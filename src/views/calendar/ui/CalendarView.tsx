@@ -9,7 +9,7 @@ import { EntryListCard } from "@/widgets/entry-card";
 import { deleteEntryRemote, useCloudEntries } from "@/entities/cloud-entry";
 
 export function CalendarView() {
-  const { entries, refresh } = useCloudEntries();
+  const { entries, error, refresh } = useCloudEntries();
   const [viewDate, setViewDate] = useState(() => new Date());
 
   const year = viewDate.getFullYear();
@@ -51,8 +51,15 @@ export function CalendarView() {
       <MonthCalendarGrid year={year} month={month} entries={entries} onDelete={handleDelete} />
 
       <div className="flex flex-col gap-4 px-4 pb-4">
-        {monthEntries.length === 0 && (
-          <p className="py-8 text-center text-sm text-neutral-400">이 달엔 기록된 구름이 없어요</p>
+        {error && (
+          <p className="py-8 text-center text-sm font-bold text-rose-600">
+            {error}
+          </p>
+        )}
+        {!error && monthEntries.length === 0 && (
+          <p className="py-8 text-center text-sm text-neutral-400">
+            이 달엔 기록된 구름이 없어요
+          </p>
         )}
         {monthEntries.map((entry) => (
           <EntryListCard key={entry.id} entry={entry} />
