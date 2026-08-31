@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { BRUTAL_SM } from "@/shared/ui/tokens";
 import { HeartIcon } from "@/shared/ui/icons";
 import { PlaceholderPhoto } from "@/shared/ui/PlaceholderPhoto";
@@ -7,26 +6,37 @@ import { CloudEntry } from "@/entities/cloud-entry";
 export function EntryFeedCard({
   entry,
   index,
+  onSelect,
   onToggleLike,
 }: {
   entry: CloudEntry;
   index: number;
+  onSelect: (id: string) => void;
   onToggleLike: (id: string) => void;
 }) {
   return (
     <div className={`${BRUTAL_SM} flex flex-col overflow-hidden bg-white`}>
-      <Link href={`/feed/${entry.id}`} className="block">
+      <button
+        type="button"
+        onClick={() => onSelect(entry.id)}
+        aria-label={`${entry.location} 기록 보기`}
+        className="block text-left"
+      >
         <PlaceholderPhoto
           photoDataUrl={entry.photoDataUrl}
           placeholderClass={entry.placeholderClass}
           className="aspect-square w-full"
         />
-      </Link>
+      </button>
       <div className="flex flex-1 flex-col gap-1 p-2">
-        <Link href={`/feed/${entry.id}`}>
+        <button
+          type="button"
+          onClick={() => onSelect(entry.id)}
+          className="text-left"
+        >
           <p className="text-xs text-neutral-600">{entry.location}</p>
           <p className="text-sm font-extrabold">{entry.tag}</p>
-        </Link>
+        </button>
         <button
           type="button"
           onClick={() => onToggleLike(entry.id)}

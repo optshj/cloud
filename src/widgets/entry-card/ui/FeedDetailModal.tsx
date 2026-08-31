@@ -1,47 +1,23 @@
-"use client";
-
-import { useParams, useRouter } from "next/navigation";
-import { AppShell } from "@/widgets/app-shell";
 import { BRUTAL, BRUTAL_SM } from "@/shared/ui/tokens";
 import { HeartIcon, XIcon } from "@/shared/ui/icons";
 import { PlaceholderPhoto } from "@/shared/ui/PlaceholderPhoto";
 import { formatDisplayDate } from "@/shared/lib/date";
 import { ReportButton } from "@/features/report-entry";
-import { useCloudEntries } from "@/entities/cloud-entry";
-import { useSession } from "@/entities/session";
-import { signInWithKakao } from "@/features/login-kakao";
+import type { CloudEntry } from "@/entities/cloud-entry";
 
-export function FeedDetailView() {
-  const { id } = useParams<{ id: string }>();
-  const router = useRouter();
-  const { user } = useSession();
-  const { entries, toggleLike } = useCloudEntries();
-  const entry = entries.find((e) => e.id === id);
-
-  if (!entry) {
-    return (
-      <AppShell theme="feed" title="피드">
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 text-sm text-neutral-500">
-          <p>기록을 찾을 수 없어요</p>
-          <button
-            type="button"
-            onClick={() => router.push("/feed")}
-            className={`${BRUTAL} bg-white px-3 py-1.5 font-bold`}
-          >
-            피드로 돌아가기
-          </button>
-        </div>
-      </AppShell>
-    );
-  }
-
-  function handleToggleLike() {
-    if (!user) return signInWithKakao();
-    toggleLike(entry!.id);
-  }
-
-  // 피드 모달은 사진첩 모달과 달리, 같은 목록의 다른 기록 카드 1~2장을 메인 카드 뒤에
-  // 부채꼴로 겹쳐 보여주는 "카드 더미" 연출을 쓴다(목업 `피드 모달.png` 기준).
+// 피드 모달은 사진첩 모달과 달리, 같은 목록의 다른 기록 카드 1~2장을 메인 카드 뒤에
+// 부채꼴로 겹쳐 보여주는 "카드 더미" 연출을 쓴다(목업 `피드 모달.png` 기준).
+export const FeedDetailModal = ({
+  entry,
+  entries,
+  onClose,
+  onToggleLike,
+}: {
+  entry: CloudEntry;
+  entries: CloudEntry[];
+  onClose: () => void;
+  onToggleLike: () => void;
+}) => {
   const stackEntries = [...entries]
     .filter((e) => e.id !== entry.id)
     .sort((a, b) => b.likes - a.likes)
@@ -54,7 +30,7 @@ export function FeedDetailView() {
   return (
     <div
       className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-black/50 p-8"
-      onClick={() => router.push("/feed")}
+      onClick={onClose}
     >
       <div
         className="relative w-full max-w-xs"
@@ -87,7 +63,7 @@ export function FeedDetailView() {
         <div className={`${BRUTAL} relative z-10 -rotate-1 bg-white p-2`}>
           <button
             type="button"
-            onClick={() => router.push("/feed")}
+            onClick={onClose}
             aria-label="닫기"
             className={`${BRUTAL_SM} absolute -right-3 -top-3 z-20 flex h-9 w-9 rotate-2 items-center justify-center bg-white`}
           >
@@ -109,7 +85,7 @@ export function FeedDetailView() {
             <div className="flex items-center justify-between pt-1">
               <button
                 type="button"
-                onClick={handleToggleLike}
+                onClick={onToggleLike}
                 className="flex items-center gap-1 text-sm font-bold"
               >
                 <HeartIcon
@@ -134,4 +110,4 @@ export function FeedDetailView() {
       </div>
     </div>
   );
-}
+};

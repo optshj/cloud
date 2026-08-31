@@ -1,8 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { AppShell } from "@/widgets/app-shell";
-import { EntryFeedCard } from "@/widgets/entry-card";
+import { EntryFeedCard, FeedDetailModal } from "@/widgets/entry-card";
 import { useCloudEntries } from "@/entities/cloud-entry";
 import { useSession } from "@/entities/session";
 import { signInWithKakao } from "@/features/login-kakao";
@@ -18,6 +19,7 @@ export const FeedView = () => {
     refresh,
     toggleLike,
   } = useCloudEntries();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const handleToggleLike = (id: string) => {
     if (!user) return signInWithKakao();
@@ -25,6 +27,7 @@ export const FeedView = () => {
   };
 
   const sorted = [...entries].sort((a, b) => b.likes - a.likes);
+  const selectedEntry = sorted.find((e) => e.id === selectedId) ?? null;
 
   if (isLoading) {
     return (
@@ -97,10 +100,19 @@ export const FeedView = () => {
             key={entry.id}
             entry={entry}
             index={index}
+            onSelect={setSelectedId}
             onToggleLike={handleToggleLike}
           />
         ))}
       </div>
+      {selectedEntry && (
+        <FeedDetailModal
+          entry={selectedEntry}
+          entries={sorted}
+          onClose={() => setSelectedId(null)}
+          onToggleLike={() => handleToggleLike(selectedEntry.id)}
+        />
+      )}
     </AppShell>
   );
 };

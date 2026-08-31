@@ -31,15 +31,15 @@
 
 ## 4. 피드 탐색 + 좋아요
 
-`/feed`, `/feed/[id]` · `FeedView`, `FeedDetailView`
+`/feed` · `FeedView`, `FeedDetailModal`(`widgets/entry-card`)
 
-- 좋아요 많은 순으로 정렬된 2열 그리드. 카드를 누르면 상세 모달로 이동한다.
+- 좋아요 많은 순으로 정렬된 2열 그리드. 카드를 누르면 페이지 전환 없이 같은 화면에서 상세 모달이 뜬다(`FeedView`의 `selectedId` state).
 - 상세 모달은 같은 목록의 다른 카드 1~2장을 부채꼴로 겹쳐 보여주는 "카드 더미" 연출을 쓴다.
 - 좋아요 토글: 비로그인이면 클릭 즉시 카카오 로그인을 띄우고, 로그인 상태면 바로 토글한다.
 
 ## 5. 신고
 
-`/feed/[id]` 상세 모달의 신고 아이콘(`ReportButton`). 누적 시 자동 숨김 처리는 서버/DB 쪽 정책 — 전체공개 서비스의 최소 안전장치라 임의로 빼거나 약화시키지 않는다([`REVIEW-STANDARD.md`](REVIEW-STANDARD.md) 스코프 가드레일).
+`/feed` 상세 모달의 신고 아이콘(`ReportButton`). 누적 시 자동 숨김 처리는 서버/DB 쪽 정책 — 전체공개 서비스의 최소 안전장치라 임의로 빼거나 약화시키지 않는다([`REVIEW-STANDARD.md`](REVIEW-STANDARD.md) 스코프 가드레일).
 
 ## 6. 탈퇴
 
