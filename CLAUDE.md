@@ -12,6 +12,8 @@
 
 제품 스펙(기능 결정, 디자인 스타일, 핵심 루프, 미정 사항)은 [`docs/PRODUCT.md`](docs/PRODUCT.md)가 유일한 기준이다. 이 문서는 개발/프로세스 관련 내용만 다룬다.
 
+UI 구현 기준(디자인 프리미티브·로딩/빈/에러 상태 표현·모션 역할 분담)은 [`docs/UI-SYSTEM.md`](docs/UI-SYSTEM.md)에 있다.
+
 ## 기술 스택 (계획)
 
 - Next.js(프론트+API) + Supabase(Auth/Postgres/Storage)
