@@ -1,2 +1,3 @@
 - [Lint 부채는 diff 스코프로 격리](project_lint_debt.md) — repo 전체가 이미 lint 실패 상태, `npm run lint` 전체 출력으로 diff를 판단하지 말 것
 - [커밋/푸시 자동화 정책](project_commit_automation.md) — code-reviewer 통과 = 확인 없이 main push, qa/fix-qa-issue 에이전트 쌍 신설
+- [router.back() 금지 패턴](project_router_back.md) — 딥링크 가능한 동적 라우트에서 닫기는 router.push(명시적경로), router.back() 아님
