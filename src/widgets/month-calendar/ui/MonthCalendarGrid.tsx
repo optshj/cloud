@@ -92,13 +92,13 @@ export function MonthCalendarGrid({
             aria-label={`${date.getDate()}일 기록 보기`}
             className="relative aspect-square border border-neutral-300"
           >
-            <span className="absolute -left-1 -top-1 z-20 text-[11px] font-bold leading-none text-black">
+            <span className="absolute -left-0.5 -top-0.5 z-20 text-[11px] font-bold leading-none text-black">
               {date.getDate()}
             </span>
             <PlaceholderPhoto
               photoDataUrl={entry.photoDataUrl}
               placeholderClass={entry.placeholderClass}
-              className={`${BRUTAL_SM} absolute -inset-1 z-10 bg-white p-0.5 ${tilt}`}
+              className={`${BRUTAL_SM} absolute -inset-0.5 z-10 bg-white p-0.5 ${tilt}`}
             />
           </button>
         );
