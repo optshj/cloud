@@ -4,13 +4,15 @@ import { useState } from "react";
 import { AppShell } from "@/widgets/app-shell";
 import { BRUTAL_SM } from "@/shared/ui/tokens";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/shared/ui/icons";
-import { MonthCalendarGrid } from "@/widgets/month-calendar";
+import { EntryDetailModal, MonthCalendarGrid } from "@/widgets/month-calendar";
 import { EntryListCard } from "@/widgets/entry-card";
 import { deleteEntryRemote, useCloudEntries } from "@/entities/cloud-entry";
 
 export function CalendarView() {
   const { entries, error, refresh } = useCloudEntries();
   const [viewDate, setViewDate] = useState(() => new Date());
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selectedEntry = entries.find((e) => e.id === selectedId) ?? null;
 
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
@@ -36,19 +38,34 @@ export function CalendarView() {
   return (
     <AppShell theme="calendar" title="사진첩">
       <div className="flex items-center justify-between border-b-[3px] border-black px-4 pb-4 pt-4">
-        <button type="button" onClick={() => goMonth(-1)} aria-label="이전 달" className={`${BRUTAL_SM} flex h-11 w-11 items-center justify-center bg-white`}>
+        <button
+          type="button"
+          onClick={() => goMonth(-1)}
+          aria-label="이전 달"
+          className={`${BRUTAL_SM} flex h-11 w-11 items-center justify-center bg-white`}
+        >
           <ChevronLeftIcon className="h-4 w-4" />
         </button>
         <div className="text-center">
           <p className="text-xl font-extrabold">{month + 1}월</p>
           <p className="text-xs text-neutral-500">총 {monthEntries.length}장</p>
         </div>
-        <button type="button" onClick={() => goMonth(1)} aria-label="다음 달" className={`${BRUTAL_SM} flex h-11 w-11 items-center justify-center bg-white`}>
+        <button
+          type="button"
+          onClick={() => goMonth(1)}
+          aria-label="다음 달"
+          className={`${BRUTAL_SM} flex h-11 w-11 items-center justify-center bg-white`}
+        >
           <ChevronRightIcon className="h-4 w-4" />
         </button>
       </div>
 
-      <MonthCalendarGrid year={year} month={month} entries={entries} onDelete={handleDelete} />
+      <MonthCalendarGrid
+        year={year}
+        month={month}
+        entries={entries}
+        onSelectEntry={setSelectedId}
+      />
 
       <div className="flex flex-col gap-4 px-4 pb-4">
         {error && (
@@ -62,9 +79,21 @@ export function CalendarView() {
           </p>
         )}
         {monthEntries.map((entry) => (
-          <EntryListCard key={entry.id} entry={entry} />
+          <EntryListCard
+            key={entry.id}
+            entry={entry}
+            onSelect={setSelectedId}
+          />
         ))}
       </div>
+
+      {selectedEntry && (
+        <EntryDetailModal
+          entry={selectedEntry}
+          onClose={() => setSelectedId(null)}
+          onDelete={handleDelete}
+        />
+      )}
     </AppShell>
   );
 }

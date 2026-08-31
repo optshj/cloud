@@ -1,11 +1,22 @@
 import { BRUTAL_SM } from "@/shared/ui/tokens";
 import { formatDisplayDate } from "@/shared/lib/date";
 import { PlaceholderPhoto } from "@/shared/ui/PlaceholderPhoto";
-import { CloudEntry } from "@/entities/cloud-entry";
+import type { CloudEntry } from "@/entities/cloud-entry";
 
-export function EntryListCard({ entry }: { entry: CloudEntry }) {
+export function EntryListCard({
+  entry,
+  onSelect,
+}: {
+  entry: CloudEntry;
+  onSelect: (id: string) => void;
+}) {
   return (
-    <div className={`${BRUTAL_SM} flex aspect-[4/3] flex-col overflow-hidden bg-white`}>
+    <button
+      type="button"
+      onClick={() => onSelect(entry.id)}
+      aria-label={`${entry.location} 기록 보기`}
+      className={`${BRUTAL_SM} flex aspect-[4/3] flex-col overflow-hidden bg-white text-left`}
+    >
       <PlaceholderPhoto
         photoDataUrl={entry.photoDataUrl}
         placeholderClass={entry.placeholderClass}
@@ -17,10 +28,14 @@ export function EntryListCard({ entry }: { entry: CloudEntry }) {
       <div className="min-h-0 flex-1 space-y-1 overflow-hidden bg-amber-50 p-3">
         <p className="font-extrabold">{entry.location}</p>
         <div className="flex items-end justify-between gap-2">
-          <p className="line-clamp-2 text-sm text-neutral-700">{entry.comment}</p>
-          <p className="whitespace-nowrap text-xs text-neutral-600">{formatDisplayDate(entry.date)}</p>
+          <p className="line-clamp-2 text-sm text-neutral-700">
+            {entry.comment}
+          </p>
+          <p className="whitespace-nowrap text-xs text-neutral-600">
+            {formatDisplayDate(entry.date)}
+          </p>
         </div>
       </div>
-    </div>
+    </button>
   );
 }

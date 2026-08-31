@@ -1,11 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { PlaceholderPhoto } from "@/shared/ui/PlaceholderPhoto";
 import { BRUTAL_SM } from "@/shared/ui/tokens";
 import { CloudEntry } from "@/entities/cloud-entry";
 import { dateKey, getMonthGrid } from "@/shared/lib/date";
-import { EntryDetailModal } from "./EntryDetailModal";
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
@@ -13,19 +11,16 @@ export function MonthCalendarGrid({
   year,
   month,
   entries,
-  onDelete,
+  onSelectEntry,
 }: {
   year: number;
   month: number;
   entries: CloudEntry[];
-  onDelete: (id: string) => void;
+  onSelectEntry: (id: string) => void;
 }) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-
   const todayKey = dateKey(new Date());
   const grid = getMonthGrid(year, month);
   const entryByDate = new Map(entries.map((e) => [e.date, e]));
-  const selectedEntry = entries.find((e) => e.id === selectedId) ?? null;
 
   return (
     <div className="grid grid-cols-7 gap-1 p-4 text-center text-xs">
@@ -52,7 +47,7 @@ export function MonthCalendarGrid({
             <button
               key={key}
               type="button"
-              onClick={() => entry && setSelectedId(entry.id)}
+              onClick={() => entry && onSelectEntry(entry.id)}
               disabled={!entry}
               aria-label={`${date.getDate()}일${entry ? " 기록 보기" : ""}`}
               className={`flex aspect-square flex-col items-center gap-0.5 border-2 border-black bg-violet-100 p-1 ${
@@ -88,7 +83,7 @@ export function MonthCalendarGrid({
           <button
             key={key}
             type="button"
-            onClick={() => setSelectedId(entry.id)}
+            onClick={() => onSelectEntry(entry.id)}
             aria-label={`${date.getDate()}일 기록 보기`}
             className="relative aspect-square border border-neutral-300"
           >
@@ -103,10 +98,6 @@ export function MonthCalendarGrid({
           </button>
         );
       })}
-
-      {selectedEntry && (
-        <EntryDetailModal entry={selectedEntry} onClose={() => setSelectedId(null)} onDelete={onDelete} />
-      )}
     </div>
   );
 }
