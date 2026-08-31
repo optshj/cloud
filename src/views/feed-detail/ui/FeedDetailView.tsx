@@ -23,7 +23,11 @@ export function FeedDetailView() {
       <AppShell theme="feed" title="피드">
         <div className="flex flex-1 flex-col items-center justify-center gap-3 text-sm text-neutral-500">
           <p>기록을 찾을 수 없어요</p>
-          <button type="button" onClick={() => router.push("/feed")} className={`${BRUTAL} bg-white px-3 py-1.5 font-bold`}>
+          <button
+            type="button"
+            onClick={() => router.push("/feed")}
+            className={`${BRUTAL} bg-white px-3 py-1.5 font-bold`}
+          >
             피드로 돌아가기
           </button>
         </div>
@@ -42,71 +46,92 @@ export function FeedDetailView() {
     .filter((e) => e.id !== entry.id)
     .sort((a, b) => b.likes - a.likes)
     .slice(0, 2);
-  const stackTilts = ["rotate-6 translate-x-4 -translate-y-3", "-rotate-6 -translate-x-4 translate-y-3"];
+  const stackTilts = [
+    "rotate-6 translate-x-4 -translate-y-3",
+    "-rotate-6 -translate-x-4 translate-y-3",
+  ];
 
   return (
-    <AppShell theme="feed" title="피드">
-      <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8">
-        <div className="relative w-full max-w-xs">
-          {stackEntries.map((stackEntry, i) => (
-            <div
-              key={stackEntry.id}
-              aria-hidden
-              className={`${BRUTAL_SM} absolute inset-0 z-0 flex flex-col overflow-hidden bg-white ${stackTilts[i % stackTilts.length]}`}
-            >
-              <PlaceholderPhoto
-                photoDataUrl={stackEntry.photoDataUrl}
-                placeholderClass={stackEntry.placeholderClass}
-                className="aspect-square w-full"
-              />
-              <div className="flex flex-1 flex-col gap-1 p-2">
-                <p className="text-xs text-neutral-600">{stackEntry.location}</p>
-                <p className="text-sm font-extrabold">{stackEntry.tag}</p>
-                <div className="mt-auto flex items-center gap-1.5 pt-1">
-                  <HeartIcon className="h-4 w-4" />
-                  <span className="text-base font-extrabold">{stackEntry.likes}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-
-          <div className={`${BRUTAL} relative z-10 -rotate-1 bg-white p-2`}>
-            <button
-              type="button"
-              onClick={() => router.back()}
-              aria-label="닫기"
-              className={`${BRUTAL_SM} absolute -right-3 -top-3 z-20 flex h-9 w-9 rotate-2 items-center justify-center bg-white`}
-            >
-              <XIcon className="h-4 w-4" />
-            </button>
-            <ReportButton
-              entryId={entry.id}
-              className={`${BRUTAL_SM} absolute -left-3 -top-3 z-20 flex h-9 w-9 rotate-2 items-center justify-center bg-white disabled:opacity-50`}
-            />
-
+    <div
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-black/50 p-8"
+      onClick={() => router.push("/feed")}
+    >
+      <div
+        className="relative w-full max-w-xs"
+        onClick={(ev) => ev.stopPropagation()}
+      >
+        {stackEntries.map((stackEntry, i) => (
+          <div
+            key={stackEntry.id}
+            aria-hidden
+            className={`${BRUTAL_SM} absolute inset-0 z-0 flex flex-col overflow-hidden bg-white ${stackTilts[i % stackTilts.length]}`}
+          >
             <PlaceholderPhoto
-              photoDataUrl={entry.photoDataUrl}
-              placeholderClass={entry.placeholderClass}
-              className="aspect-square w-full border-2 border-black"
+              photoDataUrl={stackEntry.photoDataUrl}
+              placeholderClass={stackEntry.placeholderClass}
+              className="aspect-square w-full"
             />
-
-            <div className="space-y-1 px-1 pb-1 pt-3">
-              <p className="text-xs text-neutral-600">{entry.location}</p>
-              <div className="flex items-center justify-between pt-1">
-                <button type="button" onClick={handleToggleLike} className="flex items-center gap-1 text-sm font-bold">
-                  <HeartIcon className={`h-4 w-4 ${entry.liked ? "text-rose-500" : "text-black"}`} filled={entry.liked} />
-                  {entry.likes}
-                </button>
-                <p className="text-xs text-neutral-600">{formatDisplayDate(entry.date)}</p>
+            <div className="flex flex-1 flex-col gap-1 p-2">
+              <p className="text-xs text-neutral-600">{stackEntry.location}</p>
+              <p className="text-sm font-extrabold">{stackEntry.tag}</p>
+              <div className="mt-auto flex items-center gap-1.5 pt-1">
+                <HeartIcon className="h-4 w-4" />
+                <span className="text-base font-extrabold">
+                  {stackEntry.likes}
+                </span>
               </div>
             </div>
           </div>
-        </div>
+        ))}
 
-        <div className={`${BRUTAL_SM} relative z-10 -mt-3 w-fit max-w-[85%] rotate-1 rounded-full bg-white px-5 py-2 text-center text-sm font-extrabold leading-snug`}>
-          {entry.comment}
+        <div className={`${BRUTAL} relative z-10 -rotate-1 bg-white p-2`}>
+          <button
+            type="button"
+            onClick={() => router.push("/feed")}
+            aria-label="닫기"
+            className={`${BRUTAL_SM} absolute -right-3 -top-3 z-20 flex h-9 w-9 rotate-2 items-center justify-center bg-white`}
+          >
+            <XIcon className="h-4 w-4" />
+          </button>
+          <ReportButton
+            entryId={entry.id}
+            className={`${BRUTAL_SM} absolute -left-3 -top-3 z-20 flex h-9 w-9 rotate-2 items-center justify-center bg-white disabled:opacity-50`}
+          />
+
+          <PlaceholderPhoto
+            photoDataUrl={entry.photoDataUrl}
+            placeholderClass={entry.placeholderClass}
+            className="aspect-square w-full border-2 border-black"
+          />
+
+          <div className="space-y-1 px-1 pb-1 pt-3">
+            <p className="text-xs text-neutral-600">{entry.location}</p>
+            <div className="flex items-center justify-between pt-1">
+              <button
+                type="button"
+                onClick={handleToggleLike}
+                className="flex items-center gap-1 text-sm font-bold"
+              >
+                <HeartIcon
+                  className={`h-4 w-4 ${entry.liked ? "text-rose-500" : "text-black"}`}
+                  filled={entry.liked}
+                />
+                {entry.likes}
+              </button>
+              <p className="text-xs text-neutral-600">
+                {formatDisplayDate(entry.date)}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
-    </AppShell>
+
+      <div
+        className={`${BRUTAL_SM} relative z-10 -mt-3 w-fit max-w-[85%] rotate-1 rounded-full bg-white px-5 py-2 text-center text-sm font-extrabold leading-snug`}
+        onClick={(ev) => ev.stopPropagation()}
+      >
+        {entry.comment}
+      </div>
+    </div>
   );
 }
