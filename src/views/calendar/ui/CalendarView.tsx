@@ -34,7 +34,7 @@ export function CalendarView() {
   }
 
   return (
-    <AppShell theme="calendar">
+    <AppShell theme="calendar" title="사진첩">
       <div className="flex items-center justify-between border-b-[3px] border-black px-4 pb-4 pt-4">
         <button type="button" onClick={() => goMonth(-1)} aria-label="이전 달" className={`${BRUTAL_SM} flex h-11 w-11 items-center justify-center bg-white`}>
           <ChevronLeftIcon className="h-4 w-4" />

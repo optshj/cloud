@@ -168,12 +168,16 @@ export function CameraView() {
   }
 
   if (sessionLoading) {
-    return <AppShell theme="camera">{null}</AppShell>;
+    return (
+      <AppShell theme="camera" title="카메라">
+        {null}
+      </AppShell>
+    );
   }
 
   if (todaysEntry || stage.kind === "already-done") {
     return (
-      <AppShell theme="camera">
+      <AppShell theme="camera" title="카메라">
         <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
           <div className={`${BRUTAL} bg-white p-4`}>
             <CloudIcon className="h-10 w-10 text-sky-300" />
@@ -198,7 +202,7 @@ export function CameraView() {
 
   if (stage.kind === "generating") {
     return (
-      <AppShell theme="camera">
+      <AppShell theme="camera" title="카메라">
         <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
           <div className={`${BRUTAL} bg-white p-4`}>
             <CloudIcon className="h-10 w-10 animate-pulse text-sky-300" />
@@ -211,7 +215,7 @@ export function CameraView() {
 
   if (stage.kind === "anon-ready") {
     return (
-      <AppShell theme="camera">
+      <AppShell theme="camera" title="카메라">
         <CapturePreview
           captured={{ photoDataUrl: stage.photoDataUrl }}
           dateKeyStr={todayKey}
@@ -229,7 +233,7 @@ export function CameraView() {
 
   if (stage.kind === "ready") {
     return (
-      <AppShell theme="camera">
+      <AppShell theme="camera" title="카메라">
         <CapturePreview
           captured={stage.captured}
           location={stage.locationDong}
@@ -249,7 +253,7 @@ export function CameraView() {
   }
 
   return (
-    <AppShell theme="camera">
+    <AppShell theme="camera" title="카메라">
       {error && (
         <p className="px-6 pt-2 text-center text-xs font-bold text-rose-600">
           {error}

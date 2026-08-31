@@ -28,7 +28,7 @@ export const FeedView = () => {
 
   if (isLoading) {
     return (
-      <AppShell theme="feed">
+      <AppShell theme="feed" title="피드">
         <div
           className="grid grid-cols-2 gap-3 p-4"
           aria-busy="true"
@@ -47,7 +47,7 @@ export const FeedView = () => {
 
   if (error) {
     return (
-      <AppShell theme="feed">
+      <AppShell theme="feed" title="피드">
         <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
           <div className={`${BRUTAL} bg-white p-4`}>
             <CloudIcon className="h-10 w-10 text-rose-300" />
@@ -69,7 +69,7 @@ export const FeedView = () => {
 
   if (sorted.length === 0) {
     return (
-      <AppShell theme="feed">
+      <AppShell theme="feed" title="피드">
         <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
           <div className={`${BRUTAL} bg-white p-4`}>
             <CloudIcon className="h-10 w-10 text-rose-300" />
@@ -90,7 +90,7 @@ export const FeedView = () => {
   }
 
   return (
-    <AppShell theme="feed">
+    <AppShell theme="feed" title="피드">
       <div className="grid grid-cols-2 gap-3 p-4">
         {sorted.map((entry, index) => (
           <EntryFeedCard

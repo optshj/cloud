@@ -35,12 +35,16 @@ export function SettingsView() {
   }
 
   if (loading) {
-    return <AppShell theme="calendar">{null}</AppShell>;
+    return (
+      <AppShell theme="calendar" title="설정">
+        {null}
+      </AppShell>
+    );
   }
 
   if (!user) {
     return (
-      <AppShell theme="calendar">
+      <AppShell theme="calendar" title="설정">
         <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
           <p className="font-bold">로그인하고 구름을 기록해보세요</p>
           <KakaoLoginButton />
@@ -50,7 +54,7 @@ export function SettingsView() {
   }
 
   return (
-    <AppShell theme="calendar">
+    <AppShell theme="calendar" title="설정">
       <div className="flex flex-1 flex-col gap-6 p-4">
         <h1 className="px-1 pt-1 text-xl font-extrabold">설정</h1>
 

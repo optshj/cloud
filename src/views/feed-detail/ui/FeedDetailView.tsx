@@ -20,7 +20,7 @@ export function FeedDetailView() {
 
   if (!entry) {
     return (
-      <AppShell theme="feed">
+      <AppShell theme="feed" title="피드">
         <div className="flex flex-1 flex-col items-center justify-center gap-3 text-sm text-neutral-500">
           <p>기록을 찾을 수 없어요</p>
           <button type="button" onClick={() => router.push("/feed")} className={`${BRUTAL} bg-white px-3 py-1.5 font-bold`}>
@@ -45,7 +45,7 @@ export function FeedDetailView() {
   const stackTilts = ["rotate-6 translate-x-4 -translate-y-3", "-rotate-6 -translate-x-4 translate-y-3"];
 
   return (
-    <AppShell theme="feed">
+    <AppShell theme="feed" title="피드">
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8">
         <div className="relative w-full max-w-xs">
           {stackEntries.map((stackEntry, i) => (

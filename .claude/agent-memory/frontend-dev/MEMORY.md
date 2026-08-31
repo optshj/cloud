@@ -1,0 +1,2 @@
+- [Lint baseline is already broken repo-wide](project_lint_baseline_broken.md) — ~257 pre-existing errors on clean main; isolate your own diff's errors via git stash before assuming you broke lint.
+- [Verify visual/CSS bugs in the actual browser, don't guess from source](feedback_verify_in_browser_not_guess.md) — use Playwright bounding-rect/computed-style checks; Tailwind v4 rotate/scale/translate don't show in `getComputedStyle().transform`.
