@@ -1,0 +1,12 @@
+export type CloudEntry = {
+  id: string;
+  date: string; // YYYY-MM-DD
+  location: string; // 동 단위로 변환된 위치 (원본 위경도는 서버에만 저장, 클라이언트로 내려주지 않음)
+  tag: string; // AI가 붙인 짧은 태그 (예: "분홍 하늘")
+  comment: string; // AI가 붙인 한 줄 코멘트 (예: "오늘 하늘 정말 맑아요")
+  likes: number;
+  liked: boolean;
+  // 실제로는 Supabase Storage의 public URL이 담긴다. 필드명은 위젯 쪽 diff를 줄이려고 그대로 유지.
+  photoDataUrl?: string;
+  placeholderClass?: string; // 목업/시드 데이터 전용 — 실제 사진이 항상 있으므로 이제 쓰이지 않음
+};

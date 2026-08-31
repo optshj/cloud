@@ -1,0 +1,2 @@
+- [vitest include gap for app/](project_vitest_include_gap.md) — app/api/**/route.ts는 src/ 밖이라 include를 넓혀야 co-located 테스트가 실행됨 (2026-08-30에 해결, 되돌리지 말 것)
+- [vi.hoisted for route handler mocks](feedback_vi_hoisted.md) — Route Handler 테스트에서 vi.mock factory가 참조할 mock은 vi.hoisted()로 선언 (TDZ 방지)
