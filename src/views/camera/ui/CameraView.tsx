@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { AppShell } from "@/widgets/app-shell";
 import { BRUTAL } from "@/shared/ui/tokens";
 import { CloudIcon } from "@/shared/ui/icons";
+import { Button } from "@/shared/ui/button";
+import { Skeleton } from "@/shared/ui/skeleton";
 import { formatDisplayDate, seoulDateKey } from "@/shared/lib/date";
 import { CameraLive, CapturePreview } from "@/features/capture-cloud";
 import type { Captured, Coords } from "@/features/capture-cloud";
@@ -23,7 +25,9 @@ type PendingCapture = { photoDataUrl: string; coords: Coords };
 
 type Stage =
   | { kind: "idle" }
-  | { kind: "generating" }
+  // AI 대기가 플로우에서 가장 긴 구간이라 방금 찍은 사진을 함께 들고 다닌다 —
+  // 빈 화면 대신 그 사진 위에 진행 오버레이를 얹기 위해서.
+  | { kind: "generating"; photoDataUrl: string }
   | { kind: "anon-ready"; photoDataUrl: string }
   | {
       kind: "ready";
@@ -34,15 +38,15 @@ type Stage =
     }
   | { kind: "already-done" };
 
-export function CameraView() {
+export const CameraView = () => {
   const router = useRouter();
-  const { user, loading: sessionLoading } = useSession();
+  const { user, loading: isSessionLoading } = useSession();
   const { refresh } = useCloudEntries();
   // 공개 피드(entry_feed)에는 user_id가 없어 다른 유저의 오늘 기록과 구분이 안 된다 —
   // "내가 오늘 이미 기록했는지"는 별도로 본인 소유 행만 조회한다.
   const todaysEntry = useTodaysEntry(user?.id);
   const [stage, setStage] = useState<Stage>({ kind: "idle" });
-  const [saving, setSaving] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const todayKey = seoulDateKey();
@@ -50,7 +54,7 @@ export function CameraView() {
   const processCapture = useCallback(
     async (currentUserId: string, photoDataUrl: string, coords: Coords) => {
       setError(null);
-      setStage({ kind: "generating" });
+      setStage({ kind: "generating", photoDataUrl });
 
       try {
         const blob = await (await fetch(photoDataUrl)).blob();
@@ -88,7 +92,7 @@ export function CameraView() {
     [todayKey],
   );
 
-  async function handleCapture(photoDataUrl: string, coords: Coords) {
+  const handleCapture = async (photoDataUrl: string, coords: Coords) => {
     if (!user) {
       sessionStorage.setItem(
         PENDING_CAPTURE_KEY,
@@ -98,13 +102,17 @@ export function CameraView() {
       return;
     }
     await processCapture(user.id, photoDataUrl, coords);
-  }
+  };
 
   // 비로그인 촬영 → 카카오 로그인(전체 페이지 이동) → 돌아왔을 때, 찍어둔 사진이 있으면 이어서 처리한다.
   useEffect(() => {
-    if (sessionLoading || !user) return;
+    if (isSessionLoading || !user) {
+      return;
+    }
     const raw = sessionStorage.getItem(PENDING_CAPTURE_KEY);
-    if (!raw) return;
+    if (!raw) {
+      return;
+    }
     sessionStorage.removeItem(PENDING_CAPTURE_KEY);
     try {
       const pending = JSON.parse(raw) as PendingCapture;
@@ -115,16 +123,18 @@ export function CameraView() {
     } catch (err) {
       console.error("failed to resume pending capture", err);
     }
-  }, [sessionLoading, user, processCapture]);
+  }, [isSessionLoading, user, processCapture]);
 
-  function handleRetake() {
+  const handleRetake = () => {
     sessionStorage.removeItem(PENDING_CAPTURE_KEY);
     setStage({ kind: "idle" });
-  }
+  };
 
-  async function handleRecord() {
-    if (stage.kind !== "ready") return;
-    setSaving(true);
+  const handleRecord = async () => {
+    if (stage.kind !== "ready") {
+      return;
+    }
+    setIsSaving(true);
     setError(null);
     try {
       const res = await fetch("/api/entries/confirm", {
@@ -150,14 +160,17 @@ export function CameraView() {
       await refresh();
       router.push("/calendar");
     } catch (err) {
+      console.error("camera: 기록 저장(POST /api/entries/confirm) 실패", err);
       setError(err instanceof Error ? err.message : "저장에 실패했어요");
     } finally {
-      setSaving(false);
+      setIsSaving(false);
     }
-  }
+  };
 
-  async function handleDownload() {
-    if (stage.kind !== "ready") return;
+  const handleDownload = async () => {
+    if (stage.kind !== "ready") {
+      return;
+    }
     const dataUrl = await buildShareCardDataUrl({
       photoDataUrl: stage.captured.photoDataUrl,
       location: stage.locationDong,
@@ -165,12 +178,27 @@ export function CameraView() {
       displayDate: formatDisplayDate(todayKey),
     });
     downloadDataUrl(dataUrl, `구름-${todayKey}.png`);
-  }
+  };
 
-  if (sessionLoading) {
+  // 세션 조회 중 {null}을 렌더하면 빈 흰 화면이 깜빡인다 — 뷰파인더 골격을 그대로 잡아둔다.
+  if (isSessionLoading) {
     return (
       <AppShell theme="camera" title="카메라">
-        {null}
+        <div
+          className="relative flex flex-1 flex-col overflow-hidden"
+          aria-busy="true"
+          aria-label="카메라 준비 중"
+        >
+          <span aria-hidden className="shimmer absolute inset-0 block" />
+          <div className="relative z-10 mt-auto flex flex-col items-center gap-4 px-4 pb-8 pt-6">
+            <div className="flex items-center gap-6">
+              {[1, 2, 3].map((slot) => (
+                <Skeleton key={slot} className="h-5 w-3" />
+              ))}
+            </div>
+            <Skeleton className={`${BRUTAL} h-16 w-16 rounded-full`} />
+          </div>
+        </div>
       </AppShell>
     );
   }
@@ -188,26 +216,42 @@ export function CameraView() {
               &ldquo;{todaysEntry.comment}&rdquo;
             </p>
           )}
-          <button
-            type="button"
-            onClick={() => router.push("/calendar")}
-            className={`${BRUTAL} bg-white px-4 py-2 text-sm font-bold active:translate-x-[2px] active:translate-y-[2px] active:shadow-none`}
-          >
+          <Button onClick={() => router.push("/calendar")}>
             사진첩에서 보기
-          </button>
+          </Button>
         </div>
       </AppShell>
     );
   }
 
+  // 업로드 + AI 코멘트 생성은 몇 초 걸린다 — 빈 화면 대신 방금 찍은 사진을 보여준 채로 기다린다.
   if (stage.kind === "generating") {
     return (
       <AppShell theme="camera" title="카메라">
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
-          <div className={`${BRUTAL} bg-white p-4`}>
-            <CloudIcon className="h-10 w-10 animate-pulse text-sky-300" />
+        <div className="flex flex-1 flex-col gap-4 p-6">
+          <div className={`${BRUTAL} relative bg-white p-3`}>
+            <div className="relative overflow-hidden border-2 border-black">
+              <img
+                src={stage.photoDataUrl}
+                alt="방금 촬영한 하늘 사진"
+                className="aspect-[4/5] w-full object-cover"
+              />
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/40 text-white">
+                <div className={`${BRUTAL} bg-white p-4`}>
+                  <CloudIcon className="h-10 w-10 animate-pulse text-sky-300" />
+                </div>
+                <p role="status" className="text-sm font-extrabold">
+                  AI가 하늘을 보고 있어요...
+                </p>
+              </div>
+            </div>
+            <div className="space-y-2 pt-3">
+              <Skeleton className="h-5 w-28" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="ml-auto h-3 w-20" />
+            </div>
           </div>
-          <p className="text-sm font-bold">AI가 하늘을 보고 있어요...</p>
+          <Skeleton className={`${BRUTAL} h-12 w-full`} />
         </div>
       </AppShell>
     );
@@ -219,12 +263,8 @@ export function CameraView() {
         <CapturePreview
           captured={{ photoDataUrl: stage.photoDataUrl }}
           dateKeyStr={todayKey}
-          loggedIn={false}
-          loginSlot={
-            <KakaoLoginButton
-              className={`${BRUTAL} w-full bg-amber-300 py-3 text-center font-extrabold active:translate-x-[2px] active:translate-y-[2px] active:shadow-none`}
-            />
-          }
+          isLoggedIn={false}
+          loginSlot={<KakaoLoginButton className="w-full py-3 text-base" />}
           onRetake={handleRetake}
         />
       </AppShell>
@@ -238,7 +278,7 @@ export function CameraView() {
           captured={stage.captured}
           location={stage.locationDong}
           dateKeyStr={todayKey}
-          saving={saving}
+          isSaving={isSaving}
           onRetake={handleRetake}
           onRecord={handleRecord}
           onDownload={handleDownload}
@@ -262,4 +302,4 @@ export function CameraView() {
       <CameraLive onCapture={handleCapture} />
     </AppShell>
   );
-}
+};

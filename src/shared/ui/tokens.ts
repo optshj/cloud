@@ -21,3 +21,25 @@ export const THEME = {
 } as const;
 
 export type ThemeKey = keyof typeof THEME;
+
+// 모달 열고닫기 모션은 framer-motion이 아니라 Radix의 data-state + globals.css의
+// `--animate-modal-*` 키프레임이 맡는다(shadcn-component 스킬: 둘을 겹치지 않는다).
+
+// 목록 진입: 카드가 한꺼번에 튀지 않게 살짝 시차를 준다.
+// framer-motion에 그대로 스프레드해서 쓴다 (`<motion.div {...LIST_CONTAINER} />`).
+export const LIST_CONTAINER = {
+  initial: "hidden",
+  animate: "shown",
+  variants: { shown: { transition: { staggerChildren: 0.04 } } },
+} as const;
+
+export const LIST_ITEM = {
+  variants: {
+    hidden: { opacity: 0, y: 12 },
+    shown: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.25, ease: "easeOut" },
+    },
+  },
+} as const;

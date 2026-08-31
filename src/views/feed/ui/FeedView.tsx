@@ -2,13 +2,19 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { AppShell } from "@/widgets/app-shell";
-import { EntryFeedCard, FeedDetailModal } from "@/widgets/entry-card";
+import {
+  EntryFeedCard,
+  EntryFeedCardSkeleton,
+  FeedDetailModal,
+} from "@/widgets/entry-card";
 import { useCloudEntries } from "@/entities/cloud-entry";
 import { useSession } from "@/entities/session";
 import { signInWithKakao } from "@/features/login-kakao";
-import { BRUTAL } from "@/shared/ui/tokens";
+import { BRUTAL, LIST_CONTAINER, LIST_ITEM } from "@/shared/ui/tokens";
 import { CloudIcon } from "@/shared/ui/icons";
+import { Button } from "@/shared/ui/button";
 
 export const FeedView = () => {
   const { user } = useSession();
@@ -22,7 +28,9 @@ export const FeedView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const handleToggleLike = (id: string) => {
-    if (!user) return signInWithKakao();
+    if (!user) {
+      return signInWithKakao();
+    }
     toggleLike(id);
   };
 
@@ -38,10 +46,7 @@ export const FeedView = () => {
           aria-label="피드 불러오는 중"
         >
           {Array.from({ length: 4 }).map((_, index) => (
-            <div
-              key={index}
-              className={`${BRUTAL} aspect-square animate-pulse bg-white/60`}
-            />
+            <EntryFeedCardSkeleton key={index} />
           ))}
         </div>
       </AppShell>
@@ -58,13 +63,7 @@ export const FeedView = () => {
           <p role="alert" className="text-sm font-bold text-rose-600">
             {error}
           </p>
-          <button
-            type="button"
-            onClick={() => refresh()}
-            className={`${BRUTAL} bg-white px-4 py-2 text-sm font-bold active:translate-x-[2px] active:translate-y-[2px] active:shadow-none`}
-          >
-            다시 시도
-          </button>
+          <Button onClick={() => refresh()}>다시 시도</Button>
         </div>
       </AppShell>
     );
@@ -81,12 +80,9 @@ export const FeedView = () => {
           <p className="text-sm text-neutral-600">
             가장 먼저 하늘을 기록해보세요
           </p>
-          <Link
-            href="/"
-            className={`${BRUTAL} bg-white px-4 py-2 text-sm font-bold active:translate-x-[2px] active:translate-y-[2px] active:shadow-none`}
-          >
-            카메라로 가기
-          </Link>
+          <Button asChild>
+            <Link href="/">카메라로 가기</Link>
+          </Button>
         </div>
       </AppShell>
     );
@@ -94,17 +90,18 @@ export const FeedView = () => {
 
   return (
     <AppShell theme="feed" title="피드">
-      <div className="grid grid-cols-2 gap-3 p-4">
-        {sorted.map((entry, index) => (
-          <EntryFeedCard
-            key={entry.id}
-            entry={entry}
-            index={index}
-            onSelect={setSelectedId}
-            onToggleLike={handleToggleLike}
-          />
+      <motion.div {...LIST_CONTAINER} className="grid grid-cols-2 gap-3 p-4">
+        {sorted.map((entry) => (
+          // grid로 감싸야 카드가 원래처럼 행 높이만큼 늘어난다(stagger 래퍼를 끼우기 전과 동일).
+          <motion.div key={entry.id} {...LIST_ITEM} className="grid">
+            <EntryFeedCard
+              entry={entry}
+              onSelect={setSelectedId}
+              onToggleLike={handleToggleLike}
+            />
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
       {selectedEntry && (
         <FeedDetailModal
           entry={selectedEntry}
