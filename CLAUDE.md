@@ -43,5 +43,7 @@ src/
 | Supabase 연동, Route Handler(`app/api/**`), AI Gateway | `api-developer` |
 | 테스트 작성·수정 (수정은 안 함) | `test-writer` |
 | "리뷰해줘", 커밋/푸시 전 | `code-reviewer` — **CI가 없으므로 푸시 전 1회 실행이 규약이다** |
+| "QA 돌려줘", 플로우 점검 | `qa` — `docs/FLOWS.md` 기준으로 실제 브라우저를 구동해 훑어보고, 발견한 문제를 GitHub 이슈(`qa-bug` 라벨)로 등록만 한다. 코드는 고치지 않는다 |
+| "이슈 고쳐줘", QA 이슈 처리 | `fix-qa-issue` 스킬 — `qa-bug` 이슈를 가져와 `frontend-dev`/`api-developer`에게 위임하고, `code-reviewer` 통과 후 커밋 + main에 직접 push까지 한다(push되면 `Fixes #<n>`로 이슈 자동 닫힘) |
 
-세 agent 모두 상세 규칙은 `docs/`와 `.claude/skills/`를 참조한다 — 이 표는 라우팅용이고 규칙 본문은 여기 복붙하지 않는다.
+agent 모두 상세 규칙은 `docs/`와 `.claude/skills/`를 참조한다 — 이 표는 라우팅용이고 규칙 본문은 여기 복붙하지 않는다.

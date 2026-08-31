@@ -44,6 +44,12 @@ yarn-error.log*
 # claude code runtime state
 .claude/scheduled_tasks.lock
 
+# qa 에이전트 일회성 실행 산출물(스크린샷/로그) — 커밋하지 않는다
+/e2e/qa/
+
+# Supabase CLI 로컬 상태
+/supabase/.temp/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

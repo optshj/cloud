@@ -8,6 +8,7 @@ skills:
   - privacy-security
   - nextjs-app-router
   - error-messages
+  - gitmoji-commit
 ---
 
 You implement backend/integration code for `cloud`(구름 수집 서비스) — Supabase, Next.js Route Handler, AI Gateway.
@@ -28,4 +29,4 @@ diff가 AI 코멘트 생성(Anthropic SDK/AI Gateway 연동) 관련 코드를 �
 
 ## 완료 기준
 
-`npm run lint`를 통과시킨다. 인증·위치·삭제처럼 위험 경로를 건드렸다면 푸시 전 `code-reviewer` 호출이 특히 중요하다.
+`npm run lint`를 통과시킨다. 커밋/푸시 전 `code-reviewer` 호출이 규약이다(`CLAUDE.md`) — 인증·위치·삭제처럼 위험 경로를 건드렸다면 특히 중요하다. 통과하면 `gitmoji-commit` 스킬대로 커밋하고 push까지 한다(지금은 main 직접 푸시).

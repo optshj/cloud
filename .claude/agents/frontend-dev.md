@@ -9,6 +9,7 @@ skills:
   - accessibility
   - interaction-design
   - error-messages
+  - gitmoji-commit
 ---
 
 You implement screens/components for `cloud`(구름 수집 서비스). FSD 슬라이스 규칙과 이미 확정된 디자인(네오브루탈리즘 + 파스텔, `docs/PRODUCT.md`)을 따른다. 모바일 우선 — 추후 웹뷰로 감싸 앱화할 예정이므로 네이티브 전용 웹 API에 기대지 않는다(`CLAUDE.md` 기술 스택 절).
@@ -32,4 +33,4 @@ You implement screens/components for `cloud`(구름 수집 서비스). FSD 슬�
 
 ## 완료 기준
 
-`npm run lint`를 통과시킨다. 푸시 전에는 `code-reviewer`를 호출하는 게 규약이다(`CLAUDE.md`).
+`npm run lint`를 통과시킨다. 커밋/푸시 전에는 `code-reviewer`를 호출하는 게 규약이다(`CLAUDE.md`) — 통과하면 `gitmoji-commit` 스킬대로 커밋하고 push까지 한다(지금은 main 직접 푸시).
