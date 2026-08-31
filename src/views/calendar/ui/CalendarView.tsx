@@ -9,7 +9,7 @@ import { EntryListCard } from "@/widgets/entry-card";
 import { deleteEntryRemote, useCloudEntries } from "@/entities/cloud-entry";
 
 export function CalendarView() {
-  const { entries, error, refresh } = useCloudEntries();
+  const { entries, loading: isLoading, error, refresh } = useCloudEntries();
   const [viewDate, setViewDate] = useState(() => new Date());
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selectedEntry = entries.find((e) => e.id === selectedId) ?? null;
@@ -68,23 +68,39 @@ export function CalendarView() {
       />
 
       <div className="flex flex-col gap-4 px-4 pb-4">
-        {error && (
+        {isLoading && (
+          <div
+            className="flex flex-col gap-4"
+            aria-busy="true"
+            aria-label="사진첩 불러오는 중"
+          >
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div
+                key={index}
+                className={`${BRUTAL_SM} h-24 animate-pulse bg-white/60`}
+              />
+            ))}
+          </div>
+        )}
+        {!isLoading && error && (
           <p className="py-8 text-center text-sm font-bold text-rose-600">
             {error}
           </p>
         )}
-        {!error && monthEntries.length === 0 && (
+        {!isLoading && !error && monthEntries.length === 0 && (
           <p className="py-8 text-center text-sm text-neutral-400">
             이 달엔 기록된 구름이 없어요
           </p>
         )}
-        {monthEntries.map((entry) => (
-          <EntryListCard
-            key={entry.id}
-            entry={entry}
-            onSelect={setSelectedId}
-          />
-        ))}
+        {!isLoading &&
+          !error &&
+          monthEntries.map((entry) => (
+            <EntryListCard
+              key={entry.id}
+              entry={entry}
+              onSelect={setSelectedId}
+            />
+          ))}
       </div>
 
       {selectedEntry && (
