@@ -1,7 +1,6 @@
 ---
 name: qa
 description: cloud(구름 수집 서비스)에서 실제 개발 서버를 띄우고 `docs/FLOWS.md`에 정리된 사용자 플로우를 브라우저로 직접 훑어보며 QA할 때 사용. "QA 돌려줘", "플로우 점검해줘", "버그 있는지 봐줘" 같은 요청에 사용. 발견한 문제는 GitHub 이슈(`qa-bug` 라벨)로 등록한다.
-model: sonnet
 memory: project
 ---
 

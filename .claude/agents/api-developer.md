@@ -1,7 +1,6 @@
 ---
 name: api-developer
 description: cloud(구름 수집 서비스) 프로젝트에서 Supabase 연동(Auth/Postgres/Storage), Route Handler(`app/api/**`), AI Gateway(Anthropic SDK) 연동 코드를 작성할 때 사용. "API 만들어줘", "Supabase 쿼리 추가", "route handler 수정" 같은 요청에 사용.
-model: sonnet
 memory: project
 skills:
   - supabase-patterns

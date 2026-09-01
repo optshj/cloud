@@ -77,7 +77,7 @@ AI 생성 구간에서 사진을 보여주려고 `Stage` 타입에 `photoDataUrl
 | 화면 | 로딩 | 에러 | 빈 상태 |
 |---|---|---|---|
 | 카메라 | 골격 스켈레톤 / GPS·AI·저장 각각 안내 | `role="status"` + 인라인 문구 | 해당 없음(오늘 기록 완료 화면이 대체) |
-| 사진첩 | `EntryListCardSkeleton` + 헤더 "불러오는 중..." | `role="alert"` | "이 달엔 기록된 구름이 없어요" |
+| 사진첩 | 전체화면 구름 로더(`.cloud-bob`) — 달력 골격을 먼저 그리면 "기록 없는 달"로 읽혀서 통째로 가린다 | `role="alert"` | "이 달엔 기록된 구름이 없어요" |
 | 피드 | `EntryFeedCardSkeleton` | `role="alert"` + 재시도 버튼 | 빈 상태 + 카메라로 가기 CTA |
 | 설정 | 골격 스켈레톤 | 탈퇴 실패 시 AlertDialog | 비로그인 시 로그인 유도 |
 

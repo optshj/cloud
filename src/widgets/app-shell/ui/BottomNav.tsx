@@ -17,7 +17,7 @@ export function BottomNav() {
   const cameraActive = pathname === "/";
 
   return (
-    <nav className="flex items-end justify-around border-t-[3px] border-black bg-white px-4 py-3.5">
+    <nav className="relative z-20 flex items-end justify-around border-t-[3px] border-black bg-white px-4 py-3.5">
       <SideTab {...SIDE_TABS[0]} active={isActive(SIDE_TABS[0].href)} />
 
       <Link href="/" aria-label="카메라" className="flex flex-1 flex-col items-center gap-1.5 active:scale-95">

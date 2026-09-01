@@ -10,7 +10,11 @@ import { fixupPluginRules } from '@eslint/compat'
 
 export default tseslint.config(
   {
-    ignores: ['node_modules', 'dist', 'build', '.next', 'out', 'public/mockServiceWorker.js', 'src/shared/lib/gql/**']
+    ignores: [
+      'node_modules', 'dist', 'build', '.next', 'out',
+      'next-env.d.ts',
+      'e2e/qa/**'
+    ]
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

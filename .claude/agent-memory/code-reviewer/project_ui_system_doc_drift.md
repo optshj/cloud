@@ -1,0 +1,17 @@
+---
+name: ui-system-doc-drift
+description: 상태 UI(로딩/에러/빈)를 바꾸는 diff는 docs/UI-SYSTEM.md "현재 상태 3종 현황" 표가 같이 안 바뀌어 매번 어긋난다 — 리뷰에서 함께 확인
+metadata:
+  type: project
+---
+
+상태 UI(로딩/에러/빈 상태) 컴포넌트를 바꾸거나 삭제하는 diff에서 `docs/UI-SYSTEM.md`의
+"현재 상태 3종 현황" 표와 "남은 것" 절이 함께 갱신되지 않는 일이 반복된다.
+
+**Why:** `docs/REVIEW-STANDARD.md`의 "상태 처리" 항목이 표현 기준의 진실 소스로 UI-SYSTEM.md를
+가리킨다. 그래서 이 표가 틀리면 리뷰 기준 자체가 틀린 걸 가리키게 되고, 다음 세션의 agent가
+이미 지워진 컴포넌트(예: 2026-09-02 diff의 `EntryListCardSkeleton`)를 근거로 판단한다.
+
+**How to apply:** diff가 스켈레톤/로더/에러/빈 상태 컴포넌트를 건드리면 `docs/UI-SYSTEM.md`를
+grep해서 삭제·교체된 이름이 남아있는지 확인하고, 남아있으면 🟡로 올린다.
+동일한 문서-코드 어긋남 유형은 [[lint-debt-diff-scope]]처럼 diff 범위로만 판단한다.

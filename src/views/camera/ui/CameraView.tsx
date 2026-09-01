@@ -191,9 +191,14 @@ export const CameraView = () => {
         >
           <span aria-hidden className="shimmer absolute inset-0 block" />
           <div className="relative z-10 mt-auto flex flex-col items-center gap-4 px-4 pb-8 pt-6">
-            <div className="flex items-center gap-6">
-              {[1, 2, 3].map((slot) => (
-                <Skeleton key={slot} className="h-5 w-3" />
+            <div aria-hidden className="flex items-center gap-6">
+              {[1, 3, 5].map((level) => (
+                <span
+                  key={level}
+                  className="px-1 text-base font-semibold text-black/40"
+                >
+                  {level}
+                </span>
               ))}
             </div>
             <Skeleton className={`${BRUTAL} h-16 w-16 rounded-full`} />

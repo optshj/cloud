@@ -1,7 +1,6 @@
 ---
 name: test-writer
 description: cloud(구름 수집 서비스) 프로젝트에서 Vitest 단위 테스트나 Playwright E2E 테스트를 작성/수정할 때 사용. "테스트 작성해줘", "이 함수 테스트 커버해줘", "e2e 테스트 만들어줘" 같은 요청에 사용. 수정이 아니라 테스트 작성이 전담 역할이다.
-model: sonnet
 memory: project
 skills:
   - vitest-testing

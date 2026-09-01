@@ -2,7 +2,6 @@
 name: code-reviewer
 description: 코드 작성 후 PROACTIVELY 실행. "리뷰해줘", "코드 확인" 요청이나 커밋/푸시 전에 사용. cloud 프로젝트의 유일한 품질 게이트 — 스코프 가드레일·프라이버시/보안·a11y·상태 처리를 겸해서 본다.
 disallowedTools: WebFetch, WebSearch
-model: sonnet
 effort: high
 maxTurns: 20
 memory: project
