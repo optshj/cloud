@@ -34,8 +34,10 @@ export const FeedView = () => {
     toggleLike(id);
   };
 
-  const sorted = [...entries].sort((a, b) => b.likes - a.likes);
-  const selectedEntry = sorted.find((e) => e.id === selectedId) ?? null;
+  // 좋아요순으로 정렬하지 않는다 — 하트를 누른 카드가 그 자리에서 위로 튀어올라
+  // 방금 뭘 눌렀는지 놓치고, 뒤따라 오던 카드들까지 한 칸씩 밀린다.
+  // 목록 순서는 fetchEntries가 준 최신순 그대로 둔다.
+  const selectedEntry = entries.find((e) => e.id === selectedId) ?? null;
 
   if (isLoading) {
     return (
@@ -69,7 +71,7 @@ export const FeedView = () => {
     );
   }
 
-  if (sorted.length === 0) {
+  if (entries.length === 0) {
     return (
       <AppShell theme="feed" title="피드">
         <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
@@ -91,7 +93,7 @@ export const FeedView = () => {
   return (
     <AppShell theme="feed" title="피드">
       <motion.div {...LIST_CONTAINER} className="grid grid-cols-2 gap-3 p-4">
-        {sorted.map((entry) => (
+        {entries.map((entry) => (
           // grid로 감싸야 카드가 원래처럼 행 높이만큼 늘어난다(stagger 래퍼를 끼우기 전과 동일).
           <motion.div key={entry.id} {...LIST_ITEM} className="grid">
             <EntryFeedCard
@@ -105,7 +107,7 @@ export const FeedView = () => {
       {selectedEntry && (
         <FeedDetailModal
           entry={selectedEntry}
-          entries={sorted}
+          entries={entries}
           onClose={() => setSelectedId(null)}
           onToggleLike={() => handleToggleLike(selectedEntry.id)}
         />

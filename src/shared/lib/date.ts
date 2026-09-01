@@ -35,7 +35,10 @@ export function getMonthGrid(year: number, month: number): MonthCell[] {
 
   const cells: MonthCell[] = [];
   for (let i = startWeekday - 1; i >= 0; i--) {
-    cells.push({ date: new Date(year, month - 1, daysInPrevMonth - i), inMonth: false });
+    cells.push({
+      date: new Date(year, month - 1, daysInPrevMonth - i),
+      inMonth: false,
+    });
   }
   for (let d = 1; d <= daysInMonth; d++) {
     cells.push({ date: new Date(year, month, d), inMonth: true });
@@ -46,3 +49,9 @@ export function getMonthGrid(year: number, month: number): MonthCell[] {
   }
   return cells;
 }
+
+// 2열 카드에선 "2026. 08. 30"이 지역명과 한 줄에 못 들어간다 — 목록에선 월/일만 쓴다.
+export const formatShortDate = (key: string): string => {
+  const [, m, d] = key.split("-");
+  return `${m}. ${d}`;
+};

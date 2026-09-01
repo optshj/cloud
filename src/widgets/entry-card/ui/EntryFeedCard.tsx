@@ -2,7 +2,10 @@ import { BRUTAL_SM } from "@/shared/ui/tokens";
 import { HeartIcon } from "@/shared/ui/icons";
 import { PlaceholderPhoto } from "@/shared/ui/PlaceholderPhoto";
 import type { CloudEntry } from "@/entities/cloud-entry";
+import { tiltClass } from "../lib/tilt";
 
+// 사진첩과 같은 폴라로이드 어휘. 대지는 흰색이고 아래엔 날짜 대신 태그·좋아요가 온다 —
+// 두 탭이 같은 2열 격자라 대지 톤과 메타 정보로 구분한다.
 export const EntryFeedCard = ({
   entry,
   onSelect,
@@ -12,7 +15,9 @@ export const EntryFeedCard = ({
   onSelect: (id: string) => void;
   onToggleLike: (id: string) => void;
 }) => (
-  <div className={`${BRUTAL_SM} flex flex-col overflow-hidden bg-white`}>
+  <div
+    className={`${BRUTAL_SM} ${tiltClass(entry.id)} flex flex-col bg-white p-1.5 pb-2.5`}
+  >
     <button
       type="button"
       onClick={() => onSelect(entry.id)}
@@ -22,17 +27,19 @@ export const EntryFeedCard = ({
       <PlaceholderPhoto
         photoDataUrl={entry.photoDataUrl}
         placeholderClass={entry.placeholderClass}
-        className="aspect-square w-full"
+        className="aspect-square w-full border border-black/20"
       />
     </button>
-    <div className="flex flex-1 flex-col gap-1 p-2">
+    <div className="flex flex-1 flex-col px-0.5 pt-2">
       <button
         type="button"
         onClick={() => onSelect(entry.id)}
         className="text-left"
       >
-        <p className="text-xs text-neutral-600">{entry.location}</p>
-        <p className="text-sm font-extrabold">{entry.tag}</p>
+        <p className="truncate text-[10px] text-neutral-600">
+          {entry.location}
+        </p>
+        <p className="text-[13px] font-extrabold">{entry.tag}</p>
       </button>
       <button
         type="button"

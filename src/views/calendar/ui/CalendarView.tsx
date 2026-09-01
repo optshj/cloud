@@ -169,7 +169,7 @@ export const CalendarView = () => {
             <motion.div
               {...LIST_CONTAINER}
               key={`${year}-${month}`}
-              className="flex flex-col gap-4"
+              className="grid grid-cols-2 gap-3"
             >
               {monthEntries.map((entry) => (
                 <motion.div key={entry.id} {...LIST_ITEM} className="grid">
