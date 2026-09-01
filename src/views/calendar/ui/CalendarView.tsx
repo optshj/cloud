@@ -24,7 +24,12 @@ import { dateKey, seoulDateKey } from "@/shared/lib/date";
 
 export const CalendarView = () => {
   const { entries, loading: isLoading, error, refresh } = useCloudEntries();
-  const [viewDate, setViewDate] = useState(() => new Date());
+  // 처음 보여줄 달도 KST 기준이다 — 기기 로컬로 잡으면 월말 자정 근처에
+  // "이번 달"이라며 연 달이 isThisMonth(KST)와 어긋나 다음 달 버튼이 엉뚱하게 열린다.
+  const [viewDate, setViewDate] = useState(() => {
+    const [y, m] = seoulDateKey().split("-").map(Number);
+    return new Date(y, m - 1, 1);
+  });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selectedEntry = entries.find((e) => e.id === selectedId) ?? null;
 

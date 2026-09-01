@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { PlaceholderPhoto } from "@/shared/ui/PlaceholderPhoto";
 import type { CloudEntry } from "@/entities/cloud-entry";
-import { dateKey, getMonthGrid } from "@/shared/lib/date";
+import { dateKey, getMonthGrid, seoulDateKey } from "@/shared/lib/date";
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
@@ -12,8 +12,7 @@ const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 // 사진이 도착해도 칸 모양이 바뀌지 않아 레이아웃이 튀지 않는다.
 const PRINT = "aspect-square p-[2px] pb-[11px]";
 const PHOTO_AREA = "absolute inset-[2px] bottom-[11px]";
-const DATE_IN_MARGIN =
-  "absolute inset-x-0 bottom-px text-[10px] font-bold leading-none";
+const DATE_IN_MARGIN = "absolute inset-x-0 bottom-px text-[10px] leading-none";
 
 export const MonthCalendarGrid = ({
   year,
@@ -26,7 +25,9 @@ export const MonthCalendarGrid = ({
   entries: CloudEntry[];
   onSelectEntry: (id: string) => void;
 }) => {
-  const todayKey = dateKey(new Date());
+  // 하루 1장 제한(CameraView)과 다음 달 잠금(CalendarView)이 전부 KST 기준이다 —
+  // 여기만 기기 로컬을 쓰면 비 KST 기기에서 강조되는 "오늘"이 그것들과 다른 날을 가리킨다.
+  const todayKey = seoulDateKey();
   const grid = getMonthGrid(year, month);
   const entryByDate = new Map(entries.map((e) => [e.date, e]));
 
@@ -60,12 +61,25 @@ export const MonthCalendarGrid = ({
           : entry
             ? "border border-black/25 bg-white"
             : "border border-black/15 bg-white/55";
+        // 날짜 숫자는 달력의 핵심 정보라 대지가 뭐든 AA(4.5:1)를 지킨다.
+        // 오늘 칸은 대지가 violet-200이라 neutral-500으로는 3.4:1밖에 안 나온다.
+        const dateTone = isToday
+          ? "text-neutral-700"
+          : entry
+            ? "text-neutral-500"
+            : "text-neutral-600";
+        // 오늘을 색으로만 알리지 않는다 — 스크린리더엔 aria-current, 눈으로는 숫자 굵기.
+        const dateWeight = isToday ? "font-extrabold" : "font-bold";
 
         if (!entry) {
           return (
-            <div key={key} className={`relative ${PRINT} ${mount}`}>
+            <div
+              key={key}
+              aria-current={isToday ? "date" : undefined}
+              className={`relative ${PRINT} ${mount}`}
+            >
               <span className={`${PHOTO_AREA} block bg-black/[0.06]`} />
-              <span className={`${DATE_IN_MARGIN} text-black/45`}>
+              <span className={`${DATE_IN_MARGIN} ${dateTone} ${dateWeight}`}>
                 {date.getDate()}
               </span>
             </div>
@@ -79,6 +93,7 @@ export const MonthCalendarGrid = ({
             type="button"
             onClick={() => onSelectEntry(entry.id)}
             aria-label={`${date.getDate()}일 기록 보기`}
+            aria-current={isToday ? "date" : undefined}
             className={`relative ${PRINT} ${mount} shadow-[1px_1px_0_0_rgba(0,0,0,0.28)] ${
               i % 2 === 0 ? "-rotate-1" : "rotate-1"
             }`}
@@ -99,7 +114,7 @@ export const MonthCalendarGrid = ({
                 className="absolute inset-0"
               />
             </motion.span>
-            <span className={`${DATE_IN_MARGIN} text-neutral-500`}>
+            <span className={`${DATE_IN_MARGIN} ${dateTone} ${dateWeight}`}>
               {date.getDate()}
             </span>
           </button>
