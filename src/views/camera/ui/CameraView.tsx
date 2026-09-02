@@ -198,10 +198,7 @@ export const CameraView = () => {
         >
           <span aria-hidden className="shimmer absolute inset-0 block" />
           <div className="relative z-10 mt-auto flex flex-col items-center gap-4 px-4 pb-8 pt-6">
-            <Skeleton
-              aria-hidden
-              className="h-11 w-full max-w-[240px] rounded-none"
-            />
+            <Skeleton aria-hidden className="h-9 w-9 rounded-full" />
             <Skeleton className={`${BRUTAL} h-16 w-16 rounded-full`} />
           </div>
         </div>
@@ -230,12 +227,24 @@ export const CameraView = () => {
     );
   }
 
-  // 업로드 + AI 코멘트 생성은 몇 초 걸린다 — 빈 화면 대신 방금 찍은 사진을 보여준 채로 기다린다.
-  if (stage.kind === "generating") {
+  if (stage.kind === "permission") {
     return (
       <AppShell theme="camera" title="카메라">
-        <div className="flex flex-1 flex-col gap-4 p-6">
-          <div className={`${BRUTAL} relative bg-white p-3`}>
+        <CapturePermissionGate onGranted={() => setStage({ kind: "idle" })} />
+      </AppShell>
+    );
+  }
+
+  // 촬영 이후 단계는 카메라 화면을 대체하지 않고 그 위에 얹는다 — 뒤에 뷰파인더가 살아 있어야
+  // "다른 화면으로 넘어갔다"가 아니라 "위에 떴다"로 읽힌다.
+  const renderOverlay = () => {
+    // 업로드 + AI 코멘트 생성은 몇 초 걸린다 — 빈 화면 대신 방금 찍은 사진을 보여준 채로 기다린다.
+    if (stage.kind === "generating") {
+      return (
+        <div className="animate-overlay-in flex flex-1 flex-col gap-4 bg-black/60 p-6">
+          <div
+            className={`animate-modal-in max-h-[70dvh] overflow-y-auto ${BRUTAL} relative bg-white p-3`}
+          >
             <div className="relative overflow-hidden border-2 border-black">
               <img
                 src={stage.photoDataUrl}
@@ -259,13 +268,11 @@ export const CameraView = () => {
           </div>
           <Skeleton className={`${BRUTAL} h-12 w-full`} />
         </div>
-      </AppShell>
-    );
-  }
+      );
+    }
 
-  if (stage.kind === "anon-ready") {
-    return (
-      <AppShell theme="camera" title="카메라">
+    if (stage.kind === "anon-ready") {
+      return (
         <CapturePreview
           captured={{ photoDataUrl: stage.photoDataUrl }}
           dateKeyStr={todayKey}
@@ -273,47 +280,56 @@ export const CameraView = () => {
           loginSlot={<KakaoLoginButton className="w-full py-3 text-base" />}
           onRetake={handleRetake}
         />
-      </AppShell>
-    );
-  }
+      );
+    }
 
-  if (stage.kind === "ready") {
-    return (
-      <AppShell theme="camera" title="카메라">
-        <CapturePreview
-          captured={stage.captured}
-          location={stage.locationDong}
-          dateKeyStr={todayKey}
-          isSaving={isSaving}
-          onRetake={handleRetake}
-          onRecord={handleRecord}
-          onDownload={handleDownload}
-        />
-        {error && (
-          <p className="px-6 pb-4 text-center text-xs font-bold text-rose-600">
-            {error}
-          </p>
-        )}
-      </AppShell>
-    );
-  }
+    if (stage.kind === "ready") {
+      return (
+        <>
+          <CapturePreview
+            captured={stage.captured}
+            location={stage.locationDong}
+            dateKeyStr={todayKey}
+            isSaving={isSaving}
+            onRetake={handleRetake}
+            onRecord={handleRecord}
+            onDownload={handleDownload}
+          />
+          {/* 뒤가 사용자가 찍는 하늘이라 배경 밝기를 예측할 수 없다 — 딤에 기대지 않고
+              문구 자체에 불투명 칩을 준다. */}
+          {error && (
+            <p className="bg-black/85 px-6 pb-4 pt-2 text-center text-xs font-bold text-rose-200">
+              {error}
+            </p>
+          )}
+        </>
+      );
+    }
 
-  if (stage.kind === "permission") {
-    return (
-      <AppShell theme="camera" title="카메라">
-        <CapturePermissionGate onGranted={() => setStage({ kind: "idle" })} />
-      </AppShell>
-    );
-  }
+    return null;
+  };
+
+  const overlay = renderOverlay();
 
   return (
     <AppShell theme="camera" title="카메라">
-      {error && (
+      {error && !overlay && (
         <p className="px-6 pt-2 text-center text-xs font-bold text-rose-600">
           {error}
         </p>
       )}
-      <CameraLive onCapture={handleCapture} />
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        {/* 오버레이는 포인터만 막는다 — Tab/스크린리더는 뒤의 셔터·줌에 그대로 닿아서
+            미리보기를 보는 중에 촬영이 덮어써질 수 있다. inert로 트리째 빼둔다. */}
+        <div className="flex min-h-0 flex-1 flex-col" inert={overlay !== null}>
+          <CameraLive onCapture={handleCapture} isPaused={overlay !== null} />
+        </div>
+        {overlay && (
+          <div className="absolute inset-0 z-20 flex flex-col overflow-y-auto">
+            {overlay}
+          </div>
+        )}
+      </div>
     </AppShell>
   );
 };

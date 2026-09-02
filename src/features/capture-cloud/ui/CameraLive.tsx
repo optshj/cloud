@@ -21,14 +21,20 @@ const getCurrentPosition = (): Promise<Coords> =>
     navigator.geolocation.getCurrentPosition(
       (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
       () => reject(new Error("위치 확인에 실패했어요. 다시 시도해주세요.")),
-      { enableHighAccuracy: false, timeout: 8000 },
+      // 진입 게이트에서 이미 한 번 받아둔 좌표를 재사용한다 — maximumAge가 기본값 0이면
+      // granted 상태에서도 매번 새 fix를 기다려 셔터가 몇 초씩 멈춘다.
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 60_000 },
     );
   });
 
 export const CameraLive = ({
   onCapture,
+  isPaused = false,
 }: {
   onCapture: (photoDataUrl: string, coords: Coords) => void;
+  // 미리보기 오버레이가 덮고 있는 동안은 뒤에서 계속 돌 이유가 없다 — 스트림은 살려두되
+  // (재진입 시 다시 권한/초기화를 타지 않도록) 재생만 멈춰 마지막 프레임으로 굳힌다.
+  isPaused?: boolean;
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -63,6 +69,18 @@ export const CameraLive = ({
     };
   }, [retryKey]);
 
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) {
+      return;
+    }
+    if (isPaused) {
+      video.pause();
+    } else {
+      void video.play().catch(() => undefined);
+    }
+  }, [isPaused]);
+
   const handleShutter = async () => {
     if (!videoRef.current) {
       return;
@@ -70,8 +88,8 @@ export const CameraLive = ({
     setLocationError(null);
     setIsCapturing(true);
     try {
-      // GPS 조회는 최대 8초까지 걸린다 — 그동안 버튼만 회색이면 멈춘 것처럼 보여서
-      // 셔터 위에 진행 상태를 띄운다.
+      // 권한은 진입 게이트에서 이미 받아둬서 보통 즉시 돌아온다 — 셔터가 잠깐 비활성화되는
+      // 것 외에 별도 진행 UI는 두지 않는다.
       const coords = await getCurrentPosition();
       const photoDataUrl = captureFrame(videoRef.current, zoom);
       onCapture(photoDataUrl, coords);
@@ -138,14 +156,40 @@ export const CameraLive = ({
         <p role="status" className="min-h-4 text-xs font-bold text-rose-600">
           {locationError}
         </p>
+        {/* 평소엔 현재 배율만 보여주는 동그란 배지, 호버/드래그(포커스) 중에만 눈금 슬라이더로
+            펼쳐진다 — iOS 카메라 줌과 같은 언어. 조작 자체는 계속 네이티브 range가 한다(투명하게
+            줄 전체를 덮고 있어서 접힘/펼침에 상관없이 값 매핑이 동일하다). */}
         <div
-          className={`flex w-full max-w-[240px] flex-col items-center gap-1 ${hasCameraError ? "pointer-events-none opacity-30" : ""}`}
+          className={`group flex w-full max-w-[240px] flex-col items-center ${hasCameraError ? "pointer-events-none opacity-30" : ""}`}
         >
-          <span className="text-sm font-extrabold">{zoom.toFixed(1)}x</span>
-          <div className="flex w-full items-center gap-2">
-            <span className="text-xs font-semibold text-black/40">
-              {ZOOM_MIN}
-            </span>
+          <span
+            aria-hidden
+            className="mb-1 text-sm font-extrabold text-amber-300 opacity-0 transition-opacity duration-200 group-active:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100"
+          >
+            {zoom.toFixed(1)} x
+          </span>
+          <div className="relative flex h-11 w-full items-center justify-center">
+            <div className="pointer-events-none relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-black/55 transition-[width] duration-200 ease-out group-active:w-full group-focus-within:w-full group-hover:w-full">
+              <span className="text-xs font-extrabold text-white transition-opacity duration-150 group-active:opacity-0 group-focus-within:opacity-0 group-hover:opacity-0">
+                {Number.isInteger(zoom) ? zoom : zoom.toFixed(1)}x
+              </span>
+              {/* 눈금과 range가 같은 폭(줄 전체)을 써야 인디케이터가 손가락과 어긋나지 않는다. */}
+              <div className="absolute inset-x-0 top-1/2 h-3.5 -translate-y-1/2 opacity-0 transition-opacity duration-200 group-active:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100">
+                <div
+                  className="h-full"
+                  style={{
+                    backgroundImage:
+                      "repeating-linear-gradient(to right, rgba(255,255,255,0.6) 0 1px, transparent 1px 7px)",
+                  }}
+                />
+                <span
+                  className="absolute top-0 h-full w-[2px] -translate-x-1/2 bg-amber-300"
+                  style={{
+                    left: `${((zoom - ZOOM_MIN) / (ZOOM_MAX - ZOOM_MIN)) * 100}%`,
+                  }}
+                />
+              </div>
+            </div>
             <input
               type="range"
               min={ZOOM_MIN}
@@ -155,37 +199,20 @@ export const CameraLive = ({
               onChange={(e) => setZoom(Number(e.target.value))}
               disabled={hasCameraError}
               aria-label="줌 배율"
-              className="h-11 flex-1 cursor-pointer appearance-none bg-transparent disabled:cursor-not-allowed
-                [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:rounded-none [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-black [&::-moz-range-thumb]:bg-violet-200 [&::-moz-range-thumb]:shadow-[2px_2px_0_0_#000]
-                [&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-none [&::-moz-range-track]:border-2 [&::-moz-range-track]:border-black [&::-moz-range-track]:bg-white
-                [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-none [&::-webkit-slider-runnable-track]:border-2 [&::-webkit-slider-runnable-track]:border-black [&::-webkit-slider-runnable-track]:bg-white
-                [&::-webkit-slider-thumb]:-mt-[7px] [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-black [&::-webkit-slider-thumb]:bg-violet-200 [&::-webkit-slider-thumb]:shadow-[2px_2px_0_0_#000]"
+              className="absolute inset-0 h-full w-full cursor-pointer appearance-none bg-transparent opacity-0 disabled:cursor-not-allowed"
             />
-            <span className="text-xs font-semibold text-black/40">
-              {ZOOM_MAX}
-            </span>
           </div>
         </div>
-        <div className="flex flex-col items-center gap-2">
-          <button
-            type="button"
-            onClick={handleShutter}
-            disabled={hasCameraError || isCapturing}
-            aria-label="촬영"
-            aria-busy={isCapturing}
-            className={`${BRUTAL} h-16 w-16 rounded-full transition-transform duration-150 ease-out active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:cursor-not-allowed ${
-              hasCameraError || isCapturing ? "bg-neutral-300" : "bg-violet-200"
-            }`}
-          />
-          {isCapturing && (
-            <p
-              role="status"
-              className={`${BRUTAL_SM} bg-white px-3 py-1 text-xs font-bold`}
-            >
-              위치 확인 중...
-            </p>
-          )}
-        </div>
+        <button
+          type="button"
+          onClick={handleShutter}
+          disabled={hasCameraError || isCapturing}
+          aria-label="촬영"
+          aria-busy={isCapturing}
+          className={`${BRUTAL} h-16 w-16 rounded-full transition-transform duration-150 ease-out active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:cursor-not-allowed ${
+            hasCameraError || isCapturing ? "bg-neutral-300" : "bg-violet-200"
+          }`}
+        />
       </div>
     </div>
   );
