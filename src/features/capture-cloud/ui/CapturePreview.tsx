@@ -27,33 +27,42 @@ export const CapturePreview = ({
   onRecord?: () => void;
   onDownload?: () => void;
 }) => (
-  <div className="flex flex-1 flex-col gap-4 p-6">
-    <div className={`relative ${BRUTAL} bg-white p-3`}>
+  // 그냥 다른 화면으로 바뀐 것처럼 보이지 않게, 배경을 딤 처리하고 카드가 그 위에 뜬 것처럼
+  // 보이게만 한다(실제 Dialog의 포커스 트랩 등은 필요 없다는 게 결정사항 — animate-overlay-in/
+  // animate-modal-in은 Radix Dialog와 같은 시각 언어를 재사용하려고 globals.css 토큰만 가져온 것).
+  <div className="animate-overlay-in flex flex-1 flex-col gap-4 bg-black/60 p-6">
+    <div className="relative">
       <Button
         variant="thin"
         size="none"
         onClick={onRetake}
         aria-label="닫기"
-        className="absolute -right-3 -top-3 z-10 h-11 w-11 rounded-full"
+        className="absolute -right-3 -top-3 z-10 h-9 w-9 rotate-2"
       >
-        <XIcon className="h-3.5 w-3.5" />
+        <XIcon className="h-4 w-4" />
       </Button>
-      <div className="overflow-hidden border-2 border-black">
-        <img
-          src={captured.photoDataUrl}
-          alt="촬영한 하늘 사진"
-          className="aspect-[4/5] w-full object-cover"
-        />
-      </div>
-      {isLoggedIn && (
-        <div className="space-y-1 pt-3">
-          <p className="font-extrabold">{location}</p>
-          <p className="text-sm text-neutral-700">{captured.comment}</p>
-          <p className="text-right text-xs text-neutral-500">
-            {formatDisplayDate(dateKeyStr)}
-          </p>
+      {/* 내용(특히 AI 코멘트)이 뷰포트보다 길어질 수 있어 카드 안에서만 스크롤되게 한다 —
+          전체 페이지가 넘치는 대신 이 안에서 갇힌다. */}
+      <div
+        className={`animate-modal-in max-h-[70dvh] overflow-y-auto ${BRUTAL} bg-white p-3`}
+      >
+        <div className="overflow-hidden border-2 border-black">
+          <img
+            src={captured.photoDataUrl}
+            alt="촬영한 하늘 사진"
+            className="aspect-[4/5] w-full object-cover"
+          />
         </div>
-      )}
+        {isLoggedIn && (
+          <div className="space-y-1 pt-3">
+            <p className="font-extrabold">{location}</p>
+            <p className="text-sm text-neutral-700">{captured.comment}</p>
+            <p className="text-right text-xs text-neutral-500">
+              {formatDisplayDate(dateKeyStr)}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
 
     {isLoggedIn ? (
@@ -78,7 +87,7 @@ export const CapturePreview = ({
       </>
     ) : (
       <>
-        <p className="text-center text-sm text-neutral-600">
+        <p className="text-center text-sm font-bold text-white">
           로그인하면 AI 코멘트와 함께 기록할 수 있어요
         </p>
         {loginSlot}

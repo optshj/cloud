@@ -8,7 +8,11 @@ import { CloudIcon } from "@/shared/ui/icons";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { formatDisplayDate, seoulDateKey } from "@/shared/lib/date";
-import { CameraLive, CapturePreview } from "@/features/capture-cloud";
+import {
+  CameraLive,
+  CapturePermissionGate,
+  CapturePreview,
+} from "@/features/capture-cloud";
 import type { Captured, Coords } from "@/features/capture-cloud";
 import { buildShareCardDataUrl, downloadDataUrl } from "@/features/share-card";
 import { useCloudEntries, useTodaysEntry } from "@/entities/cloud-entry";
@@ -24,6 +28,9 @@ const PENDING_CAPTURE_KEY = "cloud:pending-capture";
 type PendingCapture = { photoDataUrl: string; coords: Coords };
 
 type Stage =
+  // 카메라+위치 권한을 촬영 플로우 진입 전에 한 번에 요청하는 게이트 — 셔터를 누를 때
+  // 위치 권한 팝업이 튀어나와 흐름이 끊기던 문제를 막는다.
+  | { kind: "permission" }
   | { kind: "idle" }
   // AI 대기가 플로우에서 가장 긴 구간이라 방금 찍은 사진을 함께 들고 다닌다 —
   // 빈 화면 대신 그 사진 위에 진행 오버레이를 얹기 위해서.
@@ -45,7 +52,7 @@ export const CameraView = () => {
   // 공개 피드(entry_feed)에는 user_id가 없어 다른 유저의 오늘 기록과 구분이 안 된다 —
   // "내가 오늘 이미 기록했는지"는 별도로 본인 소유 행만 조회한다.
   const todaysEntry = useTodaysEntry(user?.id);
-  const [stage, setStage] = useState<Stage>({ kind: "idle" });
+  const [stage, setStage] = useState<Stage>({ kind: "permission" });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -191,16 +198,10 @@ export const CameraView = () => {
         >
           <span aria-hidden className="shimmer absolute inset-0 block" />
           <div className="relative z-10 mt-auto flex flex-col items-center gap-4 px-4 pb-8 pt-6">
-            <div aria-hidden className="flex items-center gap-6">
-              {[1, 3, 5].map((level) => (
-                <span
-                  key={level}
-                  className="px-1 text-base font-semibold text-black/40"
-                >
-                  {level}
-                </span>
-              ))}
-            </div>
+            <Skeleton
+              aria-hidden
+              className="h-11 w-full max-w-[240px] rounded-none"
+            />
             <Skeleton className={`${BRUTAL} h-16 w-16 rounded-full`} />
           </div>
         </div>
@@ -293,6 +294,14 @@ export const CameraView = () => {
             {error}
           </p>
         )}
+      </AppShell>
+    );
+  }
+
+  if (stage.kind === "permission") {
+    return (
+      <AppShell theme="camera" title="카메라">
+        <CapturePermissionGate onGranted={() => setStage({ kind: "idle" })} />
       </AppShell>
     );
   }

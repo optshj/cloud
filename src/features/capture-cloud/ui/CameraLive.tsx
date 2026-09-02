@@ -6,7 +6,9 @@ import { CameraOffIcon, CloudIcon, RefreshIcon } from "@/shared/ui/icons";
 import { Button } from "@/shared/ui/button";
 import { captureFrame } from "../lib/capture-frame";
 
-const ZOOM_LEVELS = [1, 3, 5] as const;
+const ZOOM_MIN = 1;
+const ZOOM_MAX = 5;
+const ZOOM_STEP = 0.1;
 
 export type Coords = { lat: number; lng: number };
 
@@ -30,7 +32,7 @@ export const CameraLive = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const [zoom, setZoom] = useState<(typeof ZOOM_LEVELS)[number]>(1);
+  const [zoom, setZoom] = useState(ZOOM_MIN);
   const [hasCameraError, setHasCameraError] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isVideoReady, setIsVideoReady] = useState(false);
@@ -137,19 +139,32 @@ export const CameraLive = ({
           {locationError}
         </p>
         <div
-          className={`flex items-center gap-6 ${hasCameraError ? "pointer-events-none opacity-30" : ""}`}
+          className={`flex w-full max-w-[240px] flex-col items-center gap-1 ${hasCameraError ? "pointer-events-none opacity-30" : ""}`}
         >
-          {ZOOM_LEVELS.map((level) => (
-            <button
-              key={level}
-              type="button"
-              onClick={() => setZoom(level)}
+          <span className="text-sm font-extrabold">{zoom.toFixed(1)}x</span>
+          <div className="flex w-full items-center gap-2">
+            <span className="text-xs font-semibold text-black/40">
+              {ZOOM_MIN}
+            </span>
+            <input
+              type="range"
+              min={ZOOM_MIN}
+              max={ZOOM_MAX}
+              step={ZOOM_STEP}
+              value={zoom}
+              onChange={(e) => setZoom(Number(e.target.value))}
               disabled={hasCameraError}
-              className={`px-1 text-base ${zoom === level ? "font-extrabold text-black" : "font-semibold text-black/40"}`}
-            >
-              {level}
-            </button>
-          ))}
+              aria-label="줌 배율"
+              className="h-11 flex-1 cursor-pointer appearance-none bg-transparent disabled:cursor-not-allowed
+                [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:rounded-none [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-black [&::-moz-range-thumb]:bg-violet-200 [&::-moz-range-thumb]:shadow-[2px_2px_0_0_#000]
+                [&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-none [&::-moz-range-track]:border-2 [&::-moz-range-track]:border-black [&::-moz-range-track]:bg-white
+                [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-none [&::-webkit-slider-runnable-track]:border-2 [&::-webkit-slider-runnable-track]:border-black [&::-webkit-slider-runnable-track]:bg-white
+                [&::-webkit-slider-thumb]:-mt-[7px] [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-black [&::-webkit-slider-thumb]:bg-violet-200 [&::-webkit-slider-thumb]:shadow-[2px_2px_0_0_#000]"
+            />
+            <span className="text-xs font-semibold text-black/40">
+              {ZOOM_MAX}
+            </span>
+          </div>
         </div>
         <div className="flex flex-col items-center gap-2">
           <button

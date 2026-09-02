@@ -2,3 +2,4 @@
 - [커밋/푸시 자동화 정책](project_commit_automation.md) — code-reviewer 통과 = 확인 없이 main push, qa/fix-qa-issue 에이전트 쌍 신설
 - [router.back() 금지 패턴](project_router_back.md) — 딥링크 가능한 동적 라우트에서 닫기는 router.push(명시적경로), router.back() 아님
 - [UI-SYSTEM.md 상태 3종 표 어긋남](project_ui_system_doc_drift.md) — 상태 UI를 바꾸는 diff는 이 표가 같이 안 바뀐다, grep으로 확인
+- [Safari permissions.query 동기 throw](project_safari_permissions_query.md) — 지원 안 하는 PermissionName은 reject가 아니라 throw, `.catch()`만으론 못 잡음
