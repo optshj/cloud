@@ -96,6 +96,6 @@ AI 생성 구간에서 사진을 보여주려고 `Stage` 타입에 `photoDataUrl
 
 - **모달 exit 애니메이션이 재생되지 않는다.** 호출부가 `{selected && <Modal/>}`로 조건부 마운트해서 부모가 먼저 사라진다. enter만 동작한다(변경 전에도 그랬으므로 회귀는 아니다). 필요하면 Dialog root를 상시 마운트하고 `open`만 토글해야 한다.
 - **터치 타겟 44px이 반쪽만 적용됐다.** `Button`에 `size="icon"`(44px)을 만들어뒀지만 모달 닫기 버튼과 `ReportButton`은 아직 36px(`h-9 w-9`)이다. `EntryDetailModal`의 "삭제하기"는 `size="none"` + `text-xs`라 세로 ~20px로 셋 중 제일 나쁘다 — WCAG 2.2 최소 24×24에도 미달한다(확인 `AlertDialog`는 거치므로 오조작이 바로 삭제로 이어지진 않는다).
-- **`role="status"` vs `role="alert"` 기준이 아직 섞여 있다.** 셔터가 안 먹은 이유(위치 조회 실패)는 즉시 알려야 하므로 `alert`가 맞을 수 있다.
+- **`role="status"` vs `role="alert"` 기준이 아직 섞여 있다.** 위치 조회 실패는 `status`, 사진첩·피드의 조회 실패는 `alert`, `CameraView`의 에러 문구 2곳은 role이 아예 없다. 셔터가 안 먹은 이유(위치 조회 실패)는 즉시 알려야 하므로 `alert`가 맞을 수 있다.
 - **`PlaceholderPhoto`의 `isLoaded`가 `photoDataUrl` 변경 시 리셋되지 않는다.** 지금은 목록이 빈 배열로 시작해 SSR HTML에 `<img>`가 안 실리므로 드러나지 않는다. 나중에 서버에서 entries를 프리페치하면 캐시된 이미지의 `onLoad`가 유실돼 사진이 `opacity-0`으로 영영 안 보일 수 있다.
 - **IA 중복** — 사진첩이 그리드와 리스트로 같은 데이터를 두 번 보여주고, 피드는 2열이라 사진 서비스치고 사진이 작다. 화면 구조 재설계는 `PRODUCT.md` 플로우와 함께 다뤄야 한다.

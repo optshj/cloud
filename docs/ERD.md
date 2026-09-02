@@ -135,16 +135,39 @@ entry_reports에 insert
 
 ## 알려진 한계
 
-**`photo_path`가 폴더명으로 `user_id`를 노출한다.** `0002`가 `user_id` 컬럼을 뷰에서 뺐지만 `photo_path`의 첫 세그먼트가 곧 user_id라 그룹핑은 여전히 복원 가능하다. 배경·영향 범위·고치려면 함께 움직여야 할 네 군데는 → `CONVENTIONS.md` "알려진 한계".
+**`photo_path`가 폴더명으로 `user_id`를 노출한다.** `0002`가 `user_id` 컬럼을 뷰에서 뺐지만 `photo_path`의 첫 세그먼트가 곧 user_id라 그룹핑은 여전히 복원 가능하다. 배경·영향 범위·함께 움직여야 할 지점은 → `CONVENTIONS.md` "알려진 한계".
 
-**`cloud_entries` 테이블 자체도 PostgREST로 직접 읽힌다.** (2026-09-02 anon 키로 확인)
+**`cloud_entries` 테이블 자체도 PostgREST로 직접 읽힌다.** (2026-09-02 anon 키로 재확인)
 
 `public` 스키마 테이블은 뷰와 무관하게 자동 노출되고, `cloud_entries_select`가 숨김 아닌
 글을 누구에게나 열어주므로 `GET /rest/v1/cloud_entries?select=user_id,lat,lng`가 그대로
-응답한다. `0002`가 뷰에서 컬럼을 뺀 것은 **뷰 경유 노출만** 막은 셈이다.
+응답한다. `?select=*`면 위 표의 10개 컬럼이 전부 나온다. `0002`가 뷰에서 컬럼을 뺀 것은
+**뷰 경유 노출만** 막은 셈이다 — 그래서 지금은 `photo_path`로 user_id를 복원할 것도 없이
+`user_id`가 직접 나오는 쪽이 더 짧은 누출 경로다.
 
 지금 당장 새는 좌표는 없다 — 확인 시점에 anon에게 보이는 3행 전부 `lat`/`lng`가 `null`이었다.
-하지만 `POST /api/entries/confirm`은 `lat`/`lng`를 실제로 insert하므로 **앞으로 쌓이는 행은
-원본 좌표를 담는다.** 그때는 `cloud_entries`의 select 정책을 `auth.uid() = user_id`로 좁혀
-공개 조회를 `entry_feed`로만 몰아야 한다 — 그렇지 않으면 "정확한 좌표를 노출하지 않는다"는
-제품 결정(→ `PRODUCT.md` "확정된 제품 스펙")이 실제로는 지켜지지 않는다.
+하지만 `POST /api/entries/confirm`은 **클라이언트가 보낸 좌표를 반올림·절삭 없이 그대로**
+insert하므로(서버가 다시 계산하는 건 `entry_date`와 `location_dong`뿐이다) **앞으로 쌓이는
+행은 원본 좌표를 담는다.** 그러면 "정확한 좌표를 노출하지 않는다"는 제품 결정
+(→ `PRODUCT.md` "확정된 제품 스펙")이 실제로는 지켜지지 않는다.
+
+### 고칠 때 — select 정책을 좁히는 건 답이 아니다
+
+**(2026-09-02 정정. 이 자리엔 원래 "`cloud_entries`의 select 정책을 `auth.uid() = user_id`로
+좁혀 공개 조회를 `entry_feed`로만 몰아야 한다"고 적혀 있었으나, 그렇게 하면 피드가 죽는다.)**
+
+`entry_feed`는 `security_invoker = true`라 뷰 조회가 조회자 권한으로 `cloud_entries`의 RLS를
+**그대로 다시 탄다**(위 "`security_invoker = true`가 왜 필수인가"). 정책을 좁히면 뷰도 같이
+좁아진다 — 로그인 유저는 피드에서 자기 글만 보고, 비로그인은 `auth.uid()`가 null이라 0행을
+본다. 실측으로도 지금 anon이 뷰에서 받는 3행은 `is_mine`이 전부 `null`이다. 남의 글이라
+통과한 게 아니라 `not is_hidden` 분기 하나로 통과한 것이라, 그 분기를 지우면 0행이 된다.
+
+실제로 가능한 선택지는 둘이다:
+
+- **좌표를 아예 안 담는다.** 앱이 `lat`/`lng`를 DB에서 다시 읽는 경로가 하나도 없다(요청 바디를
+  `reverseGeocodeToDong`에 넘기는 용도가 전부다). confirm에서 insert를 빼고 컬럼을 드롭하는 게
+  가장 싸다.
+- **보관해야 한다면 컬럼 단위로 막는다.** `revoke select (lat, lng) on cloud_entries from anon, authenticated`
+  — 뷰는 그 두 컬럼을 참조하지 않으므로 계속 동작한다.
+
+착수 조건은 → `BACKLOG.md` §2-5.
