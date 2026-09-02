@@ -17,22 +17,31 @@ export function BottomNav() {
   const cameraActive = pathname === "/";
 
   return (
-    <nav className="relative z-20 flex items-end justify-around border-t-[3px] border-black bg-white px-4 py-1.5">
+    <nav className="relative z-20 flex items-center justify-around border-t-[3px] border-black bg-white px-4 py-1">
       <SideTab {...SIDE_TABS[0]} active={isActive(SIDE_TABS[0].href)} />
 
-      <Link href="/" aria-label="카메라" className="flex flex-1 flex-col items-center gap-1 active:scale-95">
+      {/* nav 높이에 영향 안 주도록 absolute로 띄운다 — 박스가 flow에 잡히면 그 높이만큼 bar가 커진다.
+          absolute라 위치는 DOM 순서와 무관하지만, 탭/스크린리더 순서를 시각 순서(사진첩→카메라→피드)와
+          맞추려면 여기(두 SideTab 사이)에 있어야 한다. */}
+      <Link
+        href="/"
+        aria-label="카메라"
+        className="absolute left-1/2 top-0 flex -translate-x-1/2 -translate-y-[28%] flex-col items-center gap-1 active:scale-95"
+      >
         <span
-          className={`flex h-14 w-14 -translate-y-5 items-center justify-center rounded-2xl border-[3px] border-black shadow-[3px_3px_0_0_#000] ${
+          className={`flex h-14 w-14 items-center justify-center rounded-2xl border-[3px] border-black shadow-[3px_3px_0_0_#000] ${
             cameraActive ? "bg-sky-300" : "bg-white"
           }`}
         >
           <CameraIcon className="h-6 w-6" />
         </span>
-        <span className={`-mt-2 text-[13px] ${cameraActive ? "font-extrabold" : "font-medium text-neutral-500"}`}>
+        <span className={`text-[13px] ${cameraActive ? "font-extrabold" : "font-medium text-neutral-500"}`}>
           카메라
         </span>
       </Link>
 
+      {/* 카메라 버튼이 absolute라 flow에 안 잡힌다 — 양옆 탭이 가운데로 쏠리지 않도록 자리만 잡아준다. */}
+      <div aria-hidden className="flex-1" />
       <SideTab {...SIDE_TABS[1]} active={isActive(SIDE_TABS[1].href)} />
     </nav>
   );
@@ -54,9 +63,9 @@ function SideTab({
   active: boolean;
 }) {
   return (
-    <Link href={href} className="flex flex-1 flex-col items-center gap-2 active:scale-95">
+    <Link href={href} className="flex flex-1 flex-col items-center gap-1.5 active:scale-95">
       <span
-        className={`flex items-center justify-center rounded-lg border-[3px] border-black px-2.5 py-2 shadow-[3px_3px_0_0_#000] ${rotate} ${
+        className={`flex items-center justify-center rounded-lg border-[3px] border-black px-2.5 py-1.5 shadow-[3px_3px_0_0_#000] ${rotate} ${
           active ? activeBg : "bg-white"
         }`}
       >
