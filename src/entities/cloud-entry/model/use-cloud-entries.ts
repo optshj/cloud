@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createClient } from "@/shared/lib/supabase/client";
 import { fetchEntries, toggleLikeRemote } from "./api";
 import type { CloudEntry } from "./types";
 
@@ -40,6 +41,25 @@ export function useCloudEntries() {
       cancelled = true;
     };
   }, []);
+
+  // 목록은 로그인한 사람이 누구냐에 따라 내용이 달라진다 — is_mine과 liked를 서버가
+  // 세션 기준으로 계산해서 내려주기 때문이다. 그래서 로그아웃해도 목록을 그대로 두면
+  // 남의 브라우저에 내 기록이 "내 것"으로 남는다(사진첩이 안 비고, 하트도 눌린 채다).
+  // 로그인/로그아웃으로 사용자가 실제로 바뀔 때만 다시 불러온다 —
+  // 토큰 갱신(TOKEN_REFRESHED)이나 탭 복귀에도 이벤트가 오므로 id를 비교해서 걸러낸다.
+  const userIdRef = useRef<string | null | undefined>(undefined);
+  useEffect(() => {
+    const supabase = createClient();
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextUserId = session?.user.id ?? null;
+      const previousUserId = userIdRef.current;
+      userIdRef.current = nextUserId;
+      // 첫 이벤트(INITIAL_SESSION)는 위 최초 조회와 겹치므로 건너뛴다.
+      if (previousUserId === undefined || previousUserId === nextUserId) return;
+      void refresh();
+    });
+    return () => data.subscription.unsubscribe();
+  }, [refresh]);
 
   const toggleLike = useCallback(async (id: string) => {
     let previous: CloudEntry | undefined;
