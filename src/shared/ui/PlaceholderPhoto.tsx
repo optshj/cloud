@@ -6,11 +6,9 @@ import { CloudIcon } from "./icons";
 // 실제 사진이 없을 때(시드/목업 데이터) 그라데이션 배경 위에 구름 아이콘을 얹어 보여준다.
 export const PlaceholderPhoto = ({
   photoDataUrl,
-  placeholderClass,
   className,
 }: {
   photoDataUrl?: string;
-  placeholderClass?: string;
   className?: string;
 }) => {
   // Supabase Storage 사진은 네트워크로 받아오므로 도착 전까진 배경색만 덩그러니 남는다 —
@@ -27,7 +25,7 @@ export const PlaceholderPhoto = ({
 
   return (
     <div
-      className={`${hasPosition ? "" : "relative"} overflow-hidden ${placeholderClass ?? "bg-sky-100"} ${className ?? ""}`}
+      className={`${hasPosition ? "" : "relative"} overflow-hidden bg-sky-100 ${className ?? ""}`}
     >
       {photoDataUrl ? (
         <>

@@ -79,7 +79,6 @@ export const EntryDetailModal = ({
         </DialogClose>
         <PlaceholderPhoto
           photoDataUrl={entry.photoDataUrl}
-          placeholderClass={entry.placeholderClass}
           className="aspect-square w-full border-2 border-black"
         />
 

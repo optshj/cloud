@@ -35,7 +35,7 @@ function drawCover(
   ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
 }
 
-export type ShareCardInput = {
+type ShareCardInput = {
   photoDataUrl: string;
   location: string;
   comment: string;

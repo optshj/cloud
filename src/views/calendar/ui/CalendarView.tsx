@@ -25,7 +25,7 @@ import { KakaoLoginButton } from "@/features/login-kakao";
 import { dateKey, seoulDateKey } from "@/shared/lib/date";
 
 export const CalendarView = () => {
-  const { user } = useSession();
+  const { user, loading: isSessionLoading } = useSession();
   const {
     entries: allEntries,
     loading: isLoading,
@@ -77,7 +77,9 @@ export const CalendarView = () => {
 
   // 달력 골격만 먼저 그려두면 사진이 도착하기 전까지 "기록 없는 달"로 읽힌다 —
   // 조회 중에는 구름 로더 하나만 두고, 끝나면 달력과 사진을 한 번에 드러낸다.
-  if (isLoading) {
+  // 세션 조회도 같이 기다린다 — 빈 상태 문구가 로그인 여부로 갈리는데 useSession이 더 늦게
+  // 끝나면, 이미 로그인한 사람에게 카카오 로그인 버튼이 한 번 깜빡였다가 바뀐다.
+  if (isLoading || isSessionLoading) {
     return (
       <AppShell theme="calendar" title="사진첩">
         <div

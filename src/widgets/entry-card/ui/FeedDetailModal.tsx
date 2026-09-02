@@ -58,7 +58,6 @@ export const FeedDetailModal = ({
             >
               <PlaceholderPhoto
                 photoDataUrl={stackEntry.photoDataUrl}
-                placeholderClass={stackEntry.placeholderClass}
                 className="aspect-square w-full"
               />
               <div className="flex flex-1 flex-col gap-1 p-2">
@@ -97,7 +96,6 @@ export const FeedDetailModal = ({
 
             <PlaceholderPhoto
               photoDataUrl={entry.photoDataUrl}
-              placeholderClass={entry.placeholderClass}
               className="aspect-square w-full border-2 border-black"
             />
 

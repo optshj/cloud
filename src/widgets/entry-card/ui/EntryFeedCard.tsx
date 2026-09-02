@@ -26,7 +26,6 @@ export const EntryFeedCard = ({
     >
       <PlaceholderPhoto
         photoDataUrl={entry.photoDataUrl}
-        placeholderClass={entry.placeholderClass}
         className="aspect-square w-full border border-black/20"
       />
     </button>

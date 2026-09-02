@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "check:unused": "ts-prune",
+    "check:unused": "ts-prune -i [.]next",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test"

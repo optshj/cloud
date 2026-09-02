@@ -110,7 +110,6 @@ export const MonthCalendarGrid = ({
             >
               <PlaceholderPhoto
                 photoDataUrl={entry.photoDataUrl}
-                placeholderClass={entry.placeholderClass}
                 className="absolute inset-0"
               />
             </motion.span>

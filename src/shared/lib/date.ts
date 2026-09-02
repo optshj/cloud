@@ -20,11 +20,11 @@ export function formatDisplayDate(key: string): string {
   return `${y}. ${m}. ${d}`;
 }
 
-export function addDays(d: Date, days: number): Date {
+function addDays(d: Date, days: number): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate() + days);
 }
 
-export type MonthCell = { date: Date; inMonth: boolean };
+type MonthCell = { date: Date; inMonth: boolean };
 
 // 달력 그리드용 셀 배열 (7의 배수 길이, 앞뒤 인접 달 날짜로 채움)
 export function getMonthGrid(year: number, month: number): MonthCell[] {

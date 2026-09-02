@@ -24,7 +24,6 @@ export const EntryListCard = ({
   >
     <PlaceholderPhoto
       photoDataUrl={entry.photoDataUrl}
-      placeholderClass={entry.placeholderClass}
       className="aspect-square w-full border border-black/20"
     />
     <div className="w-full px-0.5 pt-2">

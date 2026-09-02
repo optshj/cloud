@@ -1,6 +1,6 @@
-// ponytail: 실제 학교 API Gateway(Claude vision) 호출 대신 더미 코멘트 풀에서 무작위 선택.
-// 백엔드 연동 시 이 함수만 실제 API 호출로 교체하면 됨.
-export const AI_COMMENT_POOL: { tag: string; comment: string }[] = [
+// AI 코멘트 실패 시의 폴백 풀. 게이트웨이 호출은 generate-ai-comment.ts가 하고,
+// 키가 없거나 호출/파싱이 실패할 때 여기로 떨어진다 — 지우거나 API 호출로 갈아끼우지 말 것.
+const AI_COMMENT_POOL: { tag: string; comment: string }[] = [
   { tag: "기분 좋은 하루", comment: "오늘 하늘 정말 맑아요" },
   { tag: "햇살 가득", comment: "햇살이 좋은 하루예요" },
   { tag: "구름 산책", comment: "구름이 예쁘게 떠 있어요" },

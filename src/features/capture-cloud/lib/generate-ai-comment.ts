@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { pickRandomComment } from "./generate-comment";
 
-export type AiComment = { tag: string; comment: string };
+type AiComment = { tag: string; comment: string };
 
 const SYSTEM_PROMPT =
   "너는 하루 한 장 하늘/구름 사진에 러프한 감성 코멘트를 붙이는 다이어리 앱의 톤이다. " +

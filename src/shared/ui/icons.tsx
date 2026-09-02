@@ -4,7 +4,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Cloud,
-  Download,
   Flag,
   Heart,
   Images,
@@ -24,7 +23,6 @@ export const ChevronLeftIcon = ChevronLeft;
 export const ChevronRightIcon = ChevronRight;
 export const XIcon = X;
 export const FlagIcon = Flag;
-export const DownloadIcon = Download;
 
 export function HeartIcon({ className, filled }: IconProps & { filled?: boolean }) {
   return <Heart className={className} fill={filled ? "currentColor" : "none"} />;
