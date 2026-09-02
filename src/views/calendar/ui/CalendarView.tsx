@@ -20,10 +20,21 @@ import { Button } from "@/shared/ui/button";
 import { EntryDetailModal, MonthCalendarGrid } from "@/widgets/month-calendar";
 import { EntryListCard } from "@/widgets/entry-card";
 import { deleteEntryRemote, useCloudEntries } from "@/entities/cloud-entry";
+import { useSession } from "@/entities/session";
+import { KakaoLoginButton } from "@/features/login-kakao";
 import { dateKey, seoulDateKey } from "@/shared/lib/date";
 
 export const CalendarView = () => {
-  const { entries, loading: isLoading, error, refresh } = useCloudEntries();
+  const { user } = useSession();
+  const {
+    entries: allEntries,
+    loading: isLoading,
+    error,
+    refresh,
+  } = useCloudEntries();
+  // 사진첩은 내 앨범이다 — 피드와 같은 조회를 쓰되 내 기록만 남긴다.
+  // (전체공개라 조회 자체는 남의 기록도 내려오지만 여기선 보여주지 않는다.)
+  const entries = allEntries.filter((e) => e.isMine);
   // 처음 보여줄 달도 KST 기준이다 — 기기 로컬로 잡으면 월말 자정 근처에
   // "이번 달"이라며 연 달이 isThisMonth(KST)와 어긋나 다음 달 버튼이 엉뚱하게 열린다.
   const [viewDate, setViewDate] = useState(() => {
@@ -157,10 +168,15 @@ export const CalendarView = () => {
                   <CloudIcon className="h-10 w-10 text-violet-200" />
                 </div>
               </div>
+              {/* 사진첩은 내 기록만 보여주므로 비로그인은 항상 빈 화면이 된다 —
+                  "기록된 구름이 없어요"는 원인을 가린다(기록은 있고, 내 게 없을 뿐). */}
               <p className="text-sm font-bold text-neutral-500">
-                이 달엔 기록된 구름이 없어요
+                {user
+                  ? "이 달엔 기록된 구름이 없어요"
+                  : "로그인하면 내가 모은 구름을 볼 수 있어요"}
               </p>
-              {isThisMonth && (
+              {!user && <KakaoLoginButton />}
+              {user && isThisMonth && (
                 <Button asChild size="sm" className="bg-violet-100">
                   <Link href="/">
                     <CameraIcon className="h-4 w-4" />

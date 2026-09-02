@@ -6,6 +6,7 @@ export type CloudEntry = {
   comment: string; // AI가 붙인 한 줄 코멘트 (예: "오늘 하늘 정말 맑아요")
   likes: number;
   liked: boolean;
+  isMine: boolean; // 내가 올린 기록인지 — 신고/삭제 버튼 노출을 가른다. 비로그인은 항상 false
   // 실제로는 Supabase Storage의 public URL이 담긴다. 필드명은 위젯 쪽 diff를 줄이려고 그대로 유지.
   photoDataUrl?: string;
   placeholderClass?: string; // 목업/시드 데이터 전용 — 실제 사진이 항상 있으므로 이제 쓰이지 않음

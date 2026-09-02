@@ -87,10 +87,13 @@ export const FeedDetailModal = ({
                 <XIcon className="h-4 w-4" />
               </Button>
             </DialogClose>
-            <ReportButton
-              entryId={entry.id}
-              className={`${BRUTAL_SM} absolute -left-3 -top-3 z-20 flex h-9 w-9 rotate-2 items-center justify-center bg-white disabled:opacity-50`}
-            />
+            {/* 자기 기록은 신고할 수 없다. */}
+            {!entry.isMine && (
+              <ReportButton
+                entryId={entry.id}
+                className={`${BRUTAL_SM} absolute -left-3 -top-3 z-20 flex h-9 w-9 rotate-2 items-center justify-center bg-white disabled:opacity-50`}
+              />
+            )}
 
             <PlaceholderPhoto
               photoDataUrl={entry.photoDataUrl}

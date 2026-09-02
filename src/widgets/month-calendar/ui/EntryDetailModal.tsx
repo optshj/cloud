@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BRUTAL, BRUTAL_SM } from "@/shared/ui/tokens";
+import { BRUTAL } from "@/shared/ui/tokens";
 import { XIcon } from "@/shared/ui/icons";
 import { formatDisplayDate } from "@/shared/lib/date";
 import { Button } from "@/shared/ui/button";
@@ -23,7 +23,6 @@ import {
 } from "@/shared/ui/alert-dialog";
 import { PlaceholderPhoto } from "@/shared/ui/PlaceholderPhoto";
 import { buildShareCardDataUrl, downloadDataUrl } from "@/features/share-card";
-import { ReportButton } from "@/features/report-entry";
 import type { CloudEntry } from "@/entities/cloud-entry";
 
 // 사진첩 모달 참고 이미지: 그리드에서 날짜를 탭하면 폴라로이드처럼 살짝 기울어진 큰 카드가
@@ -78,11 +77,6 @@ export const EntryDetailModal = ({
             <XIcon className="h-4 w-4" />
           </Button>
         </DialogClose>
-        <ReportButton
-          entryId={entry.id}
-          className={`${BRUTAL_SM} absolute -left-3 -top-3 z-10 flex h-9 w-9 rotate-2 items-center justify-center bg-white disabled:opacity-50`}
-        />
-
         <PlaceholderPhoto
           photoDataUrl={entry.photoDataUrl}
           placeholderClass={entry.placeholderClass}
@@ -108,7 +102,7 @@ export const EntryDetailModal = ({
             variant="link"
             size="none"
             onClick={() => setIsDeleteOpen(true)}
-            className="w-full pt-1 text-center text-xs text-neutral-400"
+            className="w-full pt-1 text-center text-xs text-neutral-500"
           >
             삭제하기
           </Button>
