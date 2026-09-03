@@ -48,6 +48,8 @@
 - 기존 파일 이관 + `photo_path` 백필이 필요하다.
 - e2e도 같은 포맷을 하드코딩하고 있다(`e2e/smoke.spec.ts`의 `photo_path` 픽스처, 로컬 QA 시드 스크립트).
 
+**`user_id`는 더 짧은 누출 경로로도 샌다.** `photo_path`로 복원할 것도 없이 `GET /rest/v1/cloud_entries?select=user_id`가 그대로 응답한다. `0003`이 좌표는 컬럼 권한으로 막았지만 `user_id`는 남겼다 — `entry_feed`가 `security_invoker`라 `is_mine`을 계산하려면 조회자에게 그 컬럼 권한이 필요하고, `fetchMyTodayEntry`도 그 컬럼으로 필터한다(→ `ERD.md` "컬럼 권한"). 이걸 막으려면 위 네 군데와 **같이** 움직여야 한다.
+
 덧붙여 이 포맷은 **규약이지 제약이 아니다.** `POST /api/entries/confirm`은 클라이언트가 보낸
 `photoPath` 문자열을 검증 없이 그대로 insert한다 — 포맷을 실제로 붙잡고 있는 건 `CameraView`의
 업로드 경로와 storage insert RLS(첫 세그먼트 = uid)뿐이다.
@@ -73,37 +75,6 @@
 (`INITIAL_SESSION`)는 최초 조회와 겹친다고 건너뛰므로 자동 복구 지점이 없고, 실제
 로그아웃→로그인으로 user id가 바뀌기 전까지 그대로다.
 코드상 깨질 확률은 낮다 — `auth/callback`이 서버에서 쿠키를 굽고 풀 리다이렉트를 한다.
-
-### 2-5. `cloud_entries`의 원본 좌표 노출 → **`lat`/`lng`가 실제로 쌓인 행이 생기는 순간**
-
-(2026-09-02 anon 키로 재확인)
-
-`public` 스키마 테이블은 뷰와 무관하게 PostgREST로 자동 노출되고, `cloud_entries_select`가 숨김 아닌
-글을 누구에게나 열어주므로 `GET /rest/v1/cloud_entries?select=user_id,lat,lng`가 그대로 응답한다.
-`?select=*`면 컬럼 10개가 전부 나온다. `0002`가 뷰에서 컬럼을 뺀 것은 **뷰 경유 노출만** 막은 셈이라,
-지금은 `photo_path`로 user_id를 복원할 것도 없이 `user_id`가 직접 나오는 쪽이 더 짧은 누출 경로다
-(2-1과 같은 뿌리다).
-
-지금 당장 새는 좌표는 없다 — 확인 시점에 anon에게 보이는 3행 전부 `lat`/`lng`가 `null`이었다.
-하지만 `POST /api/entries/confirm`은 **클라이언트가 보낸 좌표를 반올림·절삭 없이 그대로** insert하므로
-(서버가 다시 계산하는 건 `entry_date`와 `location_dong`뿐이다) **행이 하나만 쌓여도 "정확한 좌표를
-노출하지 않는다"는 확정 스펙**(→ `PRODUCT.md` "확정된 제품 스펙")**이 깨진다.**
-
-**select 정책을 좁히는 방법은 쓸 수 없다 — 피드가 같이 죽는다.**
-(2026-09-02 정정. 원래 "`cloud_entries`의 select 정책을 `auth.uid() = user_id`로 좁혀 공개 조회를
-`entry_feed`로만 몰아야 한다"고 적혀 있었으나 그렇게 하면 피드가 죽는다.)
-`entry_feed`는 `security_invoker = true`라 뷰 조회가 조회자 권한으로 `cloud_entries`의 RLS를
-**그대로 다시 탄다**(→ `ERD.md` "`security_invoker = true`가 왜 필수인가"). 정책을 좁히면 뷰도 같이
-좁아진다 — 로그인 유저는 피드에서 자기 글만 보고, 비로그인은 `auth.uid()`가 null이라 0행을 본다.
-실측으로도 지금 anon이 뷰에서 받는 3행은 `is_mine`이 전부 `null`이다. 남의 글이라 통과한 게 아니라
-`not is_hidden` 분기 하나로 통과한 것이라, 그 분기를 지우면 0행이 된다.
-
-실제로 가능한 선택지는 둘이다:
-
-- **좌표를 아예 안 담는다.** 앱이 `lat`/`lng`를 DB에서 다시 읽는 경로가 하나도 없다(요청 바디를
-  `reverseGeocodeToDong`에 넘기는 용도가 전부다). confirm에서 insert를 빼고 컬럼을 드롭하는 게 가장 싸다.
-- **보관해야 한다면 컬럼 단위로 막는다.** `revoke select (lat, lng) on cloud_entries from anon, authenticated`
-  — 뷰는 그 두 컬럼을 참조하지 않으므로 계속 동작한다.
 
 ### 2-6. 셔터의 "위치 확인 중..." 배지 되살리기 → **fix가 정말 차가울 때가 문제가 되면**
 
@@ -161,6 +132,10 @@
 
 ## 4. 확인만 하면 되는 것
 
+- [ ] **`0003_revoke_coords_select.sql`을 SQL Editor에서 실행하고 anon 키로 확인.**
+      마이그레이션은 써뒀지만 아직 **적용 전이다.** 적용 후 확인:
+      `?select=lat` → `42501 permission denied for column lat`,
+      `?select=location_dong` → 정상, `entry_feed?select=is_mine` → 정상(뷰가 안 깨졌는지).
 - [ ] **카카오 로그인 → 사진첩에서 내 기록이 실제로 보이는지 브라우저로 한 번.**
       `ffbd26f`에서 사진첩이 `is_mine`에 전적으로 의존하게 됐는데, 실패하면
       에러 없이 빈 화면이라 나중에 재현이 어렵다(2-4 참고).

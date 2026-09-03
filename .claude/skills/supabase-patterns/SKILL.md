@@ -5,7 +5,7 @@ description: cloud(구름 수집 서비스) 프로젝트에서 Supabase(Auth/Pos
 
 # Supabase 연동 패턴 (cloud)
 
-지금 올라가 있는 스키마(테이블·`entry_feed` 뷰·RLS 정책·Storage 정책)는 [`docs/ERD.md`](../../../docs/ERD.md)가 진실 소스다 — 쿼리를 쓰기 전에 컬럼과 정책을 여기서 확인하고, 스키마를 바꾸면 마이그레이션과 함께 그 문서도 고친다.
+지금 올라가 있는 스키마(테이블·`entry_feed` 뷰·RLS 정책·컬럼 권한·Storage 정책)는 [`docs/ERD.md`](../../../docs/ERD.md)가 진실 소스다 — 쿼리를 쓰기 전에 컬럼과 정책을 여기서 확인하고, 스키마를 바꾸면 마이그레이션과 함께 그 문서도 고친다.
 
 `src/shared/lib/supabase/`에 클라이언트 3종이 이미 있다 — 새로 만들지 말고 상황에 맞는 걸 고른다.
 

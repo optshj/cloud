@@ -5,7 +5,7 @@ metadata:
   type: project
 ---
 
-`ERD.md`와 `TODO.md` §2-5가 나란히 "`cloud_entries_select`를 `auth.uid() = user_id`로
+`ERD.md`와 백로그가 나란히 "`cloud_entries_select`를 `auth.uid() = user_id`로
 좁혀 공개 조회를 `entry_feed`로만 몰아야 한다"고 적고 있었는데 **그 처방이 틀렸다.**
 `entry_feed`가 `security_invoker = true`라 뷰 조회가 같은 RLS를 그대로 다시 타므로, 정책을
 좁히면 뷰도 같이 좁아져 비로그인은 0행을 본다. 같은 ERD 문서 안의 "`security_invoker = true`가

@@ -102,6 +102,24 @@ Postgres 뷰는 기본값(`security_invoker = false`)에서 **뷰 소유자 권�
 
 `update` 정책이 없다는 게 짝을 이룬다 — `is_hidden`을 클라이언트가 되돌릴 수 없다. 유일하게 그 값을 바꾸는 건 아래 트리거다.
 
+## 컬럼 권한 — RLS가 못 막는 층
+
+RLS는 **행**을 막고, 여기 권한은 **컬럼**을 막는다. 둘은 서로를 대신하지 못한다.
+
+`0003`이 `anon`/`authenticated`의 테이블 단위 select를 회수하고 `lat`/`lng`를 뺀 9개 컬럼만 다시 부여했다.
+
+```sql
+revoke select on public.cloud_entries from anon, authenticated;
+grant select (id, user_id, entry_date, location_dong, tag, comment, photo_path, is_hidden, created_at)
+  on public.cloud_entries to anon, authenticated;
+```
+
+**`revoke select (lat, lng)` 한 줄로는 안 된다** — Postgres에서 테이블 단위 select 권한을 들고 있으면 그게 모든 컬럼을 덮어서 컬럼 단위 revoke가 효과가 없다. 테이블 권한을 먼저 회수하고 필요한 컬럼만 다시 줘야 한다.
+
+**`user_id`는 왜 남겨뒀나.** `entry_feed`가 `security_invoker = true`라 `is_mine`(`e.user_id = auth.uid()`)을 조회자 권한으로 계산한다 — 이 컬럼을 빼면 뷰가 통째로 깨진다. `fetchMyTodayEntry`도 `user_id`로 필터하는데 **Postgres는 필터에 쓰는 컬럼에도 select 권한을 요구한다.** `user_id` 노출은 별개 건이다(→ `TODO.md` §2-1).
+
+좌표 **저장**은 계속 된다 — insert 권한은 select와 별개고, `POST /api/entries/confirm`의 `.select()` 반환 목록에 `lat`/`lng`가 없다.
+
 ## 신고 3건 → 자동 숨김
 
 ```
@@ -135,6 +153,6 @@ entry_reports에 insert
 
 ## 알려진 한계
 
-스키마 자체에 남아 있는 노출 문제(`photo_path`의 user_id 노출, `cloud_entries` 직접 조회로
-새는 `user_id`/`lat`/`lng`, 그리고 고칠 때의 선택지)는 → [`TODO.md`](TODO.md) §2-1·§2-5로 이관했다.
-이 문서는 지금 올라가 있는 스키마의 사실만 서술한다.
+원본 좌표는 `0003`의 컬럼 권한으로 막혔다(위 "컬럼 권한" 참고). 남은 건 **`user_id`가 두 경로로
+새는 것** — `photo_path`의 폴더명, 그리고 `cloud_entries`의 `user_id` 컬럼 자체다. 둘 다 뿌리가
+같고 배경·함께 움직여야 할 지점은 → [`TODO.md`](TODO.md) §2-1.
