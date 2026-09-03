@@ -12,6 +12,18 @@ const ZOOM_STEP = 0.1;
 
 export type Coords = { lat: number; lng: number };
 
+const COORDS_TIMEOUT_MS = 8000;
+// 이 화면에 들어온 뒤 받아둔 fix를 셔터가 그대로 쓰게 하는 창. 동 단위로만 저장/표시하므로
+// (→ docs/PRODUCT.md "확정된 제품 스펙") 2분 전 좌표여도 결과가 달라지지 않는다.
+const COORDS_MAX_AGE_MS = 120_000;
+
+const GEO_OPTIONS: PositionOptions = {
+  enableHighAccuracy: false,
+  timeout: COORDS_TIMEOUT_MS,
+  // 기본값 0이면 granted 상태에서도 매번 새 fix를 기다려 셔터가 몇 초씩 멈춘다.
+  maximumAge: COORDS_MAX_AGE_MS,
+};
+
 const getCurrentPosition = (): Promise<Coords> =>
   new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
@@ -21,9 +33,7 @@ const getCurrentPosition = (): Promise<Coords> =>
     navigator.geolocation.getCurrentPosition(
       (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
       () => reject(new Error("위치 확인에 실패했어요. 다시 시도해주세요.")),
-      // 진입 게이트에서 이미 한 번 받아둔 좌표를 재사용한다 — maximumAge가 기본값 0이면
-      // granted 상태에서도 매번 새 fix를 기다려 셔터가 몇 초씩 멈춘다.
-      { enableHighAccuracy: false, timeout: 8000, maximumAge: 60_000 },
+      GEO_OPTIONS,
     );
   });
 
@@ -69,6 +79,24 @@ export const CameraLive = ({
     };
   }, [retryKey]);
 
+  // 셔터를 누르는 순간 처음 fix를 요청하면 몇 초씩 멈춘다. 화면에 들어오자마자 한 번 받아
+  // 브라우저 위치 캐시를 데워두면, 셔터의 요청이 maximumAge로 그 캐시를 집어가 즉시 돌아온다.
+  //
+  // **진입 게이트에 기대면 안 된다.** 게이트는 두 권한이 이미 granted면 permissions.query만 보고
+  // 바로 통과시키느라 좌표를 한 번도 안 받는다 — 권한을 이미 허용한 재방문 사용자는 게이트를
+  // 지나고도 캐시가 비어 있어서 세션 첫 촬영에서 대기를 그대로 문다. 여기가 그 구멍을 막는다.
+  // 실패는 무시한다 — 진짜 결과는 셔터의 요청이 판정하고, 거기서 문구가 뜬다.
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      () => undefined,
+      () => undefined,
+      GEO_OPTIONS,
+    );
+  }, []);
+
   useEffect(() => {
     const video = videoRef.current;
     if (!video) {
@@ -88,8 +116,8 @@ export const CameraLive = ({
     setLocationError(null);
     setIsCapturing(true);
     try {
-      // 권한은 진입 게이트에서 이미 받아둬서 보통 즉시 돌아온다 — 셔터가 잠깐 비활성화되는
-      // 것 외에 별도 진행 UI는 두지 않는다.
+      // 위에서 마운트 때 미리 받아둔 덕에 보통 캐시에서 즉시 돌아온다 — 셔터가 잠깐
+      // 비활성화되는 것 외에 별도 진행 UI는 두지 않는다.
       const coords = await getCurrentPosition();
       const photoDataUrl = captureFrame(videoRef.current, zoom);
       onCapture(photoDataUrl, coords);

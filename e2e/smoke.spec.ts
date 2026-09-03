@@ -126,3 +126,34 @@ test("피드 상세 모달은 닫힐 때 exit 애니메이션을 재생한다", 
   expect(played).toContain("modal-out");
   expect(played).toContain("overlay-out");
 });
+
+test.describe("권한을 이미 허용한 재방문 사용자", () => {
+  test.use({
+    permissions: ["geolocation", "camera"],
+    geolocation: { latitude: 33.4996, longitude: 126.5312 },
+  });
+
+  test("셔터를 누르기 전에 위치를 미리 받아둔다", async ({ page }) => {
+    // 게이트는 두 권한이 granted면 permissions.query만 보고 바로 통과시킨다 — 좌표를 한 번도
+    // 안 받는다. 그 상태로 두면 셔터가 그때서야 fix를 요청해 최대 8초 멈춘다(게이트를 넣은
+    // 목적이 바로 그 대기를 없애는 거였는데 재방문 사용자에겐 그대로였다).
+    // CameraLive가 마운트될 때 미리 받아 브라우저 위치 캐시를 데우는 게 그 구멍을 막는다.
+    await page.addInitScript(() => {
+      const counted = window as unknown as { geoCalls: number };
+      counted.geoCalls = 0;
+      const original = navigator.geolocation.getCurrentPosition.bind(navigator.geolocation);
+      navigator.geolocation.getCurrentPosition = (...args: Parameters<typeof original>) => {
+        counted.geoCalls += 1;
+        return original(...args);
+      };
+    });
+
+    await page.goto("/");
+    // 게이트가 그냥 통과했다는 뜻 — 셔터가 바로 나온다.
+    await expect(page.getByRole("button", { name: "촬영" })).toBeVisible();
+
+    await expect
+      .poll(() => page.evaluate(() => (window as unknown as { geoCalls: number }).geoCalls))
+      .toBeGreaterThan(0);
+  });
+});
