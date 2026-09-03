@@ -23,7 +23,7 @@ const SIDE_TABS = [
   },
 ];
 
-export function BottomNav() {
+export const BottomNav = () => {
   const pathname = usePathname();
   const isActive = (href: string) => pathname.startsWith(href);
   const cameraActive = pathname === "/";
@@ -59,9 +59,9 @@ export function BottomNav() {
       <SideTab {...SIDE_TABS[1]} active={isActive(SIDE_TABS[1].href)} />
     </nav>
   );
-}
+};
 
-function SideTab({
+const SideTab = ({
   href,
   label,
   Icon,
@@ -75,7 +75,7 @@ function SideTab({
   activeBg: string;
   rotate: string;
   active: boolean;
-}) {
+}) => {
   return (
     <Link href={href} className="flex flex-1 flex-col items-center gap-1.5 active:scale-95">
       <span
@@ -90,4 +90,4 @@ function SideTab({
       </span>
     </Link>
   );
-}
+};

@@ -7,7 +7,7 @@ import { generateAiComment } from "@/features/capture-cloud";
 const BUCKET = "entry-photos";
 
 // 미리보기 전용 — DB에 아무것도 저장하지 않는다. "기록하기"를 눌러야 /api/entries/confirm에서 저장된다.
-export async function POST(request: NextRequest) {
+export const POST = async (request: NextRequest) => {
   const supabase = await createClient();
   const {
     data: { user },
@@ -32,4 +32,4 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({ tag: aiComment.tag, comment: aiComment.comment, locationDong });
-}
+};

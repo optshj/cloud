@@ -9,6 +9,6 @@ const AI_COMMENT_POOL: Array<{ tag: string; comment: string }> = [
   { tag: "잔잔한 하늘", comment: "바람 한 점 없이 잔잔한 하늘이에요" },
 ];
 
-export function pickRandomComment() {
+export const pickRandomComment = () => {
   return AI_COMMENT_POOL[Math.floor(Math.random() * AI_COMMENT_POOL.length)];
-}
+};

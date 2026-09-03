@@ -6,7 +6,7 @@ import { seoulDateKey } from "@/shared/lib/date";
 
 const BUCKET = "entry-photos";
 
-export async function POST(request: NextRequest) {
+export const POST = async (request: NextRequest) => {
   const supabase = await createClient();
   const {
     data: { user },
@@ -68,4 +68,4 @@ export async function POST(request: NextRequest) {
     liked: false,
     photoDataUrl: photoUrl,
   });
-}
+};

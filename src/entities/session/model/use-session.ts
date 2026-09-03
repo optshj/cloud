@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/shared/lib/supabase/client";
 
-export function useSession() {
+export const useSession = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -22,4 +22,4 @@ export function useSession() {
   }, []);
 
   return { user, loading };
-}
+};

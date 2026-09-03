@@ -1,4 +1,4 @@
-function loadImage(src: string): Promise<HTMLImageElement> {
+const loadImage = (src: string): Promise<HTMLImageElement> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
     // Storage의 https URL은 cross-origin이라, 이게 없으면 canvas가 tainted 상태가 돼서 toDataURL이 실패한다.
@@ -7,16 +7,16 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     img.onerror = reject;
     img.src = src;
   });
-}
+};
 
-function drawCover(
+const drawCover = (
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement,
   x: number,
   y: number,
   w: number,
   h: number,
-) {
+) => {
   const imgRatio = img.width / img.height;
   const boxRatio = w / h;
   let sx = 0;
@@ -33,7 +33,7 @@ function drawCover(
   }
 
   ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
-}
+};
 
 type ShareCardInput = {
   photoDataUrl: string;
@@ -43,7 +43,7 @@ type ShareCardInput = {
 };
 
 // 외부 공유용 카드 이미지를 합성한다. 워터마크(서비스명 자리)를 항상 포함 — 바이럴 도달용.
-export async function buildShareCardDataUrl(input: ShareCardInput): Promise<string> {
+export const buildShareCardDataUrl = async (input: ShareCardInput): Promise<string> => {
   const width = 800;
   const height = 1000;
   const photoHeight = Math.round(height * 0.6);
@@ -82,11 +82,11 @@ export async function buildShareCardDataUrl(input: ShareCardInput): Promise<stri
   ctx.strokeRect(5, 5, width - 10, height - 10);
 
   return canvas.toDataURL("image/png");
-}
+};
 
-export function downloadDataUrl(dataUrl: string, filename: string) {
+export const downloadDataUrl = (dataUrl: string, filename: string) => {
   const a = document.createElement("a");
   a.href = dataUrl;
   a.download = filename;
   a.click();
-}
+};

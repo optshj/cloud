@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { fetchMyTodayEntry, type TodayEntryStatus } from "./api";
 
 // 로그인한 사용자 본인의 "오늘 기록 여부"만 확인한다 — 공개 피드(useCloudEntries)와는 별개 조회.
-export function useTodaysEntry(userId: string | undefined): TodayEntryStatus {
+export const useTodaysEntry = (userId: string | undefined): TodayEntryStatus => {
   const [entry, setEntry] = useState<TodayEntryStatus>(null);
 
   useEffect(() => {
@@ -20,4 +20,4 @@ export function useTodaysEntry(userId: string | undefined): TodayEntryStatus {
   }, [userId]);
 
   return entry;
-}
+};

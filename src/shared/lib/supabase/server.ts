@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 
 // 라우트 핸들러/서버 컴포넌트 전용 — 매 요청마다 새로 만들어야 함(공유 금지).
-export async function createClient() {
+export const createClient = async () => {
   const cookieStore = await cookies();
 
   return createServerClient(
@@ -25,4 +25,4 @@ export async function createClient() {
       },
     },
   );
-}
+};

@@ -24,19 +24,19 @@ export const ChevronRightIcon = ChevronRight;
 export const XIcon = X;
 export const FlagIcon = Flag;
 
-export function HeartIcon({ className, filled }: IconProps & { filled?: boolean }) {
+export const HeartIcon = ({ className, filled }: IconProps & { filled?: boolean }) => {
   return <Heart className={className} fill={filled ? "currentColor" : "none"} />;
-}
+};
 
-export function CloudIcon({ className }: IconProps) {
+export const CloudIcon = ({ className }: IconProps) => {
   return <Cloud className={className} fill="currentColor" strokeWidth={0} />;
-}
+};
 
 const ROUGH_CLOUD_D =
   "M26 66 C16 64 15 50 25 47 C22 36 34 28 43 33 C47 23 64 22 69 33 C80 32 86 44 79 51 C88 55 85 66 75 66 C74 71 66 73 61 69 C55 74 43 74 38 69 C33 72 27 70 26 66 Z";
 
 // 아이콘 시안 v3 "9e — GRAPHITE" 채택안
-export function LogoIcon({ className }: IconProps) {
+export const LogoIcon = ({ className }: IconProps) => {
   return (
     <svg viewBox="0 0 100 100" className={className}>
       <rect x="8" y="8" width="88" height="88" rx="14" fill="#17151c" />
@@ -76,4 +76,4 @@ export function LogoIcon({ className }: IconProps) {
       />
     </svg>
   );
-}
+};

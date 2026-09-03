@@ -6,7 +6,7 @@ const BUCKET = "entry-photos";
 
 // 탈퇴 즉시 전체 삭제(CLAUDE.md 필수 스펙, 유예기간 없음): 사진 파일 → auth 계정 순으로 지운다.
 // DB 행(cloud_entries/entry_likes/entry_reports)은 auth.users FK의 on delete cascade로 같이 지워진다.
-export async function DELETE() {
+export const DELETE = async () => {
   const supabase = await createClient();
   const {
     data: { user },
@@ -24,4 +24,4 @@ export async function DELETE() {
   if (error) return NextResponse.json({ error: "탈퇴 처리에 실패했어요" }, { status: 500 });
 
   return new NextResponse(null, { status: 204 });
-}
+};

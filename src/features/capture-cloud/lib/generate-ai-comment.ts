@@ -11,7 +11,7 @@ const SYSTEM_PROMPT =
 
 // 학교 API Gateway(Anthropic Messages API 호환)로 사진을 보내 코멘트를 받는다.
 // 키가 없거나 호출/파싱이 실패하면 조용히 더미 코멘트로 폴백한다(CLAUDE.md: AI 코멘트는 검증 로직 없이 러프하게).
-export async function generateAiComment(photoUrl: string): Promise<AiComment> {
+export const generateAiComment = async (photoUrl: string): Promise<AiComment> => {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return pickRandomComment();
 
@@ -47,4 +47,4 @@ export async function generateAiComment(photoUrl: string): Promise<AiComment> {
   } catch {
     return pickRandomComment();
   }
-}
+};

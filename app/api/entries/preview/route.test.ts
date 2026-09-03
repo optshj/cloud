@@ -40,9 +40,9 @@ vi.mock("@/features/capture-cloud", () => ({
 
 import { POST } from "./route";
 
-function makeRequest(body: unknown): NextRequest {
+const makeRequest = (body: unknown): NextRequest => {
   return { json: async () => body } as unknown as NextRequest;
-}
+};
 
 describe("POST /api/entries/preview", () => {
   beforeEach(() => {

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { GearIcon, LogoIcon } from "@/shared/ui/icons";
 import { BRUTAL_SM } from "@/shared/ui/tokens";
 
-export function TopHeader({ headerClass, title }: { headerClass: string; title: string }) {
+export const TopHeader = ({ headerClass, title }: { headerClass: string; title: string }) => {
   return (
     <header
       className={`flex items-center justify-between gap-2 border-b-[3px] border-black px-4 py-3 ${headerClass}`}
@@ -20,4 +20,4 @@ export function TopHeader({ headerClass, title }: { headerClass: string; title: 
       </Link>
     </header>
   );
-}
+};

@@ -44,9 +44,9 @@ vi.mock("@/shared/lib/date", () => ({
 
 import { POST } from "./route";
 
-function makeRequest(body: unknown): NextRequest {
+const makeRequest = (body: unknown): NextRequest => {
   return { json: async () => body } as unknown as NextRequest;
-}
+};
 
 const validBody = {
   photoPath: "a.jpg",

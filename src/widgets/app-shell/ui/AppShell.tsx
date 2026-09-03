@@ -4,7 +4,7 @@ import { BottomNav } from "./BottomNav";
 import type { ThemeKey } from "@/shared/ui/tokens";
 import { THEME } from "@/shared/ui/tokens";
 
-export function AppShell({
+export const AppShell = ({
   theme,
   title,
   children,
@@ -12,7 +12,7 @@ export function AppShell({
   theme: ThemeKey;
   title: string;
   children: ReactNode;
-}) {
+}) => {
   const t = THEME[theme];
   return (
     <div className="mx-auto flex h-dvh w-full max-w-md flex-col bg-white">
@@ -23,4 +23,4 @@ export function AppShell({
       <BottomNav />
     </div>
   );
-}
+};

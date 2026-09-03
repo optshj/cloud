@@ -3,7 +3,7 @@ import { createClient } from "@/shared/lib/supabase/client";
 import { fetchEntries, toggleLikeRemote } from "./api";
 import type { CloudEntry } from "./types";
 
-export function useCloudEntries() {
+export const useCloudEntries = () => {
   const [entries, setEntries] = useState<CloudEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -81,4 +81,4 @@ export function useCloudEntries() {
   }, []);
 
   return { entries, loading, error, refresh, toggleLike };
-}
+};

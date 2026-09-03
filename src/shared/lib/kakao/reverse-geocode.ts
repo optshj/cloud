@@ -3,7 +3,7 @@
 // Header: Authorization: KakaoAK {REST_API_KEY}
 // documents[].region_type이 "H"(행정동)인 항목의 region_2depth_name + region_3depth_name을 합치면
 // "제주시 이도이동" 형태가 된다(제주처럼 구가 없는 지역도 region_2depth_name이 시 단위로 채워짐).
-export async function reverseGeocodeToDong(lat: number, lng: number): Promise<string> {
+export const reverseGeocodeToDong = async (lat: number, lng: number): Promise<string> => {
   const apiKey = process.env.KAKAO_REST_API_KEY;
   if (!apiKey) throw new Error("KAKAO_REST_API_KEY가 설정되지 않았습니다");
 
@@ -22,4 +22,4 @@ export async function reverseGeocodeToDong(lat: number, lng: number): Promise<st
   if (!dong) throw new Error("위치 변환 결과가 없습니다");
 
   return [dong.region_2depth_name, dong.region_3depth_name].filter(Boolean).join(" ");
-}
+};
