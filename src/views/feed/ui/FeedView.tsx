@@ -14,7 +14,7 @@ import { Button } from "@/shared/ui/button";
 
 export const FeedView = () => {
   const { user } = useSession();
-  const { entries, loading: isLoading, error, refresh, toggleLike } = useCloudEntries();
+  const { entries, isLoading, error, refresh, toggleLike } = useCloudEntries();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const handleToggleLike = (id: string) => {

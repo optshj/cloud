@@ -43,7 +43,7 @@ type Stage =
 
 export const CameraView = () => {
   const router = useRouter();
-  const { user, loading: isSessionLoading } = useSession();
+  const { user, isLoading: isSessionLoading } = useSession();
   const { refresh } = useCloudEntries();
   // 공개 피드(entry_feed)에는 user_id가 없어 다른 유저의 오늘 기록과 구분이 안 된다 —
   // "내가 오늘 이미 기록했는지"는 별도로 본인 소유 행만 조회한다.

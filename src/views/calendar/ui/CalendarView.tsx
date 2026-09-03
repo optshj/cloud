@@ -15,8 +15,8 @@ import { KakaoLoginButton } from "@/features/login-kakao";
 import { dateKey, seoulDateKey } from "@/shared/lib/date";
 
 export const CalendarView = () => {
-  const { user, loading: isSessionLoading } = useSession();
-  const { entries: allEntries, loading: isLoading, error, refresh } = useCloudEntries();
+  const { user, isLoading: isSessionLoading } = useSession();
+  const { entries: allEntries, isLoading, error, refresh } = useCloudEntries();
   // 사진첩은 내 앨범이다 — 피드와 같은 조회를 쓰되 내 기록만 남긴다.
   // (전체공개라 조회 자체는 남의 기록도 내려오지만 여기선 보여주지 않는다.)
   const entries = allEntries.filter((e) => e.isMine);

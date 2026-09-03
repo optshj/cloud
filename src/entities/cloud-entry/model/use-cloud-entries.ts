@@ -5,7 +5,7 @@ import type { CloudEntry } from "./types";
 
 export const useCloudEntries = () => {
   const [entries, setEntries] = useState<CloudEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
@@ -17,28 +17,28 @@ export const useCloudEntries = () => {
       console.error("useCloudEntries refresh failed", err);
       setError("기록을 불러오지 못했어요");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
+    let isCancelled = false;
     fetchEntries()
       .then((list) => {
-        if (!cancelled) {
+        if (!isCancelled) {
           setEntries(list);
           setError(null);
         }
       })
       .catch((err) => {
         console.error("useCloudEntries initial fetch failed", err);
-        if (!cancelled) setError("기록을 불러오지 못했어요");
+        if (!isCancelled) setError("기록을 불러오지 못했어요");
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!isCancelled) setIsLoading(false);
       });
     return () => {
-      cancelled = true;
+      isCancelled = true;
     };
   }, []);
 
@@ -80,5 +80,5 @@ export const useCloudEntries = () => {
     }
   }, []);
 
-  return { entries, loading, error, refresh, toggleLike };
+  return { entries, isLoading, error, refresh, toggleLike };
 };

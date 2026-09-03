@@ -4,14 +4,14 @@ import { createClient } from "@/shared/lib/supabase/client";
 
 export const useSession = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const supabase = createClient();
 
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
-      setLoading(false);
+      setIsLoading(false);
     });
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -21,5 +21,5 @@ export const useSession = () => {
     return () => subscription.subscription.unsubscribe();
   }, []);
 
-  return { user, loading };
+  return { user, isLoading };
 };

@@ -26,7 +26,7 @@ const SIDE_TABS = [
 export const BottomNav = () => {
   const pathname = usePathname();
   const isActive = (href: string) => pathname.startsWith(href);
-  const cameraActive = pathname === "/";
+  const isCameraActive = pathname === "/";
 
   return (
     <nav className="relative z-20 flex items-center justify-around border-t-[3px] border-black bg-white px-4 py-1">
@@ -42,13 +42,13 @@ export const BottomNav = () => {
       >
         <span
           className={`flex h-14 w-14 items-center justify-center rounded-2xl border-[3px] border-black shadow-[3px_3px_0_0_#000] ${
-            cameraActive ? "bg-sky-300" : "bg-white"
+            isCameraActive ? "bg-sky-300" : "bg-white"
           }`}
         >
           <CameraIcon className="h-6 w-6" />
         </span>
         <span
-          className={`text-[13px] ${cameraActive ? "font-extrabold" : "font-medium text-neutral-500"}`}
+          className={`text-[13px] ${isCameraActive ? "font-extrabold" : "font-medium text-neutral-500"}`}
         >
           카메라
         </span>

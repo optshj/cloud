@@ -22,7 +22,7 @@ import { createClient } from "@/shared/lib/supabase/client";
 
 export const SettingsView = () => {
   const router = useRouter();
-  const { user, loading: isLoading } = useSession();
+  const { user, isLoading } = useSession();
   const [isBusy, setIsBusy] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

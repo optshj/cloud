@@ -9,14 +9,11 @@ const loadImage = (src: string): Promise<HTMLImageElement> => {
   });
 };
 
-const drawCover = (
-  ctx: CanvasRenderingContext2D,
-  img: HTMLImageElement,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-) => {
+type Box = { x: number; y: number; w: number; h: number };
+
+// 박스는 x/y/w/h를 따로 받지 않고 한 덩어리로 받는다 — 인자 4개가 전부 number라
+// 호출부에서 순서를 바꿔 넣어도 타입이 안 잡힌다.
+const drawCover = (ctx: CanvasRenderingContext2D, img: HTMLImageElement, { x, y, w, h }: Box) => {
   const imgRatio = img.width / img.height;
   const boxRatio = w / h;
   let sx = 0;
@@ -58,7 +55,7 @@ export const buildShareCardDataUrl = async (input: ShareCardInput): Promise<stri
   ctx.fillRect(0, 0, width, height);
 
   const img = await loadImage(input.photoDataUrl);
-  drawCover(ctx, img, 24, 24, width - 48, photoHeight - 24);
+  drawCover(ctx, img, { x: 24, y: 24, w: width - 48, h: photoHeight - 24 });
 
   ctx.fillStyle = "#111111";
   ctx.font = "bold 34px sans-serif";
