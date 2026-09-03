@@ -298,7 +298,10 @@ export const CameraView = () => {
           {/* 뒤가 사용자가 찍는 하늘이라 배경 밝기를 예측할 수 없다 — 딤에 기대지 않고
               문구 자체에 불투명 칩을 준다. */}
           {error && (
-            <p className="bg-black/85 px-6 pb-4 pt-2 text-center text-xs font-bold text-rose-200">
+            <p
+              role="alert"
+              className="bg-black/85 px-6 pb-4 pt-2 text-center text-xs font-bold text-rose-200"
+            >
               {error}
             </p>
           )}
@@ -314,7 +317,10 @@ export const CameraView = () => {
   return (
     <AppShell theme="camera" title="카메라">
       {error && !overlay && (
-        <p className="px-6 pt-2 text-center text-xs font-bold text-rose-600">
+        <p
+          role="alert"
+          className="px-6 pt-2 text-center text-xs font-bold text-rose-600"
+        >
           {error}
         </p>
       )}

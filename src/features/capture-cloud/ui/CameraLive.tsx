@@ -153,7 +153,7 @@ export const CameraLive = ({
       )}
 
       <div className="relative z-10 mt-auto flex flex-col items-center gap-4 px-4 pb-8 pt-6">
-        <p role="status" className="min-h-4 text-xs font-bold text-rose-600">
+        <p role="alert" className="min-h-4 text-xs font-bold text-rose-600">
           {locationError}
         </p>
         {/* 평소엔 현재 배율만 보여주는 동그란 배지, 호버/드래그(포커스) 중에만 눈금 슬라이더로
