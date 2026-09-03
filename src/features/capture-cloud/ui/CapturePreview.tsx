@@ -34,10 +34,10 @@ export const CapturePreview = ({
     <div className="relative">
       <Button
         variant="thin"
-        size="none"
+        size="icon"
         onClick={onRetake}
         aria-label="닫기"
-        className="absolute -right-3 -top-3 z-10 h-9 w-9 rotate-2"
+        className="absolute -right-3 -top-3 z-10 rotate-2"
       >
         <XIcon className="h-4 w-4" />
       </Button>

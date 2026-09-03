@@ -79,9 +79,9 @@ export const FeedDetailModal = ({
             <DialogClose asChild>
               <Button
                 variant="thin"
-                size="none"
+                size="icon"
                 aria-label="닫기"
-                className="absolute -right-3 -top-3 z-20 h-9 w-9 rotate-2"
+                className="absolute -right-3 -top-3 z-20 rotate-2"
               >
                 <XIcon className="h-4 w-4" />
               </Button>
@@ -90,7 +90,7 @@ export const FeedDetailModal = ({
             {!entry.isMine && (
               <ReportButton
                 entryId={entry.id}
-                className={`${BRUTAL_SM} absolute -left-3 -top-3 z-20 flex h-9 w-9 rotate-2 items-center justify-center bg-white disabled:opacity-50`}
+                className={`${BRUTAL_SM} absolute -left-3 -top-3 z-20 flex h-11 w-11 rotate-2 items-center justify-center bg-white disabled:opacity-50`}
               />
             )}
 

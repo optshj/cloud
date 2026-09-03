@@ -70,9 +70,9 @@ export const EntryDetailModal = ({
         <DialogClose asChild>
           <Button
             variant="thin"
-            size="none"
+            size="icon"
             aria-label="닫기"
-            className="absolute -right-3 -top-3 z-10 h-9 w-9 rotate-2"
+            className="absolute -right-3 -top-3 z-10 rotate-2"
           >
             <XIcon className="h-4 w-4" />
           </Button>
@@ -101,7 +101,7 @@ export const EntryDetailModal = ({
             variant="link"
             size="none"
             onClick={() => setIsDeleteOpen(true)}
-            className="w-full pt-1 text-center text-xs text-neutral-500"
+            className="min-h-11 w-full text-center text-xs text-neutral-500"
           >
             삭제하기
           </Button>

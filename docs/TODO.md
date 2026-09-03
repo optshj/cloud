@@ -45,21 +45,7 @@
 **CI가 없어서 이게 계속 쌓인다.** 정리 커밋과 함께 pre-commit 훅이나 CI를 붙일지 판단이 필요하다
 — 안 붙이면 다음 세션에 또 같은 양이 쌓인다.
 
-### 1-2. 터치 타겟 44px 마무리 (a11y)
-
-`Button`에 `size="icon"`(44px)을 만들어뒀지만 아직 36px(`h-9 w-9`)인 곳이 네 군데다:
-
-- `EntryDetailModal` 닫기 버튼
-- `FeedDetailModal` 닫기 버튼
-- `CapturePreview` 닫기 버튼 — **원래 44px이었는데 X버튼 규격 통일로 36px 그룹에 합류했다**
-  (→ `UI-SYSTEM.md` "결정" §8). 일관성을 택한 대가라 **올릴 땐 네 곳을 한꺼번에** 올려야 한다.
-- `ReportButton` — 크기를 호출부 `className`에서 받는다(`FeedDetailModal`이 `h-9 w-9`로 넘긴다).
-
-**`EntryDetailModal`의 "삭제하기"부터 손대는 게 맞다.** `size="none"` + `text-xs`라 세로 ~20px로
-그중 제일 나쁘고, WCAG 2.2 최소 24×24에도 미달한다(확인 `AlertDialog`는 거치므로 오조작이 바로
-삭제로 이어지진 않는다).
-
-### 1-3. `role="status"` vs `role="alert"` 기준 통일
+### 1-2. `role="status"` vs `role="alert"` 기준 통일
 
 화면마다 섞여 있고 role이 아예 없는 곳도 있다:
 
