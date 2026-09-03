@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "./dialog";
 import { Button } from "./button";
-import { XIcon } from "./icons";
+import { X } from "lucide-react";
 import { PlaceholderPhoto } from "./PlaceholderPhoto";
 import { BRUTAL } from "./tokens";
 
@@ -30,7 +30,7 @@ const DialogDemo = ({ hasPhoto = false }: { hasPhoto?: boolean }) => {
               aria-label="닫기"
               className="absolute -top-3 -right-3 z-10 rotate-2"
             >
-              <XIcon className="h-4 w-4" />
+              <X className="h-4 w-4" />
             </Button>
           </DialogClose>
           {hasPhoto && <PlaceholderPhoto className="aspect-square w-full border-2 border-black" />}

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { BRUTAL, BRUTAL_SM } from "@/shared/ui/tokens";
-import { CameraOffIcon, CloudIcon, RefreshIcon } from "@/shared/ui/icons";
+import { CameraOff, Cloud, RefreshCw } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { captureFrame } from "../lib/capture-frame";
 
@@ -136,14 +136,22 @@ export const CameraLive = ({
       {/* 목업 장식용 구름 — 카메라 초기화 중에만 노출, 권한 거부 화면에는 안 띄운다 */}
       {!isVideoReady && !hasCameraError && (
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-          <CloudIcon className="absolute top-[38%] left-[8%] h-10 w-14 text-white" />
-          <CloudIcon className="absolute top-[47%] left-[52%] h-14 w-20 text-white" />
+          <Cloud
+            className="absolute top-[38%] left-[8%] h-10 w-14 text-white"
+            fill="currentColor"
+            strokeWidth={0}
+          />
+          <Cloud
+            className="absolute top-[47%] left-[52%] h-14 w-20 text-white"
+            fill="currentColor"
+            strokeWidth={0}
+          />
         </div>
       )}
       {hasCameraError ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
           <div className={`${BRUTAL_SM} rounded-full bg-white p-3`}>
-            <CameraOffIcon className="h-8 w-8 text-sky-300" />
+            <CameraOff className="h-8 w-8 text-sky-300" />
           </div>
           <p className="text-sm font-bold">
             카메라 권한이 필요해요.
@@ -158,7 +166,7 @@ export const CameraLive = ({
             }}
             className="gap-1.5 py-1.5"
           >
-            <RefreshIcon className="h-3.5 w-3.5" />
+            <RefreshCw className="h-3.5 w-3.5" />
             다시 시도
           </Button>
         </div>

@@ -1,42 +1,11 @@
-import {
-  Camera,
-  CameraOff,
-  ChevronLeft,
-  ChevronRight,
-  Cloud,
-  Flag,
-  Heart,
-  Images,
-  RefreshCw,
-  Settings,
-  X,
-} from "lucide-react";
-
-type IconProps = { className?: string };
-
-export const GearIcon = Settings;
-export const CameraIcon = Camera;
-export const CameraOffIcon = CameraOff;
-export const RefreshIcon = RefreshCw;
-export const ImagesIcon = Images;
-export const ChevronLeftIcon = ChevronLeft;
-export const ChevronRightIcon = ChevronRight;
-export const XIcon = X;
-export const FlagIcon = Flag;
-
-export const HeartIcon = ({ className, filled }: IconProps & { filled?: boolean }) => {
-  return <Heart className={className} fill={filled ? "currentColor" : "none"} />;
-};
-
-export const CloudIcon = ({ className }: IconProps) => {
-  return <Cloud className={className} fill="currentColor" strokeWidth={0} />;
-};
+// lucide 아이콘은 호출부가 `lucide-react`에서 직접 가져온다 — 이 파일은 lucide에 대응물이 없는
+// 서비스 고유 로고만 갖는다.
 
 const ROUGH_CLOUD_D =
   "M26 66 C16 64 15 50 25 47 C22 36 34 28 43 33 C47 23 64 22 69 33 C80 32 86 44 79 51 C88 55 85 66 75 66 C74 71 66 73 61 69 C55 74 43 74 38 69 C33 72 27 70 26 66 Z";
 
 // 아이콘 시안 v3 "9e — GRAPHITE" 채택안
-export const LogoIcon = ({ className }: IconProps) => {
+export const LogoIcon = ({ className }: { className?: string }) => {
   return (
     <svg viewBox="0 0 100 100" className={className}>
       <rect x="8" y="8" width="88" height="88" rx="14" fill="#17151c" />

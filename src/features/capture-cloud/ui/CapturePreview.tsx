@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { BRUTAL } from "@/shared/ui/tokens";
-import { XIcon } from "@/shared/ui/icons";
+import { X } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { formatDisplayDate } from "@/shared/lib/date";
 
@@ -39,7 +39,7 @@ export const CapturePreview = ({
         aria-label="닫기"
         className="absolute -top-3 -right-3 z-10 rotate-2"
       >
-        <XIcon className="h-4 w-4" />
+        <X className="h-4 w-4" />
       </Button>
       {/* 내용(특히 AI 코멘트)이 뷰포트보다 길어질 수 있어 카드 안에서만 스크롤되게 한다 —
           전체 페이지가 넘치는 대신 이 안에서 갇힌다. */}

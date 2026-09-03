@@ -17,7 +17,7 @@ You implement screens/components for `cloud`(구름 수집 서비스). FSD 슬�
 ## 시작하기 전에
 
 1. 어느 FSD 레이어(entity/feature/widget/view)인지 판단한다 — 애매하면 사용자에게 확인한다.
-2. `src/shared/ui/`에 이미 있는 공통 요소(디자인 토큰·아이콘·플레이스홀더·shadcn 프리미티브 등)부터 재사용한다. 새 디자인 프리미티브는 정말 없을 때만 추가한다.
+2. `src/shared/ui/`에 이미 있는 공통 요소(디자인 토큰·플레이스홀더·shadcn 프리미티브 등)부터 재사용한다. 새 디자인 프리미티브는 정말 없을 때만 추가한다. 아이콘은 `lucide-react`에서 직접 가져온다(`shared/ui/icons.tsx`엔 서비스 로고만 있다).
 
 ## 구현 시
 

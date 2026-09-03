@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/widgets/app-shell";
 import { BRUTAL_SM } from "@/shared/ui/tokens";
-import { ChevronRightIcon } from "@/shared/ui/icons";
+import { ChevronRight } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
 import {
@@ -175,6 +175,6 @@ const SettingRow = ({
     className={`justify-between px-4 py-3 text-left ${danger ? "text-rose-600" : ""}`}
   >
     {label}
-    <ChevronRightIcon className="h-4 w-4 text-neutral-400" />
+    <ChevronRight className="h-4 w-4 text-neutral-400" />
   </Button>
 );

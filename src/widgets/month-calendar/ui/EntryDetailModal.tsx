@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { BRUTAL } from "@/shared/ui/tokens";
-import { XIcon } from "@/shared/ui/icons";
+import { X } from "lucide-react";
 import { formatDisplayDate } from "@/shared/lib/date";
 import { useLastNonNull } from "@/shared/lib/use-last-non-null";
 import { Button } from "@/shared/ui/button";
@@ -87,7 +87,7 @@ export const EntryDetailModal = ({
               aria-label="닫기"
               className="absolute -top-3 -right-3 z-10 rotate-2"
             >
-              <XIcon className="h-4 w-4" />
+              <X className="h-4 w-4" />
             </Button>
           </DialogClose>
           <PlaceholderPhoto

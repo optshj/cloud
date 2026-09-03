@@ -9,7 +9,7 @@ import { useCloudEntries } from "@/entities/cloud-entry";
 import { useSession } from "@/entities/session";
 import { signInWithKakao } from "@/features/login-kakao";
 import { BRUTAL, LIST_CONTAINER, LIST_ITEM } from "@/shared/ui/tokens";
-import { CloudIcon } from "@/shared/ui/icons";
+import { Cloud } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 
 export const FeedView = () => {
@@ -46,7 +46,7 @@ export const FeedView = () => {
       <AppShell theme="feed" title="피드">
         <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
           <div className={`${BRUTAL} bg-white p-4`}>
-            <CloudIcon className="h-10 w-10 text-rose-300" />
+            <Cloud className="h-10 w-10 text-rose-300" fill="currentColor" strokeWidth={0} />
           </div>
           <p role="alert" className="text-sm font-bold text-rose-600">
             {error}
@@ -62,7 +62,7 @@ export const FeedView = () => {
       <AppShell theme="feed" title="피드">
         <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
           <div className={`${BRUTAL} bg-white p-4`}>
-            <CloudIcon className="h-10 w-10 text-rose-300" />
+            <Cloud className="h-10 w-10 text-rose-300" fill="currentColor" strokeWidth={0} />
           </div>
           <p className="font-bold">아직 등록된 구름이 없어요</p>
           <p className="text-sm text-neutral-600">가장 먼저 하늘을 기록해보세요</p>

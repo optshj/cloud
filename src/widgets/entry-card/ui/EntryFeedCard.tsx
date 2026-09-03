@@ -1,5 +1,5 @@
 import { BRUTAL_SM } from "@/shared/ui/tokens";
-import { HeartIcon } from "@/shared/ui/icons";
+import { Heart } from "lucide-react";
 import { PlaceholderPhoto } from "@/shared/ui/PlaceholderPhoto";
 import type { CloudEntry } from "@/entities/cloud-entry";
 import { tiltClass } from "../lib/tilt";
@@ -41,9 +41,9 @@ export const EntryFeedCard = ({
         aria-label={`좋아요 ${entry.likes}개`}
         className="mt-auto flex items-center gap-1.5 pt-1"
       >
-        <HeartIcon
+        <Heart
           className={`h-4 w-4 ${entry.liked ? "text-rose-500" : "text-black"}`}
-          filled={entry.liked}
+          fill={entry.liked ? "currentColor" : "none"}
         />
         <span className="text-base font-extrabold">{entry.likes}</span>
       </button>

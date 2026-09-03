@@ -12,6 +12,7 @@ shadcn을 추가하는 **절차**와 그때 매번 걸리는 함정(`cssVariable
 
 - **shadcn으로 간다**: 다이얼로그, 확인창, 그리고 호출부에 복붙되는 프리미티브(버튼). 현재 `button` / `dialog` / `alert-dialog` / `skeleton`.
 - **직접 만든다**: 폴라로이드 카드, 캘린더 그리드, 카메라 UI — 이 서비스 고유 UI라 shadcn에 대응물이 없다.
+- **아이콘은 호출부가 `lucide-react`에서 직접 가져온다.** 한때 `shared/ui/icons.tsx`가 전부 재수출했는데, 대부분이 이름만 바꾼 별칭이라 lucide 문서를 검색해도 우리 이름이 안 나오는 간접층만 됐다. 지금 이 파일에 남은 건 lucide에 대응물이 없는 `LogoIcon` 하나다. **대신 스타일을 입힌 아이콘(구름은 `fill="currentColor" strokeWidth={0}`, 하트는 `fill`)은 그 prop을 호출부가 들고 간다** — 빠뜨리면 윤곽선만 그려지니 복붙할 때 같이 옮긴다.
 - shadcn은 **npm 의존성이 아니라 `src/shared/ui/`에 들어온 우리 코드**다. 생성 직후 상태로 두지 않고 기본 스타일(둥근 모서리·soft shadow·`dark:` 변형)을 걷어낸 뒤 `BRUTAL` 톤으로 바꾼다.
 
 `globals.css`의 시맨틱 토큰은 shadcn 기본 테마(oklch 40여 개)를 들이는 대신 이 프로젝트 팔레트로 직접 정의했다 — `--border`는 검정, `--radius`는 `0`, `--primary`는 연보라, `--accent`는 노랑, `--destructive`는 로즈. 다크 모드는 제품 스코프 밖이라 `.dark` 블록을 두지 않는다.

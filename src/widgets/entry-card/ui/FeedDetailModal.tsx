@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { BRUTAL, BRUTAL_SM } from "@/shared/ui/tokens";
-import { HeartIcon, XIcon } from "@/shared/ui/icons";
+import { Heart, X } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import {
   Dialog,
@@ -62,7 +62,7 @@ export const FeedDetailModal = ({
                   <p className="text-xs text-neutral-600">{stackEntry.location}</p>
                   <p className="text-sm font-extrabold">{stackEntry.tag}</p>
                   <div className="mt-auto flex items-center gap-1.5 pt-1">
-                    <HeartIcon className="h-4 w-4" />
+                    <Heart className="h-4 w-4" />
                     <span className="text-base font-extrabold">{stackEntry.likes}</span>
                   </div>
                 </div>
@@ -77,7 +77,7 @@ export const FeedDetailModal = ({
                   aria-label="닫기"
                   className="absolute -top-3 -right-3 z-20 rotate-2"
                 >
-                  <XIcon className="h-4 w-4" />
+                  <X className="h-4 w-4" />
                 </Button>
               </DialogClose>
               {/* 자기 기록은 신고할 수 없다. */}
@@ -112,9 +112,9 @@ export const FeedDetailModal = ({
                       transition={{ duration: 0.28, ease: "easeOut" }}
                       className="inline-flex"
                     >
-                      <HeartIcon
+                      <Heart
                         className={`h-4 w-4 ${entry.liked ? "text-rose-500" : "text-black"}`}
-                        filled={entry.liked}
+                        fill={entry.liked ? "currentColor" : "none"}
                       />
                     </motion.span>
                     {entry.likes}

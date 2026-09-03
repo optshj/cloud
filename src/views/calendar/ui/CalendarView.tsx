@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { AppShell } from "@/widgets/app-shell";
 import { BRUTAL, BRUTAL_SM, LIST_CONTAINER, LIST_ITEM } from "@/shared/ui/tokens";
-import { CameraIcon, ChevronLeftIcon, ChevronRightIcon, CloudIcon } from "@/shared/ui/icons";
+import { Camera, ChevronLeft, ChevronRight, Cloud } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { EntryDetailModal, MonthCalendarGrid } from "@/widgets/month-calendar";
 import { EntryListCard } from "@/widgets/entry-card";
@@ -72,7 +72,7 @@ export const CalendarView = () => {
           aria-label="사진첩 불러오는 중"
         >
           <div className={`cloud-bob ${BRUTAL} bg-white p-4`}>
-            <CloudIcon className="h-10 w-10 text-violet-300" />
+            <Cloud className="h-10 w-10 text-violet-300" fill="currentColor" strokeWidth={0} />
           </div>
           <p className={`${BRUTAL_SM} bg-white px-3 py-1 text-xs font-bold`}>구름 모으는 중...</p>
         </div>
@@ -96,7 +96,7 @@ export const CalendarView = () => {
             aria-label="이전 달"
             className="rotate-2"
           >
-            <ChevronLeftIcon className="h-5 w-5" strokeWidth={2.75} />
+            <ChevronLeft className="h-5 w-5" strokeWidth={2.75} />
           </Button>
           {/* 달력 칸의 미니 폴라로이드와 같은 언어 — 아래 여백을 넓게 둬 사진 대지처럼 보이게 한다. */}
           <div className={`${BRUTAL_SM} -rotate-2 bg-white px-5 pt-1.5 pb-2 text-center`}>
@@ -114,7 +114,7 @@ export const CalendarView = () => {
             aria-label="다음 달"
             className="-rotate-2"
           >
-            <ChevronRightIcon className="h-5 w-5" strokeWidth={2.75} />
+            <ChevronRight className="h-5 w-5" strokeWidth={2.75} />
           </Button>
         </motion.div>
 
@@ -139,7 +139,11 @@ export const CalendarView = () => {
             <motion.div {...LIST_ITEM} className="flex flex-col items-center gap-3 py-8">
               <div className={`${BRUTAL} -rotate-2 bg-white p-2 pb-6`}>
                 <div className="flex h-28 w-28 items-center justify-center border border-dashed border-black/25 bg-violet-50">
-                  <CloudIcon className="h-10 w-10 text-violet-200" />
+                  <Cloud
+                    className="h-10 w-10 text-violet-200"
+                    fill="currentColor"
+                    strokeWidth={0}
+                  />
                 </div>
               </div>
               {/* 사진첩은 내 기록만 보여주므로 비로그인은 항상 빈 화면이 된다 —
@@ -151,7 +155,7 @@ export const CalendarView = () => {
               {user && isThisMonth && (
                 <Button asChild size="sm" className="bg-violet-100">
                   <Link href="/">
-                    <CameraIcon className="h-4 w-4" />
+                    <Camera className="h-4 w-4" />
                     오늘 하늘 찍기
                   </Link>
                 </Button>

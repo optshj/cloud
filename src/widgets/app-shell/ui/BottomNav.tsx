@@ -3,21 +3,21 @@
 import type { ComponentType } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CameraIcon, HeartIcon, ImagesIcon } from "@/shared/ui/icons";
+import { Camera, Heart, Images } from "lucide-react";
 import { THEME } from "@/shared/ui/tokens";
 
 const SIDE_TABS = [
   {
     href: "/calendar",
     label: "사진첩",
-    Icon: ImagesIcon,
+    Icon: Images,
     activeBg: THEME.calendar.active,
     rotate: "-rotate-[7deg]",
   },
   {
     href: "/feed",
     label: "피드",
-    Icon: HeartIcon,
+    Icon: Heart,
     activeBg: THEME.feed.active,
     rotate: "rotate-[6deg]",
   },
@@ -45,7 +45,7 @@ export const BottomNav = () => {
             isCameraActive ? "bg-sky-300" : "bg-white"
           }`}
         >
-          <CameraIcon className="h-6 w-6" />
+          <Camera className="h-6 w-6" />
         </span>
         <span
           className={`text-[13px] ${isCameraActive ? "font-extrabold" : "font-medium text-neutral-500"}`}

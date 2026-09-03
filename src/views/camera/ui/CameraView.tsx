@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/widgets/app-shell";
 import { BRUTAL } from "@/shared/ui/tokens";
-import { CloudIcon } from "@/shared/ui/icons";
+import { Cloud } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { formatDisplayDate, seoulDateKey } from "@/shared/lib/date";
@@ -207,7 +207,7 @@ export const CameraView = () => {
       <AppShell theme="camera" title="카메라">
         <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
           <div className={`${BRUTAL} bg-white p-4`}>
-            <CloudIcon className="h-10 w-10 text-sky-300" />
+            <Cloud className="h-10 w-10 text-sky-300" fill="currentColor" strokeWidth={0} />
           </div>
           <p className="font-bold">오늘 구름은 이미 기록했어요</p>
           {todaysEntry && (
@@ -245,7 +245,11 @@ export const CameraView = () => {
               />
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/40 text-white">
                 <div className={`${BRUTAL} bg-white p-4`}>
-                  <CloudIcon className="h-10 w-10 animate-pulse text-sky-300" />
+                  <Cloud
+                    className="h-10 w-10 animate-pulse text-sky-300"
+                    fill="currentColor"
+                    strokeWidth={0}
+                  />
                 </div>
                 <p role="status" className="text-sm font-extrabold">
                   AI가 하늘을 보고 있어요...

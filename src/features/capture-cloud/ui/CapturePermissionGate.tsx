@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { BRUTAL_SM } from "@/shared/ui/tokens";
-import { CameraOffIcon, RefreshIcon } from "@/shared/ui/icons";
+import { CameraOff, RefreshCw } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 
 // 카메라 권한은 mount 시, 위치 권한은 셔터를 눌러야 처음 요청되던 게 문제였다
@@ -76,7 +76,7 @@ export const CapturePermissionGate = ({ onGranted }: { onGranted: () => void }) 
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
       <div className={`${BRUTAL_SM} rounded-full bg-white p-3`}>
-        <CameraOffIcon className="h-8 w-8 text-sky-300" />
+        <CameraOff className="h-8 w-8 text-sky-300" />
       </div>
       <p className="text-sm font-bold">
         {isDenied ? (
@@ -100,7 +100,7 @@ export const CapturePermissionGate = ({ onGranted }: { onGranted: () => void }) 
         aria-busy={isRequesting}
         className="gap-1.5 py-1.5"
       >
-        {isDenied && <RefreshIcon className="h-3.5 w-3.5" />}
+        {isDenied && <RefreshCw className="h-3.5 w-3.5" />}
         {isDenied ? "다시 시도" : "권한 허용하기"}
       </Button>
     </div>

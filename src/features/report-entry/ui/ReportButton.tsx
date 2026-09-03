@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FlagIcon } from "@/shared/ui/icons";
+import { Flag } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,7 +49,7 @@ export const ReportButton = ({ entryId, className }: { entryId: string; classNam
         aria-label="신고"
         className={className}
       >
-        <FlagIcon className="h-4 w-4" />
+        <Flag className="h-4 w-4" />
       </button>
       {isReported && (
         <span

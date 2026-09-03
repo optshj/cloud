@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 import { Button } from "./button";
-import { CameraIcon, XIcon } from "./icons";
+import { Camera, X } from "lucide-react";
 
 const meta = {
   title: "shared/ui/Button",
@@ -55,7 +55,7 @@ export const Sizes: Story = {
         sm
       </Button>
       <Button {...args} size="icon" aria-label="닫기">
-        <XIcon className="h-4 w-4" />
+        <X className="h-4 w-4" />
       </Button>
     </div>
   ),
@@ -87,7 +87,7 @@ export const WithIcon: Story = {
     className: "bg-sky-200",
     children: (
       <>
-        <CameraIcon className="h-4 w-4" />
+        <Camera className="h-4 w-4" />
         오늘 하늘 찍기
       </>
     ),
@@ -102,13 +102,13 @@ export const TouchTarget44: Story = {
     <div className="flex items-end gap-4">
       <div className="text-center">
         <Button variant="thin" size="icon" aria-label="닫기" className="rotate-2">
-          <XIcon className="h-4 w-4" />
+          <X className="h-4 w-4" />
         </Button>
         <p className="pt-2 text-xs font-bold">44px ✓</p>
       </div>
       <div className="text-center">
         <Button variant="thin" size="none" aria-label="닫기" className="h-9 w-9 rotate-2">
-          <XIcon className="h-4 w-4" />
+          <X className="h-4 w-4" />
         </Button>
         <p className="pt-2 text-xs text-neutral-500">36px (미달)</p>
       </div>

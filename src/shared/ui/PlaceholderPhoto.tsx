@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CloudIcon } from "./icons";
+import { Cloud } from "lucide-react";
 
 // 실제 사진이 없을 때(시드/목업 데이터) 그라데이션 배경 위에 구름 아이콘을 얹어 보여준다.
 export const PlaceholderPhoto = ({
@@ -40,7 +40,11 @@ export const PlaceholderPhoto = ({
           />
         </>
       ) : (
-        <CloudIcon className="absolute inset-0 m-auto h-1/3 w-1/3 text-white/60" />
+        <Cloud
+          className="absolute inset-0 m-auto h-1/3 w-1/3 text-white/60"
+          fill="currentColor"
+          strokeWidth={0}
+        />
       )}
     </div>
   );
