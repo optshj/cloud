@@ -53,3 +53,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# storybook 빌드 산출물
+/storybook-static/

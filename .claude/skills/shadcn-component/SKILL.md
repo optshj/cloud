@@ -21,7 +21,7 @@ description: cloud(구름 수집 서비스) 프로젝트에서 버튼·다이얼
 npx shadcn@latest add <component> --yes
 ```
 
-`components.json`의 alias가 FSD 경로로 잡혀 있어 파일은 `src/shared/ui/<component>.tsx`(kebab-case)로 떨어진다. 그다음 **반드시** 아래 4단계를 거친다. 생략하면 화면이 깨지거나 lint가 막힌다.
+`components.json`의 alias가 FSD 경로로 잡혀 있어 파일은 `src/shared/ui/<component>.tsx`(kebab-case)로 떨어진다. 그다음 **반드시** 아래 5단계를 거친다. 생략하면 화면이 깨지거나 lint가 막힌다.
 
 ### 1. radix 의존성이 실제로 깔렸는지 확인한다
 
@@ -79,6 +79,23 @@ import { Dialog, DialogContent } from "@/shared/ui/dialog";
 
 `widgets`/`features`/`entities`와 달리 `shared/ui`에는 배럴 `index.ts`를 만들지 않는다 — 트리셰이킹을 막고 shadcn 파일이 늘어날수록 관리 지점만 하나 더 생긴다.
 
+### 5. 스토리를 같이 추가한다
+
+`src/shared/ui/<component>.stories.tsx`. 프리미티브를 눈으로 확인할 유일한 자리다 — 이걸 빼면
+화면에 실제로 붙여보기 전까진 아무도 못 본다.
+
+```bash
+npm run storybook   # http://localhost:6006
+```
+
+- **`title`은 `shared/ui/<Component>`**로 맞춘다(사이드바 그룹이 갈린다).
+- **export 이름이 곧 스토리 이름이다.** 한글 이름을 쓰고 싶으면 export는 ASCII PascalCase로 두고
+  `name: "한글 이름"`으로 넘긴다 — `eslint.config.mjs`가 스토리 파일에만 PascalCase를 허용한다.
+- **바꾼 기본값을 스토리로 남긴다.** 위 표에서 갈아끼운 것(스켈레톤 광택, 프레스 피드백, 44px 규격)이
+  왜 그런지는 나란히 놓고 봐야 읽힌다. `parameters.docs.description.component`에 근거 링크를 적는다.
+- 상태를 들어야 하는 컴포넌트(모달 등)는 스토리 파일 안에 작은 `*Demo` 래퍼를 두고 그걸 `component`로
+  쓴다. Radix 모달은 **상시 마운트 + `open` 토글**이라야 exit가 재생되므로 스토리도 그 형태로 쓴다.
+
 ## 모션과 겹칠 때
 
 Radix Dialog는 `data-state="open|closed"` 속성을 주므로 **간단한 enter/exit는 CSS만으로 끝난다**. `framer-motion`의 `AnimatePresence`로 Radix Dialog를 감싸면 언마운트 타이밍이 어긋나 exit가 씹힌다. 둘을 겹치지 말고 하나를 고른다:
@@ -86,7 +103,7 @@ Radix Dialog는 `data-state="open|closed"` 속성을 주므로 **간단한 enter
 - 다이얼로그 열고닫기 → **Radix + CSS** (`data-state` + `globals.css`의 `--animate-modal-*`)
 - 리스트 stagger, 좋아요 하트 팝, 드래그 → **framer-motion** (`interaction-design` 스킬)
 
-**exit 애니메이션이 안 나오는 조건**: 호출부가 `{selected && <Modal/>}`처럼 조건부 마운트하면 부모가 먼저 사라져서 Radix가 닫힘 모션을 재생할 틈이 없다(현재 두 모달이 이 상태 — enter만 동작한다). exit까지 필요하면 Dialog root를 **상시 마운트하고 `open`만 토글**해야 한다. 지금 구조를 바꿀 만큼 급하진 않아서 그대로 뒀다.
+**exit 애니메이션이 안 나오는 조건**: 호출부가 `{selected && <Modal/>}`처럼 조건부 마운트하면 부모가 먼저 사라져서 Radix가 닫힘 모션을 재생할 틈이 없다. **2026-09-03에 두 모달을 상시 마운트 + `open` 토글로 바꿨다** — 새 모달도 같은 형태로 쓴다(조건부 마운트로 되돌리면 exit가 조용히 사라진다). 닫히는 동안 그릴 데이터가 없어지는 문제는 `shared/lib/use-last-non-null.ts`가 맡는다.
 
 ## 하지 않는 것
 

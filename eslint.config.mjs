@@ -336,5 +336,28 @@ export default tseslint.config(
       'react/no-unknown-property': ['error', { ignore: ['css'] }]
     }
   },
+  {
+    // Storybook 스토리 파일: export 이름이 곧 사이드바에 뜨는 스토리 이름이라
+    // camelCase를 강제하면 카탈로그가 읽히지 않는다(`Default`, `Disabled`가 관례).
+    // 대신 여기서만 PascalCase를 허용하고, 나머지 규칙은 그대로 적용된다.
+    // 한글 이름이 필요하면 export는 ASCII로 두고 `name: '한글 이름'`으로 넘긴다.
+    files: ['**/*.stories.ts', '**/*.stories.tsx'],
+    rules: {
+      '@typescript-eslint/naming-convention': [
+        'error',
+        {
+          selector: 'variable',
+          format: ['camelCase', 'PascalCase', 'UPPER_CASE'],
+          leadingUnderscore: 'allow'
+        },
+        {
+          selector: 'variable',
+          types: ['boolean'],
+          format: ['PascalCase'],
+          prefix: ['is', 'has', 'should', 'need', 'disabled', 'opened', 'show']
+        }
+      ]
+    }
+  },
   prettierConfig
 )
