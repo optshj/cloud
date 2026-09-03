@@ -3,9 +3,16 @@ import { expect, test } from "@playwright/test";
 // 로그인 없이도 확인 가능한 최소 스모크 — 3개 탭이 크래시 없이 뜨는지, 하단 네비가 동작하는지만 본다.
 // 실제 촬영/기록/좋아요 플로우는 카메라 하드웨어·Supabase 인증이 필요해 여기서 다루지 않는다.
 
-test("카메라 탭은 비로그인 상태에서도 카메라를 바로 보여준다", async ({ page }) => {
+test("카메라 탭은 비로그인 상태에서도 로그인으로 막지 않는다", async ({ page }) => {
+  // 이 케이스는 원래 셔터가 바로 보이는지를 봤는데, 진입 권한 게이트가 생기면서(`44ea260`,
+  // FLOWS.md §1-1) 셔터 앞에 한 단계가 끼었다. 게이트를 지나야 나오는 셔터는 getUserMedia
+  // 목업이 있어야 볼 수 있으므로(→ docs 남은 작업 목록 §2-8) 여기선 게이트까지만 본다.
+  //
+  // 지키려는 규칙은 그대로다 — 비로그인을 막는 건 **저장**뿐이고 촬영 진입은 아니다.
+  // 여기에 로그인 안내가 뜨면 회귀다.
   await page.goto("/");
-  await expect(page.getByRole("button", { name: "촬영" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "권한 허용하기" })).toBeVisible();
+  await expect(page.getByText("로그인하면 AI 코멘트와 함께 기록할 수 있어요")).toBeHidden();
 });
 
 test("하단 네비로 사진첩 탭 이동", async ({ page }) => {
