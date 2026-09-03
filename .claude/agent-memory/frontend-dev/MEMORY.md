@@ -1,2 +1,2 @@
-- [Lint baseline is already broken repo-wide](project_lint_baseline_broken.md) — 285 pre-existing errors on clean main; aim for a clean diff, and never `eslint --fix` a whole directory.
+- [Lint 기준선은 0건](project_lint_baseline_broken.md) — 2026-09-03에 레포 전체 0건이 됐다, 완료 기준은 `npm run lint` 통과.
 - [Verify visual/CSS bugs in the actual browser, don't guess from source](feedback_verify_in_browser_not_guess.md) — use Playwright bounding-rect/computed-style checks; Tailwind v4 rotate/scale/translate don't show in `getComputedStyle().transform`.

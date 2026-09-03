@@ -1,14 +1,27 @@
 ---
 name: project-lint-debt
-description: cloud 저장소는 npm run lint가 diff와 무관하게 repo 전체에서 이미 실패한다 — diff 스코프로 격리해서 봐야 한다
+description: lint 부채는 2026-09-03에 0건으로 정리됐다 — 이제 npm run lint 실패는 그 diff가 깨뜨린 것이다
 metadata:
   type: project
 ---
 
-`npm run lint`를 그냥 돌리면 이 저장소는 어떤 diff든 상관없이 200개 이상의 기존 위반(주로 `no-restricted-syntax`의 화살표 함수 강제, `@typescript-eslint/naming-convention`의 boolean 변수 접두사 규칙(`is/has/should/...`), `prettier/prettier`)으로 이미 실패한다. 2026-08-31 확인 시점 기준 `git stash`로 클린 HEAD에서 돌려도 247개 에러가 난다 — eslint.config.mjs가 먼저 엄격해지고 기존 코드가 아직 마이그레이션 안 된 상태.
+**`npm run lint`는 이제 레포 전체에서 0건이다.** (2026-09-03, 커밋 `3835e20`)
 
-**Why:** 이 상태에서 diff를 리뷰할 때 `npm run lint` 전체 출력만 보고 "lint 실패 = 이 diff가 깨졌다"고 결론 내리면 오탐이다. 이번 리뷰(CameraView.tsx, use-cloud-entries.ts 수정)에서도 두 파일 다 lint 에러가 있었지만, `git stash`로 diff 적용 전/후를 비교해보니 새 코드는 오히려 에러를 줄였다(18→10개, import type 정리 + prettier 포맷 수정 포함) — 남은 에러는 전부 diff 이전부터 있던 것.
+오랫동안 이 저장소는 어떤 diff든 상관없이 127~285건의 기존 위반으로 lint가 실패했고, 그래서
+"lint 실패 = 이 diff가 깨졌다"가 오탐이었다. 그 전제가 끝났다 — **지금 `npm run lint`가 실패하면
+그건 그 diff가 새로 만든 위반이다.** `git stash`로 전/후를 비교하는 절차는 더 필요 없다.
 
-**prettier 부채의 원인은 설정 파일 이름이다.** (2026-09-03 확인) 루트에 `prettierrc.yaml`이 있는데 **앞에 점이 없어서** prettier가 인식하는 이름(`.prettierrc.yaml`)이 아니다. 그래서 `printWidth: 200`/`singleQuote`/`semi: false` 의도가 전혀 안 먹고 기본값(printWidth 80, 세미콜론 있음)으로 검사된다 — repo 전체 `prettier/prettier` 에러 대부분이 "80자 넘으니 줄바꿈해라"인 이유다. 정작 코드는 double quote + 세미콜론으로 쓰여 있어서, 파일명을 고치는 순간 오히려 repo 전체가 재포맷 대상이 된다. **개별 diff 리뷰에서 prettier 줄바꿈 에러를 지적하지 말고, 파일명 수정은 별도 세션의 결정 사항으로 남긴다.**
+정리한 내용(커밋 `285fcbe`→`3835e20`): prettier 설정 파일명 수정 + `--fix` 자동 정리 +
+함수 선언식 41곳 화살표 전환 + 불리언 접두사·max-params·set-state-in-effect 손질.
 
-**How to apply:** 앞으로 리뷰할 때 `npm run lint` 전체 결과 대신, 변경된 파일만 `npx eslint <파일...>`로 돌리고, 필요하면 `git show HEAD:<경로> > src/.../TmpOld.tsx` → `npx eslint` → 삭제(저장소 안에 둬야 eslint 설정이 적용된다. 미커밋 파일이 많을 땐 `git stash`보다 안전하다), 또는 `git stash -u` → 같은 명령 → `git stash pop`으로 전/후를 비교해서 **이 diff가 새로 추가한 위반인지**를 확인한다. 새로 추가된 것만 지적하고, 기존부터 있던 건 "pre-existing, 이 diff 범위 밖"이라고 명시하되 굳이 매번 다시 지적하지 않는다. repo 전체 lint 부채를 이 diff의 책임으로 묻지 않는다 — 그건 별도 정리 작업(`docs/CONVENTIONS.md`가 이미 "죽은 코드는 주기적으로 정리" 원칙을 언급하듯, lint 부채도 별도 세션에서 다룰 사안).
+**prettier 설정이 이제 실제로 동작한다.** 루트 `prettierrc.yaml`에 앞 점이 없어 prettier가 파일을
+못 찾던 것을 `.prettierrc.yaml`로 고쳤다. 값은 원래 의도(printWidth 200/single quote/semi:false)가
+아니라 **이미 쓰여 있는 코드**에 맞췄다(double quote, 세미콜론, printWidth 100). 설정이 살아나면서
+`prettier-plugin-tailwindcss`의 클래스 정렬도 같이 붙었다 — 그래서 클래스 순서를 임의로 바꾸면
+prettier가 되돌린다.
+
+**Why:** 이 저장소에 CI가 없어서 lint가 유일한 기계적 게이트다. 0건을 유지하지 않으면 몇 세션 만에
+다시 수백 건이 쌓이고, 그 상태에선 아무도 lint 출력을 안 본다(직전 상태가 정확히 그거였다).
+
+**How to apply:** 리뷰에서 `npm run lint`를 그대로 돌리고, 실패하면 **이 diff의 책임으로 본다** —
+0건이 아니면 🔴. 재발 방지 장치(pre-commit 훅/CI)는 아직 안 붙였다(사용자 판단, `docs/TODO.md` §3-5).
