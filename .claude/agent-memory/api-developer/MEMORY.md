@@ -1,0 +1,1 @@
+- [doc-keeper 사실확인은 읽기 전용](feedback_doc_keeper_facts_only.md) — 문서 검증 요청 시 코드/문서 고치지 말고 항목별 판정만 돌려준다

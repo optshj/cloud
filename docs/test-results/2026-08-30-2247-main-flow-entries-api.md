@@ -27,4 +27,4 @@ npm run test
 
 ## 다음에 볼 것
 
-이후 신규 테스트는 `.claude/agents/test-writer.md`의 "e2e 기본" 절차를 따른다. 로그인 없이 갈 수 있는 범위(탭 이동 등)는 이미 `e2e/smoke.spec.ts`가 커버 중이니, 로그인 세션 주입 방식이 정해지면 촬영→기록 플로우 자체를 e2e로 확장하는 게 다음 후보.
+후속 케이스는 → [`../TODO.md`](../TODO.md) §2-8. 신규 테스트 절차는 `.claude/agents/test-writer.md`의 "e2e 기본".

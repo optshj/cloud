@@ -49,7 +49,7 @@
 | AI 코멘트 생성 | 수 초 | **촬영한 사진을 그대로 띄우고** 그 위에 오버레이 + 결과 자리 스켈레톤 |
 | 기록 저장 | 1~2초 | 버튼 라벨 "기록하는 중..." |
 
-GPS 행의 `timeout`은 여전히 8초다 — 캐시가 비었을 때(게이트를 스킵당한 세션, 60초 초과)는 그만큼 걸릴 수 있다. 그 구간이 다시 눈에 띄면 배지를 되살리는 게 맞다.
+GPS 행의 `timeout`은 여전히 8초다 — 캐시가 비었을 때(게이트를 스킵당한 세션, 60초 초과)는 그만큼 걸릴 수 있다. 배지를 되살릴 조건은 → [`TODO.md`](TODO.md) §2-6.
 
 AI 생성 구간에서 사진을 보여주려고 `Stage` 타입에 `photoDataUrl`을 실었다. 사용자가 방금 찍은 것을 못 보고 기다리는 게 제일 답답하다.
 
@@ -91,7 +91,7 @@ AI 생성 구간에서 사진을 보여주려고 `Stage` 타입에 `photoDataUrl
 **X버튼 규격은 사각형 쪽으로 통일했다.** `CapturePreview`만 `h-11 w-11 rounded-full`이었고
 `EntryDetailModal`/`FeedDetailModal`은 `h-9 w-9 rotate-2`(사각형·기울임)였다 — 사각형이 2곳이라
 그쪽을 기준으로 삼고 카메라를 맞췄다. **이 통일은 터치 타겟을 44px에서 36px로 내리는 쪽이었다**
-(아래 "남은 것" 참고) — 일관성을 택한 것이지 44px 기준을 철회한 게 아니다.
+(→ [`TODO.md`](TODO.md) §1-2) — 일관성을 택한 것이지 44px 기준을 철회한 게 아니다.
 
 **`AppShell`의 좌우 `border-x-[3px] border-black`은 전역 삭제했다.** 데스크톱에서 폰 프레임처럼
 보이라고 넣은 테두리인데, 정작 실기기에서는 화면 양옆을 잘라먹는 선으로만 보인다. 데스크톱
@@ -139,10 +139,4 @@ AI 생성 구간에서 사진을 보여주려고 `Stage` 타입에 `photoDataUrl
 
 ## 남은 것
 
-이번 범위(상태 UI·모션) 밖으로 의도적으로 남긴 것들. 하는 김에 고치지 말고 별도로 다룬다.
-
-- **모달 exit 애니메이션이 재생되지 않는다.** 호출부가 `{selected && <Modal/>}`로 조건부 마운트해서 부모가 먼저 사라진다. enter만 동작한다(변경 전에도 그랬으므로 회귀는 아니다). 필요하면 Dialog root를 상시 마운트하고 `open`만 토글해야 한다.
-- **터치 타겟 44px이 반쪽만 적용됐다.** `Button`에 `size="icon"`(44px)을 만들어뒀지만 모달 닫기 버튼(`EntryDetailModal`·`FeedDetailModal`·`CapturePreview`)과 `ReportButton`(크기를 호출부 `className`에서 받는다 — `FeedDetailModal`이 `h-9 w-9`로 넘긴다)은 아직 36px(`h-9 w-9`)이다. **`CapturePreview`는 원래 44px이었는데 §8의 X버튼 규격 통일로 36px 그룹에 합류했다** — 규격을 맞추는 쪽을 택한 대가라, 올릴 땐 네 곳을 한꺼번에 올려야 한다. `EntryDetailModal`의 "삭제하기"는 `size="none"` + `text-xs`라 세로 ~20px로 그중 제일 나쁘다 — WCAG 2.2 최소 24×24에도 미달한다(확인 `AlertDialog`는 거치므로 오조작이 바로 삭제로 이어지진 않는다).
-- **`role="status"` vs `role="alert"` 기준이 아직 섞여 있다.** 위치 조회 실패는 `status`, 사진첩·피드의 조회 실패는 `alert`, `CameraView`의 에러 문구 2곳은 role이 아예 없다. 셔터가 안 먹은 이유(위치 조회 실패)는 즉시 알려야 하므로 `alert`가 맞을 수 있다.
-- **`PlaceholderPhoto`의 `isLoaded`가 `photoDataUrl` 변경 시 리셋되지 않는다.** 지금은 목록이 빈 배열로 시작해 SSR HTML에 `<img>`가 안 실리므로 드러나지 않는다. 나중에 서버에서 entries를 프리페치하면 캐시된 이미지의 `onLoad`가 유실돼 사진이 `opacity-0`으로 영영 안 보일 수 있다.
-- **IA 중복** — 사진첩이 그리드와 리스트로 같은 데이터를 두 번 보여주고, 피드는 2열이라 사진 서비스치고 사진이 작다. 화면 구조 재설계는 `PRODUCT.md` 플로우와 함께 다뤄야 한다.
+이 문서에 있던 미해결 항목(모달 exit 애니메이션, 터치 타겟 44px, `role` 기준 통일, `PlaceholderPhoto`의 `isLoaded`, IA 중복)은 → [`TODO.md`](TODO.md)로 이관했다. 열린 항목은 그쪽 한 곳에서만 관리한다.

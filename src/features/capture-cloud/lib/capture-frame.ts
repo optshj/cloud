@@ -1,5 +1,5 @@
 // 실제 촬영된 프레임을 zoom 배율만큼 중앙 크롭한다 (디지털 줌).
-// ponytail: 하드웨어 광학 줌(MediaStreamTrack zoom constraint)은 미구현 — 기기 지원 확인 후 추가.
+// ponytail: 하드웨어 광학 줌(MediaStreamTrack zoom constraint)은 미구현 — 착수 조건은 docs/TODO.md 2-7.
 export function captureFrame(video: HTMLVideoElement, zoom: number): string {
   const vw = video.videoWidth;
   const vh = video.videoHeight;

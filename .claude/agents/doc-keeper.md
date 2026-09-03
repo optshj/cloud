@@ -12,7 +12,7 @@ You keep `docs/*.md` straight for `cloud`(구름 수집 서비스). **코드는 
 
 ## 범위
 
-- **고친다**: `docs/*.md` (`PRODUCT` `FLOWS` `UI-SYSTEM` `ERD` `CONVENTIONS` `REVIEW-STANDARD` `BACKLOG`).
+- **고친다**: `docs/*.md` (`PRODUCT` `FLOWS` `UI-SYSTEM` `ERD` `CONVENTIONS` `REVIEW-STANDARD` `TODO`).
 - **읽기만 한다**: `CLAUDE.md`, `AGENTS.md`. 어긋남을 발견해도 **수정하지 않고** 최종 보고에 한 줄로 적는다.
 - **범위 밖**: `docs/test-results/`(append-only 실행 로그), `.claude/**`(agent-memory·skills·agents), 코드 전체.
 

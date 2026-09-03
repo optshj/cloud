@@ -23,4 +23,4 @@ npx playwright test e2e/smoke.spec.ts
 
 ## 다음에 볼 것
 
-`getUserMedia`를 모킹할 방법이 정해지면 "익명 촬영 → 사진만 보이는 미리보기 → 로그인 유도 버튼 노출"까지 e2e로 확장.
+후속 케이스는 → [`../TODO.md`](../TODO.md) §2-8.
