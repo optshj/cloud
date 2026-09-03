@@ -15,9 +15,7 @@ export const EntryFeedCard = ({
   onSelect: (id: string) => void;
   onToggleLike: (id: string) => void;
 }) => (
-  <div
-    className={`${BRUTAL_SM} ${tiltClass(entry.id)} flex flex-col bg-white p-1.5 pb-2.5`}
-  >
+  <div className={`${BRUTAL_SM} ${tiltClass(entry.id)} flex flex-col bg-white p-1.5 pb-2.5`}>
     <button
       type="button"
       onClick={() => onSelect(entry.id)}
@@ -30,14 +28,8 @@ export const EntryFeedCard = ({
       />
     </button>
     <div className="flex flex-1 flex-col px-0.5 pt-2">
-      <button
-        type="button"
-        onClick={() => onSelect(entry.id)}
-        className="text-left"
-      >
-        <p className="truncate text-[10px] text-neutral-600">
-          {entry.location}
-        </p>
+      <button type="button" onClick={() => onSelect(entry.id)} className="text-left">
+        <p className="truncate text-[10px] text-neutral-600">{entry.location}</p>
         <p className="text-[13px] font-extrabold">{entry.tag}</p>
       </button>
       <button

@@ -58,14 +58,7 @@ const Button = ({
   }
   // 이 Button이 대체한 호출부들은 전부 `type="button"`이었다 — 기본값(submit)으로 두면
   // 나중에 <form> 안에 놓이는 순간 의도치 않게 제출된다.
-  return (
-    <button
-      data-slot="button"
-      className={classes}
-      {...props}
-      type={props.type ?? "button"}
-    />
-  );
+  return <button data-slot="button" className={classes} {...props} type={props.type ?? "button"} />;
 };
 
 export { Button };

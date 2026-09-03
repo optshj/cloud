@@ -10,9 +10,7 @@ import { BRUTAL } from "@/shared/ui/tokens";
 // `window.confirm` / `window.alert` 대체용. 브라우저 기본 창은 톤을 깨고 웹뷰 앱화 시 더 어색해진다.
 // shadcn 생성 코드의 size/media 변형은 이 프로젝트에서 쓸 일이 없어 걷어냈다.
 
-const AlertDialog = ({
-  ...props
-}: ComponentProps<typeof AlertDialogPrimitive.Root>) => (
+const AlertDialog = ({ ...props }: ComponentProps<typeof AlertDialogPrimitive.Root>) => (
   <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />
 );
 
@@ -23,12 +21,12 @@ const AlertDialogContent = ({
   <AlertDialogPrimitive.Portal>
     <AlertDialogPrimitive.Overlay
       data-slot="alert-dialog-overlay"
-      className="fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-overlay-out data-[state=open]:animate-overlay-in"
+      className="data-[state=closed]:animate-overlay-out data-[state=open]:animate-overlay-in fixed inset-0 z-50 bg-black/50"
     />
     <AlertDialogPrimitive.Content
       data-slot="alert-dialog-content"
       className={cn(
-        `${BRUTAL} fixed left-1/2 top-1/2 z-50 grid w-[calc(100%-3rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 gap-3 bg-white p-5 outline-none data-[state=closed]:animate-modal-out data-[state=open]:animate-modal-in`,
+        `${BRUTAL} data-[state=closed]:animate-modal-out data-[state=open]:animate-modal-in fixed top-1/2 left-1/2 z-50 grid w-[calc(100%-3rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 gap-3 bg-white p-5 outline-none`,
         className,
       )}
       {...props}

@@ -8,11 +8,7 @@ import { CloudIcon } from "@/shared/ui/icons";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { formatDisplayDate, seoulDateKey } from "@/shared/lib/date";
-import {
-  CameraLive,
-  CapturePermissionGate,
-  CapturePreview,
-} from "@/features/capture-cloud";
+import { CameraLive, CapturePermissionGate, CapturePreview } from "@/features/capture-cloud";
 import type { Captured, Coords } from "@/features/capture-cloud";
 import { buildShareCardDataUrl, downloadDataUrl } from "@/features/share-card";
 import { useCloudEntries, useTodaysEntry } from "@/entities/cloud-entry";
@@ -197,7 +193,7 @@ export const CameraView = () => {
           aria-label="카메라 준비 중"
         >
           <span aria-hidden className="shimmer absolute inset-0 block" />
-          <div className="relative z-10 mt-auto flex flex-col items-center gap-4 px-4 pb-8 pt-6">
+          <div className="relative z-10 mt-auto flex flex-col items-center gap-4 px-4 pt-6 pb-8">
             <Skeleton aria-hidden className="h-9 w-9 rounded-full" />
             <Skeleton className={`${BRUTAL} h-16 w-16 rounded-full`} />
           </div>
@@ -215,13 +211,9 @@ export const CameraView = () => {
           </div>
           <p className="font-bold">오늘 구름은 이미 기록했어요</p>
           {todaysEntry && (
-            <p className="text-sm text-neutral-600">
-              &ldquo;{todaysEntry.comment}&rdquo;
-            </p>
+            <p className="text-sm text-neutral-600">&ldquo;{todaysEntry.comment}&rdquo;</p>
           )}
-          <Button onClick={() => router.push("/calendar")}>
-            사진첩에서 보기
-          </Button>
+          <Button onClick={() => router.push("/calendar")}>사진첩에서 보기</Button>
         </div>
       </AppShell>
     );
@@ -300,7 +292,7 @@ export const CameraView = () => {
           {error && (
             <p
               role="alert"
-              className="bg-black/85 px-6 pb-4 pt-2 text-center text-xs font-bold text-rose-200"
+              className="bg-black/85 px-6 pt-2 pb-4 text-center text-xs font-bold text-rose-200"
             >
               {error}
             </p>
@@ -317,10 +309,7 @@ export const CameraView = () => {
   return (
     <AppShell theme="camera" title="카메라">
       {error && !overlay && (
-        <p
-          role="alert"
-          className="px-6 pt-2 text-center text-xs font-bold text-rose-600"
-        >
+        <p role="alert" className="px-6 pt-2 text-center text-xs font-bold text-rose-600">
           {error}
         </p>
       )}
@@ -331,9 +320,7 @@ export const CameraView = () => {
           <CameraLive onCapture={handleCapture} isPaused={overlay !== null} />
         </div>
         {overlay && (
-          <div className="absolute inset-0 z-20 flex flex-col overflow-y-auto">
-            {overlay}
-          </div>
+          <div className="absolute inset-0 z-20 flex flex-col overflow-y-auto">{overlay}</div>
         )}
       </div>
     </AppShell>

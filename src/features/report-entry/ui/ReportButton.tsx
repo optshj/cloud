@@ -15,13 +15,7 @@ import { reportEntryRemote } from "@/entities/cloud-entry";
 import { useSession } from "@/entities/session";
 import { signInWithKakao } from "@/features/login-kakao";
 
-export const ReportButton = ({
-  entryId,
-  className,
-}: {
-  entryId: string;
-  className?: string;
-}) => {
+export const ReportButton = ({ entryId, className }: { entryId: string; className?: string }) => {
   const { user } = useSession();
   const [isReported, setIsReported] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -60,7 +54,7 @@ export const ReportButton = ({
       {isReported && (
         <span
           role="status"
-          className="pointer-events-none absolute left-1/2 top-2 z-20 -translate-x-1/2 whitespace-nowrap rounded-full bg-black px-3 py-1 text-xs font-bold text-white"
+          className="pointer-events-none absolute top-2 left-1/2 z-20 -translate-x-1/2 rounded-full bg-black px-3 py-1 text-xs font-bold whitespace-nowrap text-white"
         >
           신고가 접수되었어요
         </span>
@@ -81,10 +75,7 @@ export const ReportButton = ({
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog
-        open={errorMessage !== null}
-        onOpenChange={() => setErrorMessage(null)}
-      >
+      <AlertDialog open={errorMessage !== null} onOpenChange={() => setErrorMessage(null)}>
         <AlertDialogContent>
           <AlertDialogTitle>신고를 접수하지 못했어요</AlertDialogTitle>
           <AlertDialogDescription>{errorMessage}</AlertDialogDescription>

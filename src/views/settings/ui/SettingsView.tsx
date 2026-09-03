@@ -38,14 +38,8 @@ export const SettingsView = () => {
     const res = await fetch("/api/account", { method: "DELETE" });
     if (!res.ok) {
       const body = await res.json().catch(() => null);
-      console.error(
-        "settings: 탈퇴(DELETE /api/account) 실패",
-        res.status,
-        body,
-      );
-      setErrorMessage(
-        body?.error ?? "탈퇴 처리에 실패했어요. 잠시 후 다시 시도해주세요.",
-      );
+      console.error("settings: 탈퇴(DELETE /api/account) 실패", res.status, body);
+      setErrorMessage(body?.error ?? "탈퇴 처리에 실패했어요. 잠시 후 다시 시도해주세요.");
       setIsBusy(false);
       return;
     }
@@ -66,9 +60,7 @@ export const SettingsView = () => {
           <Skeleton className="mx-1 mt-1 h-7 w-20" />
           <section className="flex flex-col gap-2">
             <Skeleton className="mx-1 h-3 w-10" />
-            <div
-              className={`${BRUTAL_SM} flex items-center gap-3 bg-white p-4`}
-            >
+            <div className={`${BRUTAL_SM} flex items-center gap-3 bg-white p-4`}>
               <Skeleton className="h-11 w-11 flex-none rounded-full" />
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                 <Skeleton className="h-4 w-2/3" />
@@ -106,9 +98,7 @@ export const SettingsView = () => {
         <h1 className="px-1 pt-1 text-xl font-extrabold">설정</h1>
 
         <section className="flex flex-col gap-2">
-          <p className="px-1 text-xs font-bold uppercase tracking-wide text-neutral-500">
-            계정
-          </p>
+          <p className="px-1 text-xs font-bold tracking-wide text-neutral-500 uppercase">계정</p>
           <div className={`${BRUTAL_SM} flex items-center gap-3 bg-white p-4`}>
             <div
               className={`${BRUTAL_SM} flex h-11 w-11 flex-none items-center justify-center rounded-full bg-amber-200 text-sm font-extrabold`}
@@ -116,25 +106,19 @@ export const SettingsView = () => {
               {(user.email ?? "카")[0].toUpperCase()}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-bold">
-                {user.email ?? "카카오 계정"}
-              </p>
+              <p className="truncate text-sm font-bold">{user.email ?? "카카오 계정"}</p>
               <p className="text-xs text-neutral-500">카카오로 로그인됨</p>
             </div>
           </div>
         </section>
 
         <section className="flex flex-col gap-2">
-          <p className="px-1 text-xs font-bold uppercase tracking-wide text-neutral-500">
-            일반
-          </p>
+          <p className="px-1 text-xs font-bold tracking-wide text-neutral-500 uppercase">일반</p>
           <SettingRow label="로그아웃" onClick={handleLogout} />
         </section>
 
         <section className="flex flex-col gap-2">
-          <p className="px-1 text-xs font-bold uppercase tracking-wide text-rose-500">
-            위험 구역
-          </p>
+          <p className="px-1 text-xs font-bold tracking-wide text-rose-500 uppercase">위험 구역</p>
           <SettingRow
             label="탈퇴하기"
             onClick={() => setIsDeleteOpen(true)}
@@ -148,25 +132,18 @@ export const SettingsView = () => {
         <AlertDialogContent>
           <AlertDialogTitle>정말 탈퇴할까요?</AlertDialogTitle>
           <AlertDialogDescription>
-            탈퇴하면 지금까지 기록한 사진·캘린더·코멘트가 즉시 전부 삭제돼요.
-            되돌릴 수 없어요.
+            탈퇴하면 지금까지 기록한 사진·캘린더·코멘트가 즉시 전부 삭제돼요. 되돌릴 수 없어요.
           </AlertDialogDescription>
           <AlertDialogFooter>
             <AlertDialogCancel>취소</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              onClick={handleDeleteAccount}
-            >
+            <AlertDialogAction variant="destructive" onClick={handleDeleteAccount}>
               탈퇴하기
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog
-        open={errorMessage !== null}
-        onOpenChange={() => setErrorMessage(null)}
-      >
+      <AlertDialog open={errorMessage !== null} onOpenChange={() => setErrorMessage(null)}>
         <AlertDialogContent>
           <AlertDialogTitle>탈퇴를 처리하지 못했어요</AlertDialogTitle>
           <AlertDialogDescription>{errorMessage}</AlertDialogDescription>

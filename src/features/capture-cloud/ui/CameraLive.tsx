@@ -96,9 +96,7 @@ export const CameraLive = ({
     } catch (err) {
       console.error("capture-cloud: 촬영 시 위치 조회 실패", err);
       setLocationError(
-        err instanceof Error
-          ? err.message
-          : "위치 확인에 실패했어요. 다시 시도해주세요.",
+        err instanceof Error ? err.message : "위치 확인에 실패했어요. 다시 시도해주세요.",
       );
     } finally {
       setIsCapturing(false);
@@ -110,8 +108,8 @@ export const CameraLive = ({
       {/* 목업 장식용 구름 — 카메라 초기화 중에만 노출, 권한 거부 화면에는 안 띄운다 */}
       {!isVideoReady && !hasCameraError && (
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-          <CloudIcon className="absolute left-[8%] top-[38%] h-10 w-14 text-white" />
-          <CloudIcon className="absolute left-[52%] top-[47%] h-14 w-20 text-white" />
+          <CloudIcon className="absolute top-[38%] left-[8%] h-10 w-14 text-white" />
+          <CloudIcon className="absolute top-[47%] left-[52%] h-14 w-20 text-white" />
         </div>
       )}
       {hasCameraError ? (
@@ -147,12 +145,12 @@ export const CameraLive = ({
             className="absolute inset-0 z-[1] h-full w-full object-cover"
             style={{ transform: `scale(${zoom})`, transformOrigin: "center" }}
           />
-          <div className="pointer-events-none absolute left-4 top-4 z-10 h-12 w-12 border-l-4 border-t-4 border-black" />
-          <div className="pointer-events-none absolute bottom-6 right-4 z-10 h-12 w-12 border-b-4 border-r-4 border-black" />
+          <div className="pointer-events-none absolute top-4 left-4 z-10 h-12 w-12 border-t-4 border-l-4 border-black" />
+          <div className="pointer-events-none absolute right-4 bottom-6 z-10 h-12 w-12 border-r-4 border-b-4 border-black" />
         </>
       )}
 
-      <div className="relative z-10 mt-auto flex flex-col items-center gap-4 px-4 pb-8 pt-6">
+      <div className="relative z-10 mt-auto flex flex-col items-center gap-4 px-4 pt-6 pb-8">
         <p role="alert" className="min-h-4 text-xs font-bold text-rose-600">
           {locationError}
         </p>
@@ -164,17 +162,17 @@ export const CameraLive = ({
         >
           <span
             aria-hidden
-            className="mb-1 text-sm font-extrabold text-amber-300 opacity-0 transition-opacity duration-200 group-active:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100"
+            className="mb-1 text-sm font-extrabold text-amber-300 opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100 group-active:opacity-100"
           >
             {zoom.toFixed(1)} x
           </span>
           <div className="relative flex h-11 w-full items-center justify-center">
-            <div className="pointer-events-none relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-black/55 transition-[width] duration-200 ease-out group-active:w-full group-focus-within:w-full group-hover:w-full">
-              <span className="text-xs font-extrabold text-white transition-opacity duration-150 group-active:opacity-0 group-focus-within:opacity-0 group-hover:opacity-0">
+            <div className="pointer-events-none relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-black/55 transition-[width] duration-200 ease-out group-focus-within:w-full group-hover:w-full group-active:w-full">
+              <span className="text-xs font-extrabold text-white transition-opacity duration-150 group-focus-within:opacity-0 group-hover:opacity-0 group-active:opacity-0">
                 {Number.isInteger(zoom) ? zoom : zoom.toFixed(1)}x
               </span>
               {/* 눈금과 range가 같은 폭(줄 전체)을 써야 인디케이터가 손가락과 어긋나지 않는다. */}
-              <div className="absolute inset-x-0 top-1/2 h-3.5 -translate-y-1/2 opacity-0 transition-opacity duration-200 group-active:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100">
+              <div className="absolute inset-x-0 top-1/2 h-3.5 -translate-y-1/2 opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100 group-active:opacity-100">
                 <div
                   className="h-full"
                   style={{

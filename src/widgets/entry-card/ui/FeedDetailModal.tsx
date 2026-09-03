@@ -61,15 +61,11 @@ export const FeedDetailModal = ({
                 className="aspect-square w-full"
               />
               <div className="flex flex-1 flex-col gap-1 p-2">
-                <p className="text-xs text-neutral-600">
-                  {stackEntry.location}
-                </p>
+                <p className="text-xs text-neutral-600">{stackEntry.location}</p>
                 <p className="text-sm font-extrabold">{stackEntry.tag}</p>
                 <div className="mt-auto flex items-center gap-1.5 pt-1">
                   <HeartIcon className="h-4 w-4" />
-                  <span className="text-base font-extrabold">
-                    {stackEntry.likes}
-                  </span>
+                  <span className="text-base font-extrabold">{stackEntry.likes}</span>
                 </div>
               </div>
             </div>
@@ -81,7 +77,7 @@ export const FeedDetailModal = ({
                 variant="thin"
                 size="icon"
                 aria-label="닫기"
-                className="absolute -right-3 -top-3 z-20 rotate-2"
+                className="absolute -top-3 -right-3 z-20 rotate-2"
               >
                 <XIcon className="h-4 w-4" />
               </Button>
@@ -90,7 +86,7 @@ export const FeedDetailModal = ({
             {!entry.isMine && (
               <ReportButton
                 entryId={entry.id}
-                className={`${BRUTAL_SM} absolute -left-3 -top-3 z-20 flex h-11 w-11 rotate-2 items-center justify-center bg-white disabled:opacity-50`}
+                className={`${BRUTAL_SM} absolute -top-3 -left-3 z-20 flex h-11 w-11 rotate-2 items-center justify-center bg-white disabled:opacity-50`}
               />
             )}
 
@@ -99,7 +95,7 @@ export const FeedDetailModal = ({
               className="aspect-square w-full border-2 border-black"
             />
 
-            <div className="space-y-1 px-1 pb-1 pt-3">
+            <div className="space-y-1 px-1 pt-3 pb-1">
               <DialogTitle className="text-xs font-normal text-neutral-600">
                 {entry.location}
               </DialogTitle>
@@ -114,9 +110,7 @@ export const FeedDetailModal = ({
                 >
                   <motion.span
                     // 좋아요를 누른 순간에만 하트가 한 번 팡 튀도록 (취소할 땐 조용히).
-                    animate={
-                      entry.liked ? { scale: [1, 1.35, 1] } : { scale: 1 }
-                    }
+                    animate={entry.liked ? { scale: [1, 1.35, 1] } : { scale: 1 }}
                     transition={{ duration: 0.28, ease: "easeOut" }}
                     className="inline-flex"
                   >
@@ -127,16 +121,14 @@ export const FeedDetailModal = ({
                   </motion.span>
                   {entry.likes}
                 </motion.button>
-                <p className="text-xs text-neutral-600">
-                  {formatDisplayDate(entry.date)}
-                </p>
+                <p className="text-xs text-neutral-600">{formatDisplayDate(entry.date)}</p>
               </div>
             </div>
           </div>
         </div>
 
         <DialogDescription
-          className={`${BRUTAL_SM} relative z-10 -mt-3 w-fit max-w-[85%] rotate-1 rounded-full bg-white px-5 py-2 text-center font-extrabold leading-snug text-neutral-900`}
+          className={`${BRUTAL_SM} relative z-10 -mt-3 w-fit max-w-[85%] rotate-1 rounded-full bg-white px-5 py-2 text-center leading-snug font-extrabold text-neutral-900`}
         >
           {entry.comment}
         </DialogDescription>

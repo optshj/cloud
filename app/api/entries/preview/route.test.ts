@@ -6,15 +6,21 @@ import type { NextRequest } from "next/server";
 
 // vi.mock()은 파일 최상단으로 호이스팅되므로, 팩토리에서 참조할 mock은
 // vi.hoisted()로 만들어야 TDZ(ReferenceError)를 피할 수 있다.
-const { mockGetUser, mockGetPublicUrl, mockStorageFrom, mockFrom, mockReverseGeocode, mockGenerateAiComment } =
-  vi.hoisted(() => ({
-    mockGetUser: vi.fn(),
-    mockGetPublicUrl: vi.fn(),
-    mockStorageFrom: vi.fn(),
-    mockFrom: vi.fn(),
-    mockReverseGeocode: vi.fn(),
-    mockGenerateAiComment: vi.fn(),
-  }));
+const {
+  mockGetUser,
+  mockGetPublicUrl,
+  mockStorageFrom,
+  mockFrom,
+  mockReverseGeocode,
+  mockGenerateAiComment,
+} = vi.hoisted(() => ({
+  mockGetUser: vi.fn(),
+  mockGetPublicUrl: vi.fn(),
+  mockStorageFrom: vi.fn(),
+  mockFrom: vi.fn(),
+  mockReverseGeocode: vi.fn(),
+  mockGenerateAiComment: vi.fn(),
+}));
 
 vi.mock("@/shared/lib/supabase/server", () => ({
   createClient: vi.fn(async () => ({

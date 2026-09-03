@@ -4,18 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { AppShell } from "@/widgets/app-shell";
-import {
-  BRUTAL,
-  BRUTAL_SM,
-  LIST_CONTAINER,
-  LIST_ITEM,
-} from "@/shared/ui/tokens";
-import {
-  CameraIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  CloudIcon,
-} from "@/shared/ui/icons";
+import { BRUTAL, BRUTAL_SM, LIST_CONTAINER, LIST_ITEM } from "@/shared/ui/tokens";
+import { CameraIcon, ChevronLeftIcon, ChevronRightIcon, CloudIcon } from "@/shared/ui/icons";
 import { Button } from "@/shared/ui/button";
 import { EntryDetailModal, MonthCalendarGrid } from "@/widgets/month-calendar";
 import { EntryListCard } from "@/widgets/entry-card";
@@ -26,12 +16,7 @@ import { dateKey, seoulDateKey } from "@/shared/lib/date";
 
 export const CalendarView = () => {
   const { user, loading: isSessionLoading } = useSession();
-  const {
-    entries: allEntries,
-    loading: isLoading,
-    error,
-    refresh,
-  } = useCloudEntries();
+  const { entries: allEntries, loading: isLoading, error, refresh } = useCloudEntries();
   // 사진첩은 내 앨범이다 — 피드와 같은 조회를 쓰되 내 기록만 남긴다.
   // (전체공개라 조회 자체는 남의 기록도 내려오지만 여기선 보여주지 않는다.)
   const entries = allEntries.filter((e) => e.isMine);
@@ -50,8 +35,7 @@ export const CalendarView = () => {
   // 올해가 아닐 때만 연도를 덧붙인다(올해엔 군더더기라 숨긴다).
   const isThisYear = year === Number(seoulDateKey().slice(0, 4));
   // 아직 오지 않은 달엔 기록이 있을 수 없다 — 빈 달력만 나오므로 넘어가지 못하게 막는다.
-  const isThisMonth =
-    seoulDateKey().slice(0, 7) === dateKey(viewDate).slice(0, 7);
+  const isThisMonth = seoulDateKey().slice(0, 7) === dateKey(viewDate).slice(0, 7);
   const monthEntries = entries
     .filter((e) => {
       const [ey, em] = e.date.split("-").map(Number);
@@ -90,9 +74,7 @@ export const CalendarView = () => {
           <div className={`cloud-bob ${BRUTAL} bg-white p-4`}>
             <CloudIcon className="h-10 w-10 text-violet-300" />
           </div>
-          <p className={`${BRUTAL_SM} bg-white px-3 py-1 text-xs font-bold`}>
-            구름 모으는 중...
-          </p>
+          <p className={`${BRUTAL_SM} bg-white px-3 py-1 text-xs font-bold`}>구름 모으는 중...</p>
         </div>
       </AppShell>
     );
@@ -103,7 +85,7 @@ export const CalendarView = () => {
       <motion.div {...LIST_CONTAINER} className="flex flex-col">
         <motion.div
           {...LIST_ITEM}
-          className="flex items-center justify-between border-b-[3px] border-black px-4 pb-4 pt-4"
+          className="flex items-center justify-between border-b-[3px] border-black px-4 pt-4 pb-4"
         >
           {/* 화살표도 월 라벨과 같은 어휘 — 흰 대지 + 검은 테두리 + 하드섀도에,
               달력 칸의 미니 폴라로이드처럼 라벨과 반대 방향으로 기울인다. */}
@@ -117,12 +99,8 @@ export const CalendarView = () => {
             <ChevronLeftIcon className="h-5 w-5" strokeWidth={2.75} />
           </Button>
           {/* 달력 칸의 미니 폴라로이드와 같은 언어 — 아래 여백을 넓게 둬 사진 대지처럼 보이게 한다. */}
-          <div
-            className={`${BRUTAL_SM} -rotate-2 bg-white px-5 pb-2 pt-1.5 text-center`}
-          >
-            <p className="text-xl font-extrabold leading-tight">
-              {month + 1}월
-            </p>
+          <div className={`${BRUTAL_SM} -rotate-2 bg-white px-5 pt-1.5 pb-2 text-center`}>
+            <p className="text-xl leading-tight font-extrabold">{month + 1}월</p>
             <p className="text-[11px] text-neutral-500">
               {isThisYear ? "" : `${year}년 · `}
               {monthEntries.length}장 기록
@@ -151,20 +129,14 @@ export const CalendarView = () => {
 
         <div className="flex flex-col gap-4 px-4 pb-4">
           {error && (
-            <p
-              role="alert"
-              className="py-8 text-center text-sm font-bold text-rose-600"
-            >
+            <p role="alert" className="py-8 text-center text-sm font-bold text-rose-600">
               {error}
             </p>
           )}
           {!error && monthEntries.length === 0 && (
             /* 달력 칸의 미니 폴라로이드를 그대로 키운 빈 대지 — 아직 안 붙인 사진 한 장으로 읽힌다.
                지난 달은 이제 와서 찍을 수 없으니 CTA는 이번 달에만 붙인다. */
-            <motion.div
-              {...LIST_ITEM}
-              className="flex flex-col items-center gap-3 py-8"
-            >
+            <motion.div {...LIST_ITEM} className="flex flex-col items-center gap-3 py-8">
               <div className={`${BRUTAL} -rotate-2 bg-white p-2 pb-6`}>
                 <div className="flex h-28 w-28 items-center justify-center border border-dashed border-black/25 bg-violet-50">
                   <CloudIcon className="h-10 w-10 text-violet-200" />
@@ -173,9 +145,7 @@ export const CalendarView = () => {
               {/* 사진첩은 내 기록만 보여주므로 비로그인은 항상 빈 화면이 된다 —
                   "기록된 구름이 없어요"는 원인을 가린다(기록은 있고, 내 게 없을 뿐). */}
               <p className="text-sm font-bold text-neutral-500">
-                {user
-                  ? "이 달엔 기록된 구름이 없어요"
-                  : "로그인하면 내가 모은 구름을 볼 수 있어요"}
+                {user ? "이 달엔 기록된 구름이 없어요" : "로그인하면 내가 모은 구름을 볼 수 있어요"}
               </p>
               {!user && <KakaoLoginButton />}
               {user && isThisMonth && (

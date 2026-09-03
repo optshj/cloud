@@ -40,9 +40,30 @@ export function LogoIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 100 100" className={className}>
       <rect x="8" y="8" width="88" height="88" rx="14" fill="#17151c" />
-      <rect x="4" y="4" width="88" height="88" rx="14" fill="#f6f1e6" stroke="#17151c" strokeWidth="4" />
-      <path d="M13 17 L13 25 M13 17 L21 17" fill="none" stroke="#6f6980" strokeWidth="3" strokeLinecap="round" />
-      <path d="M83 79 L83 71 M83 79 L75 79" fill="none" stroke="#6f6980" strokeWidth="3" strokeLinecap="round" />
+      <rect
+        x="4"
+        y="4"
+        width="88"
+        height="88"
+        rx="14"
+        fill="#f6f1e6"
+        stroke="#17151c"
+        strokeWidth="4"
+      />
+      <path
+        d="M13 17 L13 25 M13 17 L21 17"
+        fill="none"
+        stroke="#6f6980"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      <path
+        d="M83 79 L83 71 M83 79 L75 79"
+        fill="none"
+        stroke="#6f6980"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
       <path d={ROUGH_CLOUD_D} fill="#4a4555" transform="translate(-1,2.5)" />
       <path
         d={ROUGH_CLOUD_D}

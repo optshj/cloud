@@ -13,8 +13,7 @@ const gothicA1 = Gothic_A1({
 
 export const metadata: Metadata = {
   title: "구름 수집 (가제)",
-  description:
-    "매일 하늘/구름을 촬영하고 AI 코멘트와 함께 캘린더에 기록하는 다이어리",
+  description: "매일 하늘/구름을 촬영하고 AI 코멘트와 함께 캘린더에 기록하는 다이어리",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

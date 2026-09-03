@@ -48,7 +48,13 @@ function makeRequest(body: unknown): NextRequest {
   return { json: async () => body } as unknown as NextRequest;
 }
 
-const validBody = { photoPath: "a.jpg", lat: 33.4, lng: 126.5, tag: "맑음", comment: "구름이 예뻐요" };
+const validBody = {
+  photoPath: "a.jpg",
+  lat: 33.4,
+  lng: 126.5,
+  tag: "맑음",
+  comment: "구름이 예뻐요",
+};
 
 describe("POST /api/entries/confirm", () => {
   beforeEach(() => {
@@ -128,7 +134,10 @@ describe("POST /api/entries/confirm", () => {
 
   it("오늘 이미 기록이 있으면(unique violation) 409를 받는다", async () => {
     mockReverseGeocode.mockResolvedValue("제주시 이도이동");
-    mockSingle.mockResolvedValue({ data: null, error: { code: "23505", message: "duplicate key" } });
+    mockSingle.mockResolvedValue({
+      data: null,
+      error: { code: "23505", message: "duplicate key" },
+    });
 
     const res = await POST(makeRequest(validBody));
 
@@ -138,7 +147,10 @@ describe("POST /api/entries/confirm", () => {
 
   it("unique violation이 아닌 insert 에러는 500을 받는다", async () => {
     mockReverseGeocode.mockResolvedValue("제주시 이도이동");
-    mockSingle.mockResolvedValue({ data: null, error: { code: "42P01", message: "relation missing" } });
+    mockSingle.mockResolvedValue({
+      data: null,
+      error: { code: "42P01", message: "relation missing" },
+    });
 
     const res = await POST(makeRequest(validBody));
 

@@ -13,26 +13,19 @@ const Dialog = ({ ...props }: ComponentProps<typeof DialogPrimitive.Root>) => (
   <DialogPrimitive.Root data-slot="dialog" {...props} />
 );
 
-const DialogPortal = ({
-  ...props
-}: ComponentProps<typeof DialogPrimitive.Portal>) => (
+const DialogPortal = ({ ...props }: ComponentProps<typeof DialogPrimitive.Portal>) => (
   <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />
 );
 
-const DialogClose = ({
-  ...props
-}: ComponentProps<typeof DialogPrimitive.Close>) => (
+const DialogClose = ({ ...props }: ComponentProps<typeof DialogPrimitive.Close>) => (
   <DialogPrimitive.Close data-slot="dialog-close" {...props} />
 );
 
-const DialogOverlay = ({
-  className,
-  ...props
-}: ComponentProps<typeof DialogPrimitive.Overlay>) => (
+const DialogOverlay = ({ className, ...props }: ComponentProps<typeof DialogPrimitive.Overlay>) => (
   <DialogPrimitive.Overlay
     data-slot="dialog-overlay"
     className={cn(
-      "fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-overlay-out data-[state=open]:animate-overlay-in",
+      "data-[state=closed]:animate-overlay-out data-[state=open]:animate-overlay-in fixed inset-0 z-50 bg-black/50",
       className,
     )}
     {...props}
@@ -49,7 +42,7 @@ const DialogContent = ({
     <DialogPrimitive.Content
       data-slot="dialog-content"
       className={cn(
-        "fixed left-1/2 top-1/2 z-50 w-[calc(100%-3rem)] max-w-xs -translate-x-1/2 -translate-y-1/2 outline-none data-[state=closed]:animate-modal-out data-[state=open]:animate-modal-in",
+        "data-[state=closed]:animate-modal-out data-[state=open]:animate-modal-in fixed top-1/2 left-1/2 z-50 w-[calc(100%-3rem)] max-w-xs -translate-x-1/2 -translate-y-1/2 outline-none",
         className,
       )}
       {...props}
@@ -59,10 +52,7 @@ const DialogContent = ({
   </DialogPortal>
 );
 
-const DialogTitle = ({
-  className,
-  ...props
-}: ComponentProps<typeof DialogPrimitive.Title>) => (
+const DialogTitle = ({ className, ...props }: ComponentProps<typeof DialogPrimitive.Title>) => (
   <DialogPrimitive.Title
     data-slot="dialog-title"
     className={cn("font-extrabold", className)}

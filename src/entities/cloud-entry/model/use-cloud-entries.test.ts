@@ -6,13 +6,11 @@ import type { CloudEntry } from "./types";
 // 계산한다). 그래서 이 훅은 최초 1회 조회로 끝나면 안 되고 로그아웃/로그인에 반응해야 한다.
 // api와 supabase 클라이언트를 모듈 단위로 모킹해 그 재조회 규칙만 본다.
 
-const { mockFetchEntries, mockOnAuthStateChange, mockUnsubscribe } = vi.hoisted(
-  () => ({
-    mockFetchEntries: vi.fn(),
-    mockOnAuthStateChange: vi.fn(),
-    mockUnsubscribe: vi.fn(),
-  }),
-);
+const { mockFetchEntries, mockOnAuthStateChange, mockUnsubscribe } = vi.hoisted(() => ({
+  mockFetchEntries: vi.fn(),
+  mockOnAuthStateChange: vi.fn(),
+  mockUnsubscribe: vi.fn(),
+}));
 
 vi.mock("@/shared/lib/supabase/client", () => ({
   createClient: vi.fn(() => ({
@@ -39,10 +37,7 @@ const makeEntry = (id: string, isMine: boolean): CloudEntry => ({
 });
 
 // onAuthStateChange에 등록된 콜백을 붙잡아 로그인/로그아웃 이벤트를 직접 흘려보낸다.
-type AuthCallback = (
-  event: string,
-  session: { user: { id: string } } | null,
-) => void;
+type AuthCallback = (event: string, session: { user: { id: string } } | null) => void;
 let emitAuthChange: AuthCallback;
 
 describe("useCloudEntries", () => {

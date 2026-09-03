@@ -18,10 +18,9 @@ export const PlaceholderPhoto = ({
   // className으로 absolute 등 다른 position을 넘기면 Tailwind 클래스 병합 순서상 뒤에 나오는
   // "relative"가 항상 이겨서(둘 다 실려있으면 스타일시트 선언 순서가 우선) position:absolute가
   // 무력화되고 -inset-*이 박스를 안 채워 찌그러진다 — 넘어온 값이 없을 때만 relative를 기본값으로 쓴다.
-  const hasPosition =
-    /(?:^|\s)(?:absolute|fixed|sticky|static|relative)(?=\s|$)/.test(
-      className ?? "",
-    );
+  const hasPosition = /(?:^|\s)(?:absolute|fixed|sticky|static|relative)(?=\s|$)/.test(
+    className ?? "",
+  );
 
   return (
     <div
@@ -29,9 +28,7 @@ export const PlaceholderPhoto = ({
     >
       {photoDataUrl ? (
         <>
-          {!isLoaded && (
-            <span aria-hidden className="shimmer absolute inset-0 block" />
-          )}
+          {!isLoaded && <span aria-hidden className="shimmer absolute inset-0 block" />}
           <img
             src={photoDataUrl}
             alt=""

@@ -29,11 +29,7 @@ const requestBothPermissions = async () => {
   });
 };
 
-export const CapturePermissionGate = ({
-  onGranted,
-}: {
-  onGranted: () => void;
-}) => {
+export const CapturePermissionGate = ({ onGranted }: { onGranted: () => void }) => {
   const [isRequesting, setIsRequesting] = useState(false);
   const [isDenied, setIsDenied] = useState(false);
 
@@ -51,11 +47,7 @@ export const CapturePermissionGate = ({
         const geolocation = await navigator.permissions.query({
           name: "geolocation",
         });
-        if (
-          !isCancelled &&
-          camera.state === "granted" &&
-          geolocation.state === "granted"
-        ) {
+        if (!isCancelled && camera.state === "granted" && geolocation.state === "granted") {
           onGranted();
         }
       } catch {

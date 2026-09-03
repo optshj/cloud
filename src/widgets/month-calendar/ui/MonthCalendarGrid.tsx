@@ -108,14 +108,9 @@ export const MonthCalendarGrid = ({
               }}
               className={`${PHOTO_AREA} block`}
             >
-              <PlaceholderPhoto
-                photoDataUrl={entry.photoDataUrl}
-                className="absolute inset-0"
-              />
+              <PlaceholderPhoto photoDataUrl={entry.photoDataUrl} className="absolute inset-0" />
             </motion.span>
-            <span className={`${DATE_IN_MARGIN} ${dateTone} ${dateWeight}`}>
-              {date.getDate()}
-            </span>
+            <span className={`${DATE_IN_MARGIN} ${dateTone} ${dateWeight}`}>{date.getDate()}</span>
           </button>
         );
       })}

@@ -4,11 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { AppShell } from "@/widgets/app-shell";
-import {
-  EntryFeedCard,
-  EntryFeedCardSkeleton,
-  FeedDetailModal,
-} from "@/widgets/entry-card";
+import { EntryFeedCard, EntryFeedCardSkeleton, FeedDetailModal } from "@/widgets/entry-card";
 import { useCloudEntries } from "@/entities/cloud-entry";
 import { useSession } from "@/entities/session";
 import { signInWithKakao } from "@/features/login-kakao";
@@ -18,13 +14,7 @@ import { Button } from "@/shared/ui/button";
 
 export const FeedView = () => {
   const { user } = useSession();
-  const {
-    entries,
-    loading: isLoading,
-    error,
-    refresh,
-    toggleLike,
-  } = useCloudEntries();
+  const { entries, loading: isLoading, error, refresh, toggleLike } = useCloudEntries();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const handleToggleLike = (id: string) => {
@@ -42,11 +32,7 @@ export const FeedView = () => {
   if (isLoading) {
     return (
       <AppShell theme="feed" title="피드">
-        <div
-          className="grid grid-cols-2 gap-3 p-4"
-          aria-busy="true"
-          aria-label="피드 불러오는 중"
-        >
+        <div className="grid grid-cols-2 gap-3 p-4" aria-busy="true" aria-label="피드 불러오는 중">
           {Array.from({ length: 4 }).map((_, index) => (
             <EntryFeedCardSkeleton key={index} />
           ))}
@@ -79,9 +65,7 @@ export const FeedView = () => {
             <CloudIcon className="h-10 w-10 text-rose-300" />
           </div>
           <p className="font-bold">아직 등록된 구름이 없어요</p>
-          <p className="text-sm text-neutral-600">
-            가장 먼저 하늘을 기록해보세요
-          </p>
+          <p className="text-sm text-neutral-600">가장 먼저 하늘을 기록해보세요</p>
           <Button asChild>
             <Link href="/">카메라로 가기</Link>
           </Button>
@@ -96,11 +80,7 @@ export const FeedView = () => {
         {entries.map((entry) => (
           // grid로 감싸야 카드가 원래처럼 행 높이만큼 늘어난다(stagger 래퍼를 끼우기 전과 동일).
           <motion.div key={entry.id} {...LIST_ITEM} className="grid">
-            <EntryFeedCard
-              entry={entry}
-              onSelect={setSelectedId}
-              onToggleLike={handleToggleLike}
-            />
+            <EntryFeedCard entry={entry} onSelect={setSelectedId} onToggleLike={handleToggleLike} />
           </motion.div>
         ))}
       </motion.div>

@@ -72,7 +72,7 @@ export const EntryDetailModal = ({
             variant="thin"
             size="icon"
             aria-label="닫기"
-            className="absolute -right-3 -top-3 z-10 rotate-2"
+            className="absolute -top-3 -right-3 z-10 rotate-2"
           >
             <XIcon className="h-4 w-4" />
           </Button>
@@ -82,11 +82,11 @@ export const EntryDetailModal = ({
           className="aspect-square w-full border-2 border-black"
         />
 
-        <div className="space-y-1 px-1 pb-1 pt-3">
+        <div className="space-y-1 px-1 pt-3 pb-1">
           <DialogTitle>{entry.location}</DialogTitle>
           <div className="flex items-end justify-between gap-2">
             <DialogDescription>{entry.comment}</DialogDescription>
-            <p className="whitespace-nowrap text-xs text-neutral-600">
+            <p className="text-xs whitespace-nowrap text-neutral-600">
               {formatDisplayDate(entry.date)}
             </p>
           </div>
@@ -111,8 +111,8 @@ export const EntryDetailModal = ({
           <AlertDialogContent>
             <AlertDialogTitle>이 기록을 삭제할까요?</AlertDialogTitle>
             <AlertDialogDescription>
-              {formatDisplayDate(entry.date)}에 기록한 사진과 코멘트가 함께
-              지워져요. 되돌릴 수 없어요.
+              {formatDisplayDate(entry.date)}에 기록한 사진과 코멘트가 함께 지워져요. 되돌릴 수
+              없어요.
             </AlertDialogDescription>
             <AlertDialogFooter>
               <AlertDialogCancel>취소</AlertDialogCancel>

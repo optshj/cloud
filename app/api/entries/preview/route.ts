@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { createClient } from "@/shared/lib/supabase/server";
 import { reverseGeocodeToDong } from "@/shared/lib/kakao/reverse-geocode";
 import { generateAiComment } from "@/features/capture-cloud";

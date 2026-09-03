@@ -12,7 +12,11 @@ export async function reverseGeocodeToDong(lat: number, lng: number): Promise<st
   if (!res.ok) throw new Error(`카카오 로컬 API 실패: ${res.status}`);
 
   const data = (await res.json()) as {
-    documents: { region_type: "H" | "B"; region_2depth_name: string; region_3depth_name: string }[];
+    documents: Array<{
+      region_type: "H" | "B";
+      region_2depth_name: string;
+      region_3depth_name: string;
+    }>;
   };
   const dong = data.documents.find((d) => d.region_type === "H") ?? data.documents[0];
   if (!dong) throw new Error("위치 변환 결과가 없습니다");

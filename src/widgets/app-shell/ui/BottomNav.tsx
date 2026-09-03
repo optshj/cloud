@@ -7,8 +7,20 @@ import { CameraIcon, HeartIcon, ImagesIcon } from "@/shared/ui/icons";
 import { THEME } from "@/shared/ui/tokens";
 
 const SIDE_TABS = [
-  { href: "/calendar", label: "사진첩", Icon: ImagesIcon, activeBg: THEME.calendar.active, rotate: "-rotate-[7deg]" },
-  { href: "/feed", label: "피드", Icon: HeartIcon, activeBg: THEME.feed.active, rotate: "rotate-[6deg]" },
+  {
+    href: "/calendar",
+    label: "사진첩",
+    Icon: ImagesIcon,
+    activeBg: THEME.calendar.active,
+    rotate: "-rotate-[7deg]",
+  },
+  {
+    href: "/feed",
+    label: "피드",
+    Icon: HeartIcon,
+    activeBg: THEME.feed.active,
+    rotate: "rotate-[6deg]",
+  },
 ];
 
 export function BottomNav() {
@@ -26,7 +38,7 @@ export function BottomNav() {
       <Link
         href="/"
         aria-label="카메라"
-        className="absolute left-1/2 top-0 flex -translate-x-1/2 -translate-y-[28%] flex-col items-center gap-1 active:scale-95"
+        className="absolute top-0 left-1/2 flex -translate-x-1/2 -translate-y-[28%] flex-col items-center gap-1 active:scale-95"
       >
         <span
           className={`flex h-14 w-14 items-center justify-center rounded-2xl border-[3px] border-black shadow-[3px_3px_0_0_#000] ${
@@ -35,7 +47,9 @@ export function BottomNav() {
         >
           <CameraIcon className="h-6 w-6" />
         </span>
-        <span className={`text-[13px] ${cameraActive ? "font-extrabold" : "font-medium text-neutral-500"}`}>
+        <span
+          className={`text-[13px] ${cameraActive ? "font-extrabold" : "font-medium text-neutral-500"}`}
+        >
           카메라
         </span>
       </Link>
@@ -71,7 +85,9 @@ function SideTab({
       >
         <Icon className="h-6 w-6" />
       </span>
-      <span className={`text-[12.5px] ${active ? "font-bold" : "font-medium text-neutral-500"}`}>{label}</span>
+      <span className={`text-[12.5px] ${active ? "font-bold" : "font-medium text-neutral-500"}`}>
+        {label}
+      </span>
     </Link>
   );
 }

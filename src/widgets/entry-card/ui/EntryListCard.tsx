@@ -30,13 +30,9 @@ export const EntryListCard = ({
       <div className="flex items-baseline justify-between gap-1">
         {/* 동 이름이 길면 잘라내고 날짜를 지킨다 — 날짜가 밀려나면 목록을 훑는 기준이 사라진다. */}
         <p className="truncate text-[13px] font-extrabold">{entry.location}</p>
-        <p className="shrink-0 text-[10px] text-neutral-600">
-          {formatShortDate(entry.date)}
-        </p>
+        <p className="shrink-0 text-[10px] text-neutral-600">{formatShortDate(entry.date)}</p>
       </div>
-      <p className="line-clamp-2 text-xs leading-snug text-neutral-700">
-        {entry.comment}
-      </p>
+      <p className="line-clamp-2 text-xs leading-snug text-neutral-700">{entry.comment}</p>
     </div>
   </button>
 );

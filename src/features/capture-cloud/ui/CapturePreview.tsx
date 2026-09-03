@@ -37,15 +37,13 @@ export const CapturePreview = ({
         size="icon"
         onClick={onRetake}
         aria-label="닫기"
-        className="absolute -right-3 -top-3 z-10 rotate-2"
+        className="absolute -top-3 -right-3 z-10 rotate-2"
       >
         <XIcon className="h-4 w-4" />
       </Button>
       {/* 내용(특히 AI 코멘트)이 뷰포트보다 길어질 수 있어 카드 안에서만 스크롤되게 한다 —
           전체 페이지가 넘치는 대신 이 안에서 갇힌다. */}
-      <div
-        className={`animate-modal-in max-h-[70dvh] overflow-y-auto ${BRUTAL} bg-white p-3`}
-      >
+      <div className={`animate-modal-in max-h-[70dvh] overflow-y-auto ${BRUTAL} bg-white p-3`}>
         <div className="overflow-hidden border-2 border-black">
           <img
             src={captured.photoDataUrl}
@@ -57,9 +55,7 @@ export const CapturePreview = ({
           <div className="space-y-1 pt-3">
             <p className="font-extrabold">{location}</p>
             <p className="text-sm text-neutral-700">{captured.comment}</p>
-            <p className="text-right text-xs text-neutral-500">
-              {formatDisplayDate(dateKeyStr)}
-            </p>
+            <p className="text-right text-xs text-neutral-500">{formatDisplayDate(dateKeyStr)}</p>
           </div>
         )}
       </div>

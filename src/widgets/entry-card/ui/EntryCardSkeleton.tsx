@@ -5,10 +5,7 @@ import { BRUTAL_SM } from "@/shared/ui/tokens";
 // 이 컴포넌트의 골격은 EntryFeedCard와 1:1로 맞춰져 있다(기울기는 id로 정해지므로 여기선 뺀다).
 
 export const EntryFeedCardSkeleton = () => (
-  <div
-    aria-hidden
-    className={`${BRUTAL_SM} flex flex-col bg-white p-1.5 pb-2.5`}
-  >
+  <div aria-hidden className={`${BRUTAL_SM} flex flex-col bg-white p-1.5 pb-2.5`}>
     <div className="skeleton aspect-square w-full" />
     <div className="flex flex-1 flex-col px-0.5 pt-2">
       <div className="skeleton h-2.5 w-2/3" />
