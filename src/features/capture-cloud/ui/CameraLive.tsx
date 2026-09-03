@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
 import { BRUTAL, BRUTAL_SM } from "@/shared/ui/tokens";
 import { CameraOff, Cloud, RefreshCw } from "lucide-react";
 import { Button } from "@/shared/ui/button";
@@ -109,6 +110,36 @@ export const CameraLive = ({
     }
   }, [isPaused]);
 
+  // 줌은 "손가락이 트랙의 어디에 있나"(절대)가 아니라 "얼마나 움직였나"(상대)로 정한다.
+  // 절대 방식이면 보이는 건 가운데 배지 하나뿐인데 값은 트랙 전체에 매핑돼 있어서, 5x에서 배지를
+  // 잡는 순간 가운데 값(3x)으로 튄다 — 확대하려고 오른쪽으로 미는데 먼저 축소되는 것처럼 느껴진다.
+  // 상대로 두면 어디를 잡든 현재 배율에서 이어지고, 오른쪽으로 밀면 항상 확대다.
+  const zoomDragRef = useRef<{ startX: number; startZoom: number } | null>(null);
+
+  const handleZoomPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (hasCameraError) {
+      return;
+    }
+    // 트랙 밖으로 손가락이 나가도 드래그가 이어지게 잡아둔다.
+    event.currentTarget.setPointerCapture(event.pointerId);
+    zoomDragRef.current = { startX: event.clientX, startZoom: zoom };
+  };
+
+  const handleZoomPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const drag = zoomDragRef.current;
+    if (!drag) {
+      return;
+    }
+    const trackWidth = event.currentTarget.getBoundingClientRect().width;
+    const moved = ((event.clientX - drag.startX) / trackWidth) * (ZOOM_MAX - ZOOM_MIN);
+    const next = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, drag.startZoom + moved));
+    setZoom(Math.round(next / ZOOM_STEP) * ZOOM_STEP);
+  };
+
+  const handleZoomPointerUp = () => {
+    zoomDragRef.current = null;
+  };
+
   const handleShutter = async () => {
     if (!videoRef.current) {
       return;
@@ -202,7 +233,13 @@ export const CameraLive = ({
           >
             {zoom.toFixed(1)} x
           </span>
-          <div className="relative flex h-11 w-full items-center justify-center">
+          <div
+            className="relative flex h-11 w-full touch-none items-center justify-center"
+            onPointerDown={handleZoomPointerDown}
+            onPointerMove={handleZoomPointerMove}
+            onPointerUp={handleZoomPointerUp}
+            onPointerCancel={handleZoomPointerUp}
+          >
             <div className="pointer-events-none relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-black/55 transition-[width] duration-200 ease-out group-focus-within:w-full group-hover:w-full group-active:w-full">
               <span className="text-xs font-extrabold text-white transition-opacity duration-150 group-focus-within:opacity-0 group-hover:opacity-0 group-active:opacity-0">
                 {Number.isInteger(zoom) ? zoom : zoom.toFixed(1)}x
@@ -233,7 +270,9 @@ export const CameraLive = ({
               onChange={(e) => setZoom(Number(e.target.value))}
               disabled={hasCameraError}
               aria-label="줌 배율"
-              className="absolute inset-0 h-full w-full cursor-pointer appearance-none bg-transparent opacity-0 disabled:cursor-not-allowed"
+              // 포인터 조작은 위 래퍼가 상대 드래그로 처리한다. 이 range는 지우지 않는다 —
+              // Tab 포커스와 화살표 키, 스크린리더의 slider 시맨틱이 여기 달려 있다.
+              className="pointer-events-none absolute inset-0 h-full w-full appearance-none bg-transparent opacity-0"
             />
           </div>
         </div>

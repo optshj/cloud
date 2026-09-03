@@ -157,3 +157,48 @@ test.describe("권한을 이미 허용한 재방문 사용자", () => {
       .toBeGreaterThan(0);
   });
 });
+
+test.describe("줌 슬라이더", () => {
+  test.use({
+    permissions: ["geolocation", "camera"],
+    geolocation: { latitude: 33.4996, longitude: 126.5312 },
+  });
+
+  test("잡은 자리가 아니라 움직인 거리로 배율이 바뀐다", async ({ page }) => {
+    // 절대 위치 방식이면 보이는 건 가운데 배지뿐인데 값은 트랙 전체에 매핑돼 있어서,
+    // 5x에서 배지를 잡는 순간 가운데 값(3x)으로 튄다 — 확대하려고 오른쪽으로 미는데
+    // 먼저 축소되는 것처럼 느껴진다. 상대 드래그라야 어디를 잡든 현재 배율에서 이어진다.
+    await page.goto("/");
+    const slider = page.getByRole("slider", { name: "줌 배율" });
+    await expect(page.getByRole("button", { name: "촬영" })).toBeVisible();
+
+    const readZoom = () => slider.evaluate((el) => Number((el as HTMLInputElement).value));
+    const setZoom = (value: string) =>
+      slider.evaluate((el, next) => {
+        const input = el as HTMLInputElement;
+        const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+        setter?.call(input, next);
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      }, value);
+
+    const track = (await slider.boundingBox())!;
+    const centerX = track.x + track.width / 2;
+    const centerY = track.y + track.height / 2;
+
+    await setZoom("5");
+    await page.mouse.move(centerX, centerY);
+    await page.mouse.down();
+    // 손가락을 대는 것만으로 배율이 변하면 안 된다.
+    expect(await readZoom()).toBe(5);
+
+    await page.mouse.move(centerX - 60, centerY, { steps: 6 });
+    const afterLeft = await readZoom();
+    await page.mouse.move(centerX + 60, centerY, { steps: 6 });
+    const afterRight = await readZoom();
+    await page.mouse.up();
+
+    // 왼쪽으로 밀면 축소, 오른쪽으로 되돌리면 다시 확대.
+    expect(afterLeft).toBeLessThan(5);
+    expect(afterRight).toBeGreaterThan(afterLeft);
+  });
+});
