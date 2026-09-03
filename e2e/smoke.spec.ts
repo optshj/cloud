@@ -75,3 +75,47 @@ test("피드 상세 모달의 신고 버튼은 남의 기록에만 붙는다", a
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(page.getByRole("button", { name: "신고" })).toBeHidden();
 });
+
+test("피드 상세 모달은 닫힐 때 exit 애니메이션을 재생한다", async ({ page }) => {
+  // 호출부가 `{selected && <Modal/>}`로 조건부 마운트하면 부모가 먼저 사라져서 Radix가
+  // data-state="closed"로 넘어갈 틈이 없다 — enter만 나오고 exit는 조용히 씹힌다.
+  // 프레임을 잡으려 하면 불안정하니 animationstart를 모아서 본다.
+  const row = {
+    entry_date: "2026-08-28",
+    location_dong: "제주시 이도이동",
+    tag: "맑음",
+    comment: "구름 한 점 없이 맑았던 하루",
+    photo_path: "u/2026-08-28.jpg",
+    likes_count: 0,
+  };
+  await page.route("**/rest/v1/entry_feed*", (route) =>
+    route.fulfill({
+      json: [{ ...row, id: "11111111-1111-4111-8111-111111111111", is_mine: false }],
+    }),
+  );
+  await page.route("**/rest/v1/entry_likes*", (route) => route.fulfill({ json: [] }));
+
+  await page.goto("/feed");
+  await expect(page.getByLabel("피드 불러오는 중")).toBeHidden();
+  await page.getByRole("button", { name: /기록 보기$/ }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+
+  await page.evaluate(() => {
+    const played: string[] = [];
+    (window as unknown as { playedAnimations: string[] }).playedAnimations = played;
+    document.addEventListener(
+      "animationstart",
+      (event) => played.push((event as AnimationEvent).animationName),
+      true,
+    );
+  });
+
+  await page.getByRole("button", { name: "닫기" }).click();
+  await expect(page.getByRole("dialog")).toBeHidden();
+
+  const played = await page.evaluate(
+    () => (window as unknown as { playedAnimations: string[] }).playedAnimations,
+  );
+  expect(played).toContain("modal-out");
+  expect(played).toContain("overlay-out");
+});

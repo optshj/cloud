@@ -56,6 +56,17 @@ AI 생성 구간에서 사진을 보여주려고 `Stage` 타입에 `photoDataUrl
 ### 5. 모션은 역할을 갈라 쓴다 — 겹치면 깨진다
 
 - **모달 열고닫기 → Radix `data-state` + CSS 키프레임.** `AnimatePresence`로 Radix Dialog를 감싸면 언마운트 타이밍이 어긋나 exit가 씹힌다.
+
+**모달은 상시 마운트하고 `open`만 토글한다 (2026-09-03).** exit 애니메이션 클래스
+(`data-[state=closed]:animate-modal-out`)는 처음부터 붙어 있었는데 재생되지 않았다 — 범인은
+프리미티브가 아니라 **호출부**였다. `{selected && <Modal/>}`로 조건부 마운트하면 부모가 먼저
+사라져서 Radix가 `data-state="closed"`로 넘어갈 틈이 없다. 그래서 `EntryDetailModal`/`FeedDetailModal`은
+`entry`가 `null`이면 닫힌 것으로 보고, 호출부는 항상 렌더한다.
+
+닫히는 동안 그릴 데이터가 이미 `null`이라 `shared/lib/use-last-non-null.ts`가 마지막 값을 붙잡는다.
+**ref가 아니라 state로 붙잡는다** — 렌더 중 ref 접근은 React 컴파일러 룰(`Cannot access refs during
+render`)이 막는다. 모달이 언마운트되지 않으므로 내부 확인창(`isDeleteOpen`) 같은 state는 닫을 때
+직접 접어줘야 다음에 열 때 바로 뜨지 않는다.
 - **목록 stagger, 좋아요 하트 팝, 드래그 → framer-motion.** DOM 마운트에 걸친 모션은 CSS만으로 안 된다.
 
 톤은 짧고 단단하게(120~200ms, ease-out). 길게 출렁이는 elastic은 브루탈리즘과 안 맞는다 — 자세한 기준은 `interaction-design` 스킬.

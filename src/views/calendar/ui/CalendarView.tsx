@@ -174,13 +174,12 @@ export const CalendarView = () => {
         </div>
       </motion.div>
 
-      {selectedEntry && (
-        <EntryDetailModal
-          entry={selectedEntry}
-          onClose={() => setSelectedId(null)}
-          onDelete={handleDelete}
-        />
-      )}
+      {/* 조건부 마운트하면 부모가 먼저 사라져 exit 애니메이션이 씹힌다 — 상시 마운트하고 entry만 비운다. */}
+      <EntryDetailModal
+        entry={selectedEntry}
+        onClose={() => setSelectedId(null)}
+        onDelete={handleDelete}
+      />
     </AppShell>
   );
 };

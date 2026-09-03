@@ -84,14 +84,17 @@ export const FeedView = () => {
           </motion.div>
         ))}
       </motion.div>
-      {selectedEntry && (
-        <FeedDetailModal
-          entry={selectedEntry}
-          entries={entries}
-          onClose={() => setSelectedId(null)}
-          onToggleLike={() => handleToggleLike(selectedEntry.id)}
-        />
-      )}
+      {/* 조건부 마운트하면 부모가 먼저 사라져 exit 애니메이션이 씹힌다 — 상시 마운트하고 entry만 비운다. */}
+      <FeedDetailModal
+        entry={selectedEntry}
+        entries={entries}
+        onClose={() => setSelectedId(null)}
+        onToggleLike={() => {
+          if (selectedId) {
+            handleToggleLike(selectedId);
+          }
+        }}
+      />
     </AppShell>
   );
 };
