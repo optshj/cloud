@@ -1,0 +1,12 @@
+# 파일명 앞의 점이 없으면 prettier가 이 파일을 아예 못 찾는다 (2026-09-03에 발견해서 고쳤다).
+# 값은 "의도"가 아니라 이미 쓰여 있는 코드에 맞춘 것이다 — 반대로 하면 레포 전체가 재포맷된다.
+singleQuote: false
+semi: true
+printWidth: 100
+trailingComma: all
+tabWidth: 2
+bracketSpacing: true
+jsxSingleQuote: false
+arrowParens: always
+endOfLine: lf
+plugins: ["prettier-plugin-tailwindcss"]
