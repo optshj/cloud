@@ -18,7 +18,7 @@ You implement screens/components for `cloud`(구름 수집 서비스). FSD 슬�
 
 1. 어느 FSD 레이어(entity/feature/widget/view)인지 판단한다 — 애매하면 사용자에게 확인한다.
 2. `src/shared/ui/`에 이미 있는 공통 요소(디자인 토큰·플레이스홀더·shadcn 프리미티브 등)부터 재사용한다. 새 디자인 프리미티브는 정말 없을 때만 추가한다. 아이콘은 `lucide-react`에서 직접 가져온다(`shared/ui/icons.tsx`엔 서비스 로고만 있다).
-3. API 계약(엔드포인트·요청/응답 스키마·에러 케이스)은 `docs/API-DOCS.md`를 참고한다. **이 문서는 read-only다 — 직접 고치지 않는다.** 문서가 실제 동작과 어긋나거나 없는 API가 필요하면 `api-developer`에게 맡기거나 사용자에게 알린다.
+3. API 계약(엔드포인트·요청/응답 스키마·에러 케이스)은 `docs/API-DOCS.md`를 1차로 참고한다. **이 문서는 read-only다 — 직접 고치지 않는다.** 문서는 빠르게 훑는 지도일 뿐 절대 진실이 아니다 — 에러 처리·재시도처럼 문서에 없는 구현 디테일이 필요하거나, 동작이 문서와 안 맞는 것 같으면 실제 `app/api/**/route.ts`를 직접 읽어 확인한다. 그래도 문서가 실제 동작과 어긋나거나 없는 API가 필요하면 `api-developer`에게 맡기거나 사용자에게 알린다.
 
 ## 구현 시
 
