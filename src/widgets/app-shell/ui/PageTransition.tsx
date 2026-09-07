@@ -9,7 +9,9 @@ const WIPE_SIZE = 64;
 const FADE_DELAY_MS = 80;
 const FADE_DURATION_MS = 180;
 
-type TriggerTransition = (originEl: HTMLElement, theme: ThemeKey) => void;
+// onCovered는 원이 화면을 다 덮은 시점에 불린다 — 실제 라우트 이동은 여기서 해야
+// "이미 바뀐 화면 위에서 뒤늦게 애니메이션만 재생되는" 어색함이 없다.
+type TriggerTransition = (originEl: HTMLElement, theme: ThemeKey, onCovered: () => void) => void;
 
 const PageTransitionContext = createContext<TriggerTransition | null>(null);
 
@@ -35,13 +37,17 @@ export const PageTransitionProvider = ({ children }: { children: ReactNode }) =>
   const wipeRef = useRef<HTMLDivElement>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
 
-  const triggerTransition = useCallback<TriggerTransition>((originEl, theme) => {
+  const triggerTransition = useCallback<TriggerTransition>((originEl, theme, onCovered) => {
     const wipe = wipeRef.current;
     const frameEl = document.getElementById("app-frame");
-    if (!wipe || !frameEl) return;
-
     const isReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (isReducedMotion) return;
+
+    // 애니메이션을 못 그리거나(엘리먼트 못 찾음) 재생 안 할 상황(reduced motion)이면
+    // 연출 없이 바로 이동만 시킨다 — 어떤 경우에도 라우팅 자체는 보장한다.
+    if (!wipe || !frameEl || isReducedMotion) {
+      onCovered();
+      return;
+    }
 
     // 연타로 재트리거될 때 이전 애니메이션의 리스너/타이머가 겹치지 않게 먼저 정리한다.
     cleanupRef.current?.();
@@ -78,6 +84,10 @@ export const PageTransitionProvider = ({ children }: { children: ReactNode }) =>
     const handleTransitionEnd = (e: TransitionEvent) => {
       if (e.propertyName !== "transform") return;
       wipe.removeEventListener("transitionend", handleTransitionEnd);
+
+      // 화면이 다 덮인 지금 실제로 페이지를 이동시킨다 — 그래야 wipe가 걷힐 때
+      // 진짜로 "바뀌는" 게 보인다.
+      onCovered();
 
       const fadeTimeoutId = window.setTimeout(() => {
         wipe.style.transition = `opacity ${FADE_DURATION_MS}ms ease-out`;

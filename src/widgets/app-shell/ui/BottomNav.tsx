@@ -55,9 +55,11 @@ const NavTab = ({
     if (active) return; // 이미 활성화된 탭 재클릭 — 전환/이동 없음
 
     if (badgeRef.current) {
-      triggerTransition(badgeRef.current, theme);
+      // 실제 이동은 화면이 다 덮인 뒤(onCovered)에 일어난다 — 배지를 못 찾은 경우에만 즉시 이동.
+      triggerTransition(badgeRef.current, theme, () => router.push(href));
+    } else {
+      router.push(href);
     }
-    router.push(href);
   };
 
   return (
