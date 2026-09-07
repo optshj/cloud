@@ -42,6 +42,7 @@ grant select (
 ) on public.cloud_entries to anon, authenticated;
 
 -- 적용 후 확인 (anon 키로):
---   GET /rest/v1/cloud_entries?select=lat        → 42501 permission denied for column lat
+--   GET /rest/v1/cloud_entries?select=lat        → 42501 permission denied for **table** cloud_entries
+--     (컬럼이 아니라 테이블 이름으로 보고된다 — 테이블 권한을 회수했기 때문. select=* 도 같이 막힌다)
 --   GET /rest/v1/cloud_entries?select=location_dong → 정상 응답 ("제주시 이도이동")
 --   GET /rest/v1/entry_feed?select=is_mine       → 정상 응답 (뷰가 안 깨졌는지)

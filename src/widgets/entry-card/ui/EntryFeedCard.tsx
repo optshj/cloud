@@ -1,4 +1,7 @@
-import { BRUTAL_SM } from "@/shared/ui/tokens";
+"use client";
+
+import { motion } from "framer-motion";
+import { BRUTAL_SM, HEART_POP, HEART_TAP, PRESS } from "@/shared/ui/tokens";
 import { Heart } from "lucide-react";
 import { PlaceholderPhoto } from "@/shared/ui/PlaceholderPhoto";
 import type { CloudEntry } from "@/entities/cloud-entry";
@@ -15,7 +18,11 @@ export const EntryFeedCard = ({
   onSelect: (id: string) => void;
   onToggleLike: (id: string) => void;
 }) => (
-  <div className={`${BRUTAL_SM} ${tiltClass(entry.id)} flex flex-col bg-white p-1.5 pb-2.5`}>
+  // 섀도가 이 대지에 걸려 있어서 눌림도 여기서 낸다 — :active는 조상까지 걸리므로
+  // 안쪽 어느 버튼을 눌러도 카드가 같이 눌린다.
+  <div
+    className={`${BRUTAL_SM} ${PRESS} ${tiltClass(entry.id)} flex flex-col bg-white p-1.5 pb-2.5`}
+  >
     <button
       type="button"
       onClick={() => onSelect(entry.id)}
@@ -32,21 +39,28 @@ export const EntryFeedCard = ({
         <p className="truncate text-[10px] text-neutral-600">{entry.location}</p>
         <p className="text-[13px] font-extrabold">{entry.tag}</p>
       </button>
-      <button
+      <motion.button
+        {...HEART_TAP}
         type="button"
         onClick={() => onToggleLike(entry.id)}
         aria-pressed={entry.liked}
         // 상태는 aria-pressed가 알린다 — 라벨까지 상태를 담으면 이중 안내가 되고,
         // 라벨이 버튼 내용을 덮어써서 좋아요 수가 안 읽힌다.
         aria-label={`좋아요 ${entry.likes}개`}
-        className="mt-auto flex items-center gap-1.5 pt-1"
+        className="mt-auto flex w-fit items-center gap-1.5 pt-1"
       >
-        <Heart
-          className={`h-4 w-4 ${entry.liked ? "text-rose-500" : "text-black"}`}
-          fill={entry.liked ? "currentColor" : "none"}
-        />
+        <motion.span
+          {...HEART_POP}
+          animate={entry.liked ? "popped" : "idle"}
+          className="inline-flex"
+        >
+          <Heart
+            className={`h-4 w-4 ${entry.liked ? "text-rose-500" : "text-black"}`}
+            fill={entry.liked ? "currentColor" : "none"}
+          />
+        </motion.span>
         <span className="text-base font-extrabold">{entry.likes}</span>
-      </button>
+      </motion.button>
     </div>
   </div>
 );

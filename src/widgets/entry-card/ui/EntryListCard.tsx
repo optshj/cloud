@@ -1,4 +1,4 @@
-import { BRUTAL_SM } from "@/shared/ui/tokens";
+import { BRUTAL_SM, PRESS } from "@/shared/ui/tokens";
 import { formatShortDate } from "@/shared/lib/date";
 import { PlaceholderPhoto } from "@/shared/ui/PlaceholderPhoto";
 import type { CloudEntry } from "@/entities/cloud-entry";
@@ -20,7 +20,7 @@ export const EntryListCard = ({
     type="button"
     onClick={() => onSelect(entry.id)}
     aria-label={`${formatShortDate(entry.date)} ${entry.location} 기록 보기`}
-    className={`${BRUTAL_SM} ${tiltClass(entry.id)} flex flex-col bg-white p-1.5 pb-2.5 text-left`}
+    className={`${BRUTAL_SM} ${PRESS} ${tiltClass(entry.id)} flex flex-col bg-white p-1.5 pb-2.5 text-left`}
   >
     <PlaceholderPhoto
       photoDataUrl={entry.photoDataUrl}

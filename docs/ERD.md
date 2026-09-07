@@ -1,6 +1,6 @@
 # ERD — Supabase 스키마 현황
 
-지금 Supabase에 **실제로 올라가 있는** 스키마. 진실 소스는 `supabase/migrations/0001_init.sql` + `0002_entry_feed_is_mine.sql`이고 둘 다 적용 완료다 — 이 문서는 그 최종 상태를 그린 것이지 계획이 아니다. 스키마를 바꾸면 마이그레이션을 추가하고 이 문서를 같이 고친다.
+지금 Supabase에 **실제로 올라가 있는** 스키마. 진실 소스는 `supabase/migrations/`의 `0001_init.sql` + `0002_entry_feed_is_mine.sql` + `0003_revoke_coords_select.sql`이고 셋 다 적용 완료다(0003은 2026-09-05 적용) — 이 문서는 그 최종 상태를 그린 것이지 계획이 아니다. 스키마를 바꾸면 마이그레이션을 추가하고 이 문서를 같이 고친다.
 
 `0002`가 `entry_feed` 뷰를 `drop` 후 재생성했으므로 `0001`의 뷰 정의(`e.*` + `likes_count`)는 더 이상 존재하지 않는다.
 

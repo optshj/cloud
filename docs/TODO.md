@@ -9,7 +9,11 @@
 
 **새 미해결 항목이 생기면 그 문서가 아니라 여기 적는다.** 원문 문서에는 결정·현재 동작만 남긴다.
 
-기준: 커밋 `26b2b39`, 2026-09-03. 열린 GitHub 이슈 없음.
+기준: 2026-09-05에 전 항목을 코드와 실제 API 응답에 대조해 재확인했다. 열린 GitHub 이슈 없음.
+
+**항목 번호는 안정 ID다.** 코드 주석이 번호로 이 문서를 가리키므로(`capture-frame.ts` → §2-7)
+재번호하지 않는다. 번호가 비어 있으면 그 항목이 끝나서 지워진 것이다 — `2-5`(원본 좌표 노출)는
+`0003`이 해결했다(커밋 `5361608`, 2026-09-05 적용).
 
 ---
 
@@ -26,7 +30,7 @@
 
 ### 2-1. `photo_path`가 user_id를 노출한다 → **프로필·팔로우가 붙을 때**
 
-(2026-09-02 확인)
+(2026-09-02 확인 / 2026-09-05 재확인 — 아래 두 경로 다 여전히 열려 있다)
 
 `entry_feed` 뷰는 `user_id`/`lat`/`lng`를 아예 컬럼에서 뺐지만(`0002`), 남아 있는 `photo_path`가
 `{user_id}/{entry_date}.jpg` 형태라 폴더명이 곧 user_id다. anon 키는 `NEXT_PUBLIC_`이라 공개값이므로
@@ -37,18 +41,22 @@
 한계로 두기로 했다. **프로필이 붙는 순간 user_id로 사람을 특정할 수 있게 되고, 그때 `photo_path`가
 그룹핑을 그대로 넘겨준다.**
 
-고치려면 최소 네 군데가 함께 움직여야 해서 지금 하기엔 비용이 크다. **경로만 먼저 바꾸면 storage
+고치려면 여러 군데가 함께 움직여야 해서 지금 하기엔 비용이 크다. **경로만 먼저 바꾸면 storage
 쓰기 권한이 열린다 — 반드시 함께 움직일 것:**
 
 - `storage.objects` RLS 3종(insert/update/delete)이 `(storage.foldername(name))[1] = auth.uid()::text`로
   **폴더명이 user_id인 것에 쓰기 권한을 걸고 있다.** 경로를 바꾸면 소유권 판정을 폴더명 대신
   `cloud_entries` 조인으로 옮겨야 한다(정책 원문은 → `ERD.md` "Storage").
-- `CameraView`의 업로드 경로, `deleteEntryRemote`의 경로 재구성(`{userId}/{entryDate}.jpg`),
-  `DELETE /api/account`의 `storage.list(user.id)`가 전부 같은 컨벤션에 기대고 있다.
+- 코드 세 곳이 같은 컨벤션에 기댄다 — `CameraView`의 업로드 경로, `deleteEntryRemote`의 경로
+  재구성(`{userId}/{entryDate}.jpg`), `DELETE /api/account`의 `storage.list(user.id)` + `remove`.
 - 기존 파일 이관 + `photo_path` 백필이 필요하다.
-- e2e도 같은 포맷을 하드코딩하고 있다(`e2e/smoke.spec.ts`의 `photo_path` 픽스처, 로컬 QA 시드 스크립트).
 
-**`user_id`는 더 짧은 누출 경로로도 샌다.** `photo_path`로 복원할 것도 없이 `GET /rest/v1/cloud_entries?select=user_id`가 그대로 응답한다. `0003`이 좌표는 컬럼 권한으로 막았지만 `user_id`는 남겼다 — `entry_feed`가 `security_invoker`라 `is_mine`을 계산하려면 조회자에게 그 컬럼 권한이 필요하고, `fetchMyTodayEntry`도 그 컬럼으로 필터한다(→ `ERD.md` "컬럼 권한"). 이걸 막으려면 위 네 군데와 **같이** 움직여야 한다.
+**e2e는 여기 안 걸린다.** `smoke.spec.ts`가 `photo_path: "u/2026-08-28.jpg"`를 쓰지만 그건
+`page.route`로 갈아끼운 가짜 PostgREST 응답이라 실제 경로 규약과 무관하다. 이전 판에 "e2e와
+로컬 QA 시드 스크립트가 포맷을 하드코딩한다"고 적혀 있었으나 **시드 스크립트는 레포에 없고**
+e2e는 포맷에 기대지 않는다(2026-09-05 확인).
+
+**`user_id`는 더 짧은 누출 경로로도 샌다.** `photo_path`로 복원할 것도 없이 `GET /rest/v1/cloud_entries?select=user_id`가 그대로 응답한다. `0003`이 좌표는 컬럼 권한으로 막았지만 `user_id`는 남겼다 — `entry_feed`가 `security_invoker`라 `is_mine`을 계산하려면 조회자에게 그 컬럼 권한이 필요하고, `fetchMyTodayEntry`도 그 컬럼으로 필터한다(→ `ERD.md` "컬럼 권한"). 이걸 막으려면 위 항목들과 **같이** 움직여야 한다.
 
 덧붙여 이 포맷은 **규약이지 제약이 아니다.** `POST /api/entries/confirm`은 클라이언트가 보낸
 `photoPath` 문자열을 검증 없이 그대로 insert한다 — 포맷을 실제로 붙잡고 있는 건 `CameraView`의
@@ -60,12 +68,14 @@
 `<img>`가 안 실리므로 드러나지 않는다. 서버에서 entries를 프리페치하는 순간 캐시된 이미지의
 `onLoad`가 유실돼 **사진이 `opacity-0`으로 영영 안 보일 수 있다.** 프리페치 작업과 **같은 커밋에서**
 함께 고쳐야 한다.
+→ `src/shared/ui/PlaceholderPhoto.tsx`
 
 ### 2-3. 사진첩 조회를 서버 필터로 → **로더 대기가 눈에 띄게 길어지면**
 
 `CalendarView`가 전체 기록을 받아 `isMine`으로 걸러 대부분 버린다(→ `FLOWS.md` §3).
 지금 규모에선 조회 훅을 피드와 공유하는 게 맞다. 옮길 땐 `entry_feed`가 뷰라
 `.eq("is_mine", true)`가 PostgREST에서 그대로 먹고, 그때 클라이언트 필터 한 줄도 같이 지워진다.
+→ `src/views/calendar/ui/CalendarView.tsx`의 `allEntries.filter((e) => e.isMine)`
 
 ### 2-4. `useCloudEntries`의 최초 조회 토큰 누락 → **빈 사진첩 제보가 들어오면**
 
@@ -75,14 +85,12 @@
 (`INITIAL_SESSION`)는 최초 조회와 겹친다고 건너뛰므로 자동 복구 지점이 없고, 실제
 로그아웃→로그인으로 user id가 바뀌기 전까지 그대로다.
 코드상 깨질 확률은 낮다 — `auth/callback`이 서버에서 쿠키를 굽고 풀 리다이렉트를 한다.
+→ `src/entities/cloud-entry/model/use-cloud-entries.ts`
 
 ### 2-6. 셔터의 "위치 확인 중..." 배지 되살리기 → **fix가 정말 차가울 때가 문제가 되면**
 
-진행 배지는 뺐다(→ `UI-SYSTEM.md` "결정" §8). 대기 자체가 없어졌다고 봤기 때문인데, 실제로는
-**권한을 이미 허용한 재방문 사용자가 세션 첫 촬영에서 대기를 그대로 물고 있었다** — 게이트가
-`permissions.query`만 보고 통과시키느라 좌표를 한 번도 안 받아서 캐시가 비어 있었다.
-2026-09-03에 `CameraLive`가 마운트될 때 미리 한 번 받도록 고쳤다(브라우저로 확인: 셔터 전
-위치 요청 0회 → 1회).
+진행 배지는 없다. 재방문자가 물고 있던 대기는 미리 받기로 없앴다 — 경위와 현재 동작은
+→ `UI-SYSTEM.md` "결정" §8, 회귀는 `e2e/smoke.spec.ts`의 "셔터를 누르기 전에 위치를 미리 받아둔다"가 막는다.
 
 **남은 건 fix 자체가 차가운 경우다.** 실내·GPS 콜드 스타트라 미리 받기도 8초를 다 쓰면 셔터도
 같이 기다린다. 이건 캐시로 못 줄이니 그때는 배지를 되살리는 게 맞다.
@@ -113,7 +121,7 @@
 정할지가 남은 결정이다.
 
 이름이 없어서 **공유 카드 워터마크가 플레이스홀더 문자열 그대로 나가고 있다**
-(`src/features/share-card/lib/share-card.ts`의 `"서비스 로고 · 나도 오늘 구름 기록하기"`).
+(`src/features/share-card/lib/share-card.ts`의 `ctx.fillText("서비스 로고 · 나도 오늘 구름 기록하기", ...)`).
 카드 이미지 내보내기는 바이럴 도달용 기능이라(→ `PRODUCT.md` "확정된 제품 스펙" 외부 공유)
 이름이 정해지기 전까지 그 목적을 못 한다.
 
@@ -132,10 +140,6 @@
 
 ## 4. 확인만 하면 되는 것
 
-- [ ] **`0003_revoke_coords_select.sql`을 SQL Editor에서 실행하고 anon 키로 확인.**
-      마이그레이션은 써뒀지만 아직 **적용 전이다.** 적용 후 확인:
-      `?select=lat` → `42501 permission denied for column lat`,
-      `?select=location_dong` → 정상, `entry_feed?select=is_mine` → 정상(뷰가 안 깨졌는지).
 - [ ] **카카오 로그인 → 사진첩에서 내 기록이 실제로 보이는지 브라우저로 한 번.**
       `ffbd26f`에서 사진첩이 `is_mine`에 전적으로 의존하게 됐는데, 실패하면
       에러 없이 빈 화면이라 나중에 재현이 어렵다(2-4 참고).

@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { AppShell } from "@/widgets/app-shell";
-import { BRUTAL_SM } from "@/shared/ui/tokens";
+import { BRUTAL_SM, LIST_CONTAINER, LIST_ITEM } from "@/shared/ui/tokens";
 import { ChevronRight } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
@@ -94,10 +95,12 @@ export const SettingsView = () => {
 
   return (
     <AppShell theme="calendar" title="설정">
-      <div className="flex flex-1 flex-col gap-6 p-4">
-        <h1 className="px-1 pt-1 text-xl font-extrabold">설정</h1>
+      <motion.div {...LIST_CONTAINER} className="flex flex-1 flex-col gap-6 p-4">
+        <motion.h1 {...LIST_ITEM} className="px-1 pt-1 text-xl font-extrabold">
+          설정
+        </motion.h1>
 
-        <section className="flex flex-col gap-2">
+        <motion.section {...LIST_ITEM} className="flex flex-col gap-2">
           <p className="px-1 text-xs font-bold tracking-wide text-neutral-500 uppercase">계정</p>
           <div className={`${BRUTAL_SM} flex items-center gap-3 bg-white p-4`}>
             <div
@@ -110,14 +113,14 @@ export const SettingsView = () => {
               <p className="text-xs text-neutral-500">카카오로 로그인됨</p>
             </div>
           </div>
-        </section>
+        </motion.section>
 
-        <section className="flex flex-col gap-2">
+        <motion.section {...LIST_ITEM} className="flex flex-col gap-2">
           <p className="px-1 text-xs font-bold tracking-wide text-neutral-500 uppercase">일반</p>
           <SettingRow label="로그아웃" onClick={handleLogout} />
-        </section>
+        </motion.section>
 
-        <section className="flex flex-col gap-2">
+        <motion.section {...LIST_ITEM} className="flex flex-col gap-2">
           <p className="px-1 text-xs font-bold tracking-wide text-rose-500 uppercase">위험 구역</p>
           <SettingRow
             label="탈퇴하기"
@@ -125,8 +128,8 @@ export const SettingsView = () => {
             disabled={isBusy}
             danger
           />
-        </section>
-      </div>
+        </motion.section>
+      </motion.div>
 
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <AlertDialogContent>

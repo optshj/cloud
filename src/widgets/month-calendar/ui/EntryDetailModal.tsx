@@ -85,7 +85,7 @@ export const EntryDetailModal = ({
               variant="thin"
               size="icon"
               aria-label="닫기"
-              className="absolute -top-3 -right-3 z-10 rotate-2"
+              className="absolute -top-3 -right-3 z-10 bg-rose-200"
             >
               <X className="h-4 w-4" />
             </Button>

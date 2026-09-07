@@ -47,7 +47,13 @@ AI 생성 구간에서 사진을 보여주려고 `Stage` 타입에 `photoDataUrl
 - **모달 열고닫기 → Radix `data-state` + CSS 키프레임.** `AnimatePresence`로 Radix Dialog를 감싸면 언마운트 타이밍이 어긋나 exit가 씹힌다.
 - **목록 stagger, 좋아요 하트 팝, 드래그 → framer-motion.** DOM 마운트에 걸친 모션은 CSS만으로 안 된다.
 
+- **누름 피드백 → CSS `:active`.** 하드섀도 오프셋만큼 밀어넣고 섀도를 지운다(`tokens.ts`의 `PRESS`). 원래 `Button` 안에 있었는데 하드섀도를 쓰는 건 버튼만이 아니라서(폴라로이드 카드·하단 네비 탭) 토큰으로 올렸다 — **누름 어휘는 앱 전체가 하나다.** `scale`로 줄이는 별개 어휘를 새로 만들지 않는다.
+
 톤은 짧고 단단하게(120~200ms, ease-out). 길게 출렁이는 elastic은 브루탈리즘과 안 맞는다 — 자세한 기준은 `interaction-design` 스킬.
+
+**같은 동작은 화면이 달라도 같은 모션을 쓴다.** 좋아요 하트가 상세 모달에만 팝이 있고 목록 카드엔 없어서 같은 탭이 자리마다 다르게 반응했다 — `HEART_TAP`/`HEART_POP`으로 묶어 두 곳이 같은 걸 스프레드한다. 목록 진입도 마찬가지로 `LIST_CONTAINER`/`LIST_ITEM` 한 벌이다(사진첩·피드·설정).
+
+**`as const` 토큰에 키프레임 배열을 담지 않는다.** `[1, 1.35, 1]`이 readonly가 돼 framer-motion의 `Variants`(가변 배열)와 안 맞는다 — 배열이 들어가는 토큰은 `MotionProps`로 타입을 명시한다.
 
 **모달은 상시 마운트하고 `open`만 토글한다.** exit 클래스는 처음부터 붙어 있었는데 재생되지 않았다 — 범인은 프리미티브가 아니라 호출부였다. `{selected && <Modal/>}`로 조건부 마운트하면 부모가 먼저 사라져 Radix가 `data-state="closed"`로 넘어갈 틈이 없다. 그래서 두 모달은 `entry`가 `null`이면 닫힌 것으로 보고 호출부가 항상 렌더한다. 닫히는 동안 그릴 데이터가 없어지는 건 `shared/lib/use-last-non-null.ts`가 맡는다 — **ref가 아니라 state로** 붙잡는다(렌더 중 ref 접근은 React 컴파일러 룰이 막는다). 언마운트가 없으니 내부 확인창 state는 닫을 때 직접 접어줘야 다음에 열 때 바로 뜨지 않는다.
 

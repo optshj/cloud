@@ -20,10 +20,11 @@ description: cloud(구름 수집 서비스) 프로젝트에서 Supabase(Auth/Pos
 ## Route Handler 작성 관례
 
 1. **항상 먼저 인증 체크**: `const { data: { user } } = await supabase.auth.getUser()`, 없으면 401 + 한국어 에러 메시지(`{ error: "로그인이 필요해요" }`).
-2. **바디는 수동으로 타입 캐스팅 후 필수값 검증** — zod 등 검증 라이브러리는 안 쓴다(설치돼 있지 않음). `typeof` 체크로 충분히 좁힌다.
-3. **클라이언트 값을 신뢰하지 않고 서버가 권위값을 다시 계산한다** — 날짜(`seoulDateKey()`), 위치(`reverseGeocodeToDong(lat, lng)`)는 클라이언트가 보낸 값을 그대로 믿지 않고 서버에서 재계산/재검증한다.
-4. **Postgres 에러 코드로 사용자 메시지를 분기** — 예: `error.code === "23505"`(unique violation) → "오늘은 이미 기록했어요" 같은 구체적 메시지. 뭉뚱그린 "실패했습니다"는 쓰지 않는다.
-5. **응답에 정확한 GPS 좌표를 담지 않는다** — DB에는 `lat`/`lng`를 저장해도 되지만(서버 내부용), API 응답은 `location_dong`(변환된 동 단위)만 내려준다. `privacy-security` 스킬 참고.
+2. **경로/바디에 userId를 두지 않는다** — v1은 프로필·타인 조회가 없어 모든 API가 "내 계정"만 다룬다. `auth.getUser()`가 돌려주는 `user.id`가 곧 신원이니 `/api/users/{userId}/...` 같은 경로나 클라이언트가 보낸 `userId` 필드를 받지 않는다. 받으면 그 값이 세션과 일치하는지 매 핸들러마다 검증해야 하는 IDOR 위험만 늘어난다 — 아예 안 받는 게 그 실수 가능성 자체를 없앤다.
+4. **바디는 수동으로 타입 캐스팅 후 필수값 검증** — zod 등 검증 라이브러리는 안 쓴다(설치돼 있지 않음). `typeof` 체크로 충분히 좁힌다.
+5. **클라이언트 값을 신뢰하지 않고 서버가 권위값을 다시 계산한다** — 날짜(`seoulDateKey()`), 위치(`reverseGeocodeToDong(lat, lng)`)는 클라이언트가 보낸 값을 그대로 믿지 않고 서버에서 재계산/재검증한다.
+6. **Postgres 에러 코드로 사용자 메시지를 분기** — 예: `error.code === "23505"`(unique violation) → "오늘은 이미 기록했어요" 같은 구체적 메시지. 뭉뚱그린 "실패했습니다"는 쓰지 않는다.
+7. **응답에 정확한 GPS 좌표를 담지 않는다** — DB에는 `lat`/`lng`를 저장해도 되지만(서버 내부용), API 응답은 `location_dong`(변환된 동 단위)만 내려준다. `privacy-security` 스킬 참고.
 
 ## AI Gateway 연동
 

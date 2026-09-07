@@ -83,6 +83,26 @@ export const CalendarView = () => {
     );
   }
 
+  // 사진첩은 내 기록만 보여주는 화면이라 비로그인이면 볼 게 없다 — 빈 달력을 보여줘봤자
+  // 혼란만 주니 캘린더 자체를 숨기고 로그인 유도만 보여준다.
+  if (!user) {
+    return (
+      <AppShell theme="calendar" title="사진첩">
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 px-4 py-8">
+          <div className={`${BRUTAL} -rotate-2 bg-white p-2 pb-6`}>
+            <div className="flex h-28 w-28 items-center justify-center border border-dashed border-black/25 bg-violet-50">
+              <Cloud className="h-10 w-10 text-violet-200" fill="currentColor" strokeWidth={0} />
+            </div>
+          </div>
+          <p className="text-sm font-bold text-neutral-500">
+            로그인하면 내가 모은 구름을 볼 수 있어요
+          </p>
+          <KakaoLoginButton />
+        </div>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell theme="calendar" title="사진첩">
       <motion.div {...LIST_CONTAINER} className="flex flex-col">
@@ -149,13 +169,8 @@ export const CalendarView = () => {
                   />
                 </div>
               </div>
-              {/* 사진첩은 내 기록만 보여주므로 비로그인은 항상 빈 화면이 된다 —
-                  "기록된 구름이 없어요"는 원인을 가린다(기록은 있고, 내 게 없을 뿐). */}
-              <p className="text-sm font-bold text-neutral-500">
-                {user ? "이 달엔 기록된 구름이 없어요" : "로그인하면 내가 모은 구름을 볼 수 있어요"}
-              </p>
-              {!user && <KakaoLoginButton />}
-              {user && isThisMonth && (
+              <p className="text-sm font-bold text-neutral-500">이 달엔 기록된 구름이 없어요</p>
+              {isThisMonth && (
                 <Button asChild size="sm" className="bg-violet-100">
                   <Link href="/">
                     <Camera className="h-4 w-4" />

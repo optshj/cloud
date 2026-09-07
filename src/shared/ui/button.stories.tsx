@@ -74,8 +74,8 @@ export const CallerProvidesColor: Story = {
       <Button {...args} className="bg-emerald-200">
         민트
       </Button>
-      <Button {...args} className="bg-gradient-to-b from-sky-200 to-sky-100">
-        그라데이션
+      <Button {...args} className="bg-sky-200">
+        하늘
       </Button>
     </div>
   ),

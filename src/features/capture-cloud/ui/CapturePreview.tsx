@@ -68,7 +68,7 @@ export const CapturePreview = ({
           onClick={onRecord}
           disabled={isSaving}
           aria-busy={isSaving}
-          className="bg-gradient-to-r from-violet-200 to-violet-300"
+          className="bg-violet-300"
         >
           {isSaving ? "기록하는 중..." : "기록하기"}
         </Button>

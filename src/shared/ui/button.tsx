@@ -3,11 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { Slot } from "radix-ui";
 
 import { cn } from "@/shared/lib/cn";
-import { BRUTAL, BRUTAL_SM } from "@/shared/ui/tokens";
-
-// 섀도 오프셋만큼 밀어넣고 섀도를 없애 "눌린" 느낌을 낸다. 호출부 10여 곳에 복붙돼 있던 문자열.
-const PRESS =
-  "transition-transform duration-150 ease-out active:translate-x-[2px] active:translate-y-[2px] active:shadow-none";
+import { BRUTAL, BRUTAL_SM, PRESS } from "@/shared/ui/tokens";
 
 // variant는 "프레임 두께/톤"만 담당한다 — 배경색은 화면마다 제각각(연보라/노랑/민트/흰색/그라데이션)이라
 // 억지로 토큰화하지 않고 호출부에서 `className="bg-*"`로 넘긴다.
