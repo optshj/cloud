@@ -19,7 +19,7 @@ export const BottomNav = () => {
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   return (
-    <nav className="flex items-end justify-around px-4 py-1">
+    <nav className="relative z-[60] flex items-end justify-around px-4 py-1">
       {TABS.map((tab) => (
         <NavTab key={tab.href} {...tab} active={isActive(tab.href)} />
       ))}
