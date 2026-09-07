@@ -31,6 +31,9 @@ export const usePageTransition = () => {
 
 // 각 View가 자신의 로딩 상태를 그대로 넘기면 된다: usePageReady(!isLoading).
 // PageTransitionProvider 밖(예: 스토리북)에서도 안전하게 no-op으로 동작한다.
+// 계약: BottomNav 탭(카메라/사진첩/피드)이 이동하는 View는 반드시 이 훅을 호출해야
+// 한다 — 기본값이 "안 준비됨"이라, 안 부르면 그 화면으로의 모든 전환이 매번
+// MAX_COVER_WAIT_MS(4초)를 다 채우고서야 걷힌다. 놓쳐도 lint/타입에서 안 걸린다.
 export const usePageReady = (isReady: boolean) => {
   const setPageReady = useContext(SetPageReadyContext);
   useEffect(() => {

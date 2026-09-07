@@ -101,6 +101,24 @@ e2e는 포맷에 기대지 않는다(2026-09-05 확인).
 `MediaStreamTrack`의 zoom constraint로 하드웨어 줌을 쓸 수 있는지 기기 지원을 확인한 뒤 추가한다.
 → `src/features/capture-cloud/lib/capture-frame.ts`
 
+### 2-9. `PageTransition`의 준비 신호가 트랜지션별로 구분 안 됨 → **View가 로딩을 재발화할 때**
+
+(2026-09-07 확인, 리뷰에서 발견)
+
+탭 전환 오버레이는 목적지 View가 `usePageReady(!isLoading)`로 "준비됨"을 알릴 때까지 화면을
+덮은 채 기다린다(`PageTransition.tsx`). 이 신호는 `isPageReadyRef`/`onPageReadyRef` 두
+module 스코프 ref로 관리되는데, **어느 트랜지션의 신호인지 구분하지 않는다** — 새 트랜지션
+시작 시 리셋만 할 뿐, 이미 마운트된 이전 화면이 나중에 다시 `isReady`를 뒤집으면(예: 포커스
+복귀 시 refetch로 `isLoading`이 true→false로 재발화) 그 신호가 엉뚱하게 새 트랜지션의 대기를
+조기 종료시킬 수 있다.
+
+`useCloudEntries`/`useSession`이 지금은 `isLoading`을 마운트당 한 번만 false로 떨어뜨리는
+단조(monotonic) 값이라 **오늘은 재현되지 않는다** — View 구현이 우연히 지켜주는 불변식이지
+타입으로 강제된 게 아니다. **어떤 View가 `usePageReady`에 refetch·포커스 재검증처럼 뒤늦게
+다시 뒤집힐 수 있는 조건을 넣는 순간** 조용히 깨진다. 그때 트랜지션마다 세대(generation)
+토큰을 붙여 `setPageReady`가 "지금 활성 트랜지션의 신호인지"를 확인하도록 고친다.
+→ `src/widgets/app-shell/ui/PageTransition.tsx`
+
 ### 2-8. e2e 확장 2건 → **각각 세션 주입/모킹 방법이 정해지면**
 
 - **로그인 세션 주입 방식이 정해지면** 촬영 → 기록 플로우 자체를 e2e로 확장한다. 지금은 실제

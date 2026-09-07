@@ -5,7 +5,7 @@ import type { ComponentType, MouseEvent } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Camera, Heart, Images } from "lucide-react";
-import { PRESS, THEME, type ThemeKey } from "@/shared/ui/tokens";
+import { THEME, type ThemeKey } from "@/shared/ui/tokens";
 import { usePageTransition } from "./PageTransition";
 
 const TABS = [
@@ -82,12 +82,19 @@ const NavTab = ({
     <Link href={href} onClick={handleClick} className="flex flex-1 flex-col items-center gap-1.5">
       {/* pendingHref 덕에 클릭 즉시 이 인스턴스에서 active가 바뀌므로 transition-transform이
           진짜로 들어올려주는 걸 보여준다 — 새 페이지가 마운트된 뒤엔 이미 이 위치라 다시
-          안 움직인다. (키프레임 방식은 마운트할 때마다 다시 재생돼 두 번 튀는 버그였다.) */}
+          안 움직인다. (키프레임 방식은 마운트할 때마다 다시 재생돼 두 번 튀는 버그였다.)
+          PRESS 토큰을 그대로 안 쓴다 — PRESS는 transition-transform duration-150을
+          같이 갖고 있어서 여기 필요한 duration-200과 같은 속성을 두고 부딪힌다. 또
+          PRESS의 active:translate-y-[2px]는 CSS 명시도상 -translate-y-2.5(들림)를
+          항상 이겨서, 이미 선택된 탭을 누르고 있는 동안 들림→눌림으로 순간 튄다 —
+          그 탭은 클릭해도 핸들러가 조기 리턴하는 no-op이니 눌림 신호 자체를 뺀다. */}
       <span
         ref={badgeRef}
-        className={`${PRESS} flex items-center justify-center rounded-2xl border-[2.5px] border-black shadow-[3px_3px_0_0_#000] transition-transform duration-200 ease-out ${
-          isCamera ? "h-12 w-12" : "h-11 w-11"
-        } ${active ? `${t.navActive} -translate-y-2.5` : `${t.navIdle} translate-y-0`}`}
+        className={`flex items-center justify-center rounded-2xl border-[2.5px] border-black shadow-[3px_3px_0_0_#000] transition-transform duration-200 ease-out ${
+          active ? "" : "active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+        } ${isCamera ? "h-12 w-12" : "h-11 w-11"} ${
+          active ? `${t.navActive} -translate-y-2.5` : `${t.navIdle} translate-y-0`
+        }`}
       >
         <Icon
           className={`${isCamera ? "h-6 w-6" : "h-5 w-5"} ${
