@@ -21,6 +21,7 @@ diff가 AI 코멘트 생성(Anthropic SDK/AI Gateway 연동) 관련 코드를 �
 3. 응답에 원본 GPS 좌표나 service role 키가 노출되지 않는지 확인한다 — `privacy-security` 스킬.
 4. fetch 캐싱 의도(`revalidate`/`tags`/`no-store`)를 명시하고 뮤테이션 후 관련 캐시를 무효화한다 — `nextjs-app-router` 스킬.
 5. Supabase 호출은 `entities/*/model/*.api.ts`에 두고 UI 컴포넌트가 직접 호출하지 않는다 — `fsd-slice` 스킬의 데이터 접근 규칙.
+6. API 스펙이 바뀌면(Route Handler 추가/변경, 요청·응답 필드 변화, 에러 코드 등) 같은 작업 안에서 `docs/API-DOCS.md`를 갱신한다 — 없으면 새로 만든다. `frontend-dev`는 이 문서를 read-only로만 참고하므로, 최신 상태를 유지할 책임은 여기(api-developer)에 있다. 엔드포인트별로 최소한 경로·메서드·인증 요건·요청/응답 스키마·에러 케이스를 적는다.
 
 ## 하지 않는 것
 
