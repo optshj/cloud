@@ -1,22 +1,36 @@
+import type { MotionProps } from "framer-motion";
+
 // 네오브루탈리즘 공통 톤: 굵은 검은 테두리 + 블러 없는 오프셋 하드섀도
 export const BRUTAL = "border-[3px] border-black shadow-[5px_5px_0_0_#000]";
 export const BRUTAL_SM = "border-2 border-black shadow-[3px_3px_0_0_#000]";
 
+// 누르는 느낌: 섀도 오프셋만큼 밀어넣고 섀도를 없앤다. 원래 Button 안에 있었는데,
+// 하드섀도를 쓰는 건 버튼만이 아니라서(폴라로이드 카드·하단 네비 탭) 같은 어휘를 공유하도록 올렸다.
+export const PRESS =
+  "transition-transform duration-150 ease-out active:translate-x-[2px] active:translate-y-[2px] active:shadow-none";
+
+// 그라데이션 대신 header/body를 서로 다른 단색 레이어로 둔다 — 네오브루탈리즘은 블렌드보다 딱 떨어지는 색면이 낫다.
 export const THEME = {
   camera: {
-    header: "bg-gradient-to-b from-sky-300 to-sky-200",
-    body: "bg-gradient-to-b from-sky-100 to-sky-50",
-    active: "bg-sky-200",
+    header: "bg-sky-300",
+    body: "bg-[#eaf4fc]",
+    navIdle: "bg-[#bfe0f7]",
+    navActive: "bg-[#4f9fe0]",
+    navMark: "bg-[#8cc7ef]",
   },
   calendar: {
-    header: "bg-gradient-to-b from-violet-300 to-violet-200",
-    body: "bg-gradient-to-b from-violet-100 to-violet-50",
-    active: "bg-violet-200",
+    header: "bg-violet-300",
+    body: "bg-[#fdf6e3]",
+    navIdle: "bg-[#f6e2a0]",
+    navActive: "bg-[#f2c230]",
+    navMark: "bg-[#f6d466]",
   },
   feed: {
-    header: "bg-gradient-to-b from-rose-300 to-orange-200",
-    body: "bg-gradient-to-b from-rose-100 to-orange-50",
-    active: "bg-rose-200",
+    header: "bg-rose-300",
+    body: "bg-[#fdeef0]",
+    navIdle: "bg-[#f8c6cd]",
+    navActive: "bg-[#e8536b]",
+    navMark: "bg-[#f0899b]",
   },
 } as const;
 
@@ -43,3 +57,14 @@ export const LIST_ITEM = {
     },
   },
 } as const;
+
+// 좋아요 하트 — 목록 카드와 상세 모달이 같은 하트를 쓰므로 어휘를 한 벌만 둔다.
+// 버튼은 누르는 동안 눌리고(HEART_TAP), 하트는 켜지는 순간에만 한 번 팡 튄다 — 취소할 땐 조용히.
+export const HEART_TAP = { whileTap: { scale: 0.85 } } as const;
+
+// `as const`를 쓰면 키프레임 배열이 readonly가 돼 framer-motion의 Variants(가변 배열)와 안 맞는다 —
+// 배열을 담는 토큰은 as const 대신 타입을 명시한다.
+export const HEART_POP: MotionProps = {
+  variants: { idle: { scale: 1 }, popped: { scale: [1, 1.35, 1] } },
+  transition: { duration: 0.28, ease: "easeOut" },
+};

@@ -15,7 +15,7 @@ export const AppShell = ({
 }) => {
   const t = THEME[theme];
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-md flex-col bg-white">
+    <div id="app-frame" className={`mx-auto flex h-dvh w-full max-w-md flex-col ${t.body}`}>
       <TopHeader headerClass={t.header} title={title} />
       <main className={`no-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto ${t.body}`}>
         {children}

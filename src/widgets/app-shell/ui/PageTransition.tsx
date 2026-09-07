@@ -1,0 +1,141 @@
+"use client";
+
+import { createContext, useCallback, useContext, useRef } from "react";
+import type { ReactNode } from "react";
+import { THEME, type ThemeKey } from "@/shared/ui/tokens";
+
+// 프로토타입에서 검증된 값 — 임의로 조정하지 않는다.
+const WIPE_SIZE = 64;
+const FADE_DELAY_MS = 80;
+const FADE_DURATION_MS = 180;
+
+type TriggerTransition = (originEl: HTMLElement, theme: ThemeKey) => void;
+
+const PageTransitionContext = createContext<TriggerTransition | null>(null);
+
+export const usePageTransition = () => {
+  const triggerTransition = useContext(PageTransitionContext);
+  if (!triggerTransition) {
+    throw new Error("usePageTransition은 PageTransitionProvider 내부에서만 쓸 수 있습니다.");
+  }
+  return { triggerTransition };
+};
+
+// wipe 배경색은 THEME.body(bg-[#xxxxxx] 형태)에서 그대로 뽑아 쓴다 — 별도 hex 토큰을
+// 새로 두면 두 값이 어긋날 수 있다(오버레이가 덮는 색과 실제 페이지 배경색은 반드시 일치해야 함).
+const getBodyColor = (theme: ThemeKey) => {
+  const hex = THEME[theme].body.match(/#[0-9a-fA-F]{6}/)?.[0];
+  if (!hex) {
+    console.warn(`[PageTransition] THEME.${theme}.body에서 hex를 못 찾았다 — 흰색으로 폴백한다.`);
+  }
+  return hex ?? "#ffffff";
+};
+
+export const PageTransitionProvider = ({ children }: { children: ReactNode }) => {
+  const wipeRef = useRef<HTMLDivElement>(null);
+  const cleanupRef = useRef<(() => void) | null>(null);
+
+  const triggerTransition = useCallback<TriggerTransition>((originEl, theme) => {
+    const wipe = wipeRef.current;
+    const frameEl = document.getElementById("app-frame");
+    if (!wipe || !frameEl) return;
+
+    const isReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (isReducedMotion) return;
+
+    // 연타로 재트리거될 때 이전 애니메이션의 리스너/타이머가 겹치지 않게 먼저 정리한다.
+    cleanupRef.current?.();
+
+    const frameRect = frameEl.getBoundingClientRect();
+    const originRect = originEl.getBoundingClientRect();
+    const x = originRect.left + originRect.width / 2 - frameRect.left;
+    const y = originRect.top + originRect.height / 2 - frameRect.top;
+
+    const corners: Array<[number, number]> = [
+      [0, 0],
+      [frameRect.width, 0],
+      [0, frameRect.height],
+      [frameRect.width, frameRect.height],
+    ];
+    const maxDist = Math.max(...corners.map(([cx, cy]) => Math.hypot(cx - x, cy - y)));
+    const scaleEnd = (maxDist / (WIPE_SIZE / 2)) * 1.15;
+
+    wipe.style.left = `${x}px`;
+    wipe.style.top = `${y}px`;
+    wipe.style.background = getBodyColor(theme);
+    wipe.style.opacity = "1";
+    wipe.style.transition = "none";
+    wipe.style.transform = "translate(-50%, -50%) scale(0)";
+    void wipe.offsetHeight; // reflow 강제 — transition:none이 실제로 적용된 뒤에 다음 단계로 넘어가게
+
+    wipe.style.transition = "transform 1.05s cubic-bezier(0.32, 0.72, 0.18, 1)";
+    const rafId = requestAnimationFrame(() => {
+      wipe.style.transform = `translate(-50%, -50%) scale(${scaleEnd})`;
+    });
+
+    const timeoutIds: number[] = [];
+
+    const handleTransitionEnd = (e: TransitionEvent) => {
+      if (e.propertyName !== "transform") return;
+      wipe.removeEventListener("transitionend", handleTransitionEnd);
+
+      const fadeTimeoutId = window.setTimeout(() => {
+        wipe.style.transition = `opacity ${FADE_DURATION_MS}ms ease-out`;
+        wipe.style.opacity = "0";
+
+        const resetTimeoutId = window.setTimeout(() => {
+          wipe.style.transition = "none";
+          wipe.style.transform = "translate(-50%, -50%) scale(0)";
+          wipe.style.opacity = "1";
+        }, FADE_DURATION_MS);
+        timeoutIds.push(resetTimeoutId);
+      }, FADE_DELAY_MS);
+      timeoutIds.push(fadeTimeoutId);
+    };
+    wipe.addEventListener("transitionend", handleTransitionEnd);
+
+    cleanupRef.current = () => {
+      cancelAnimationFrame(rafId);
+      wipe.removeEventListener("transitionend", handleTransitionEnd);
+      timeoutIds.forEach((id) => window.clearTimeout(id));
+    };
+  }, []);
+
+  return (
+    <PageTransitionContext.Provider value={triggerTransition}>
+      {children}
+      <svg width="0" height="0" aria-hidden="true" className="absolute">
+        <defs>
+          <filter id="paint-edge" x="-60%" y="-60%" width="220%" height="220%">
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0.025 0.05"
+              numOctaves={3}
+              seed={7}
+              result="noise"
+            />
+            <feDisplacementMap
+              in="SourceGraphic"
+              in2="noise"
+              scale={48}
+              xChannelSelector="R"
+              yChannelSelector="G"
+            />
+          </filter>
+        </defs>
+      </svg>
+      <div className="pointer-events-none fixed inset-0 z-50 mx-auto h-dvh w-full max-w-md overflow-hidden">
+        <div
+          ref={wipeRef}
+          aria-hidden="true"
+          className="absolute h-16 w-16 rounded-full"
+          style={{
+            transform: "translate(-50%, -50%) scale(0)",
+            transformOrigin: "center",
+            filter: "url(#paint-edge)",
+          }}
+        />
+      </div>
+    </PageTransitionContext.Provider>
+  );
+};

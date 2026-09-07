@@ -1,92 +1,91 @@
 "use client";
 
-import type { ComponentType } from "react";
+import { useRef } from "react";
+import type { ComponentType, MouseEvent } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Camera, Heart, Images } from "lucide-react";
-import { THEME } from "@/shared/ui/tokens";
+import { PRESS, THEME, type ThemeKey } from "@/shared/ui/tokens";
+import { usePageTransition } from "./PageTransition";
 
-const SIDE_TABS = [
-  {
-    href: "/calendar",
-    label: "사진첩",
-    Icon: Images,
-    activeBg: THEME.calendar.active,
-    rotate: "-rotate-[7deg]",
-  },
-  {
-    href: "/feed",
-    label: "피드",
-    Icon: Heart,
-    activeBg: THEME.feed.active,
-    rotate: "rotate-[6deg]",
-  },
+const TABS = [
+  { href: "/calendar", label: "사진첩", Icon: Images, theme: "calendar" as ThemeKey },
+  { href: "/", label: "카메라", Icon: Camera, theme: "camera" as ThemeKey },
+  { href: "/feed", label: "피드", Icon: Heart, theme: "feed" as ThemeKey },
 ];
 
 export const BottomNav = () => {
   const pathname = usePathname();
-  const isActive = (href: string) => pathname.startsWith(href);
-  const isCameraActive = pathname === "/";
+  const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   return (
-    <nav className="relative z-20 flex items-center justify-around border-t-[3px] border-black bg-white px-4 py-1">
-      <SideTab {...SIDE_TABS[0]} active={isActive(SIDE_TABS[0].href)} />
-
-      {/* nav 높이에 영향 안 주도록 absolute로 띄운다 — 박스가 flow에 잡히면 그 높이만큼 bar가 커진다.
-          absolute라 위치는 DOM 순서와 무관하지만, 탭/스크린리더 순서를 시각 순서(사진첩→카메라→피드)와
-          맞추려면 여기(두 SideTab 사이)에 있어야 한다. */}
-      <Link
-        href="/"
-        aria-label="카메라"
-        className="absolute top-0 left-1/2 flex -translate-x-1/2 -translate-y-[28%] flex-col items-center gap-1 active:scale-95"
-      >
-        <span
-          className={`flex h-14 w-14 items-center justify-center rounded-2xl border-[3px] border-black shadow-[3px_3px_0_0_#000] ${
-            isCameraActive ? "bg-sky-300" : "bg-white"
-          }`}
-        >
-          <Camera className="h-6 w-6" />
-        </span>
-        <span
-          className={`text-[13px] ${isCameraActive ? "font-extrabold" : "font-medium text-neutral-500"}`}
-        >
-          카메라
-        </span>
-      </Link>
-
-      {/* 카메라 버튼이 absolute라 flow에 안 잡힌다 — 양옆 탭이 가운데로 쏠리지 않도록 자리만 잡아준다. */}
-      <div aria-hidden className="flex-1" />
-      <SideTab {...SIDE_TABS[1]} active={isActive(SIDE_TABS[1].href)} />
+    <nav className="flex items-end justify-around px-4 py-1">
+      {TABS.map((tab) => (
+        <NavTab key={tab.href} {...tab} active={isActive(tab.href)} />
+      ))}
     </nav>
   );
 };
 
-const SideTab = ({
+const NavTab = ({
   href,
   label,
   Icon,
-  activeBg,
-  rotate,
+  theme,
   active,
 }: {
   href: string;
   label: string;
   Icon: ComponentType<{ className?: string }>;
-  activeBg: string;
-  rotate: string;
+  theme: ThemeKey;
   active: boolean;
 }) => {
+  const t = THEME[theme];
+  const isCamera = theme === "camera";
+  // 옐로(사진첩)는 활성 배경도 밝아서 아이콘을 검정으로 유지한다 — 나머지는 배경이 짙어지니 흰색으로 뒤집는다.
+  const isActiveIconDark = theme === "calendar";
+  const badgeRef = useRef<HTMLSpanElement>(null);
+  const router = useRouter();
+  const { triggerTransition } = usePageTransition();
+
+  const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
+    const isPlainClick = e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
+    if (!isPlainClick) return; // ctrl/cmd/shift/middle-click 등은 Link 기본 동작(새 탭 열기)을 그대로 둔다
+    e.preventDefault();
+    if (active) return; // 이미 활성화된 탭 재클릭 — 전환/이동 없음
+
+    if (badgeRef.current) {
+      triggerTransition(badgeRef.current, theme);
+    }
+    router.push(href);
+  };
+
   return (
-    <Link href={href} className="flex flex-1 flex-col items-center gap-1.5 active:scale-95">
+    <Link href={href} onClick={handleClick} className="flex flex-1 flex-col items-center gap-1.5">
       <span
-        className={`flex items-center justify-center rounded-lg border-[3px] border-black px-2.5 py-1.5 shadow-[3px_3px_0_0_#000] ${rotate} ${
-          active ? activeBg : "bg-white"
-        }`}
+        ref={badgeRef}
+        className={`${PRESS} flex items-center justify-center rounded-2xl border-[2.5px] border-black shadow-[3px_3px_0_0_#000] transition-transform duration-200 ease-out ${
+          isCamera ? "h-12 w-12" : "h-11 w-11"
+        } ${active ? `${t.navActive} animate-nav-rise -translate-y-2.5` : `${t.navIdle} translate-y-0`}`}
       >
-        <Icon className="h-6 w-6" />
+        <Icon
+          className={`${isCamera ? "h-6 w-6" : "h-5 w-5"} ${
+            active && !isActiveIconDark ? "text-white" : "text-black"
+          }`}
+        />
       </span>
-      <span className={`text-[12.5px] ${active ? "font-bold" : "font-medium text-neutral-500"}`}>
-        {label}
+      <span className="relative inline-block">
+        {active && (
+          <span
+            aria-hidden
+            className={`absolute -inset-x-1.5 -inset-y-0.5 -z-10 -rotate-2 rounded-[3px] border-[1.5px] border-black ${t.navMark}`}
+          />
+        )}
+        <span
+          className={`relative text-[12.5px] ${active ? "font-extrabold" : "font-medium text-neutral-500"}`}
+        >
+          {label}
+        </span>
       </span>
     </Link>
   );

@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Gothic_A1 } from "next/font/google";
 import "../globals.css";
 import { QueryProvider } from "./QueryProvider";
+import { PageTransitionProvider } from "@/widgets/app-shell";
 
 // 네오브루탈리즘에 맞는 굵은 임팩트 + 한글 지원(100~900 전체 웨이트)
 const gothicA1 = Gothic_A1({
@@ -20,7 +21,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko" className={`${gothicA1.variable} h-full antialiased`}>
       <body className="min-h-full">
-        <QueryProvider>{children}</QueryProvider>
+        <QueryProvider>
+          <PageTransitionProvider>{children}</PageTransitionProvider>
+        </QueryProvider>
       </body>
     </html>
   );
