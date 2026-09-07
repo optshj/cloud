@@ -9,24 +9,22 @@ export const BRUTAL_SM = "border-2 border-black shadow-[3px_3px_0_0_#000]";
 export const PRESS =
   "transition-transform duration-150 ease-out active:translate-x-[2px] active:translate-y-[2px] active:shadow-none";
 
-// 그라데이션 대신 header/body를 서로 다른 단색 레이어로 둔다 — 네오브루탈리즘은 블렌드보다 딱 떨어지는 색면이 낫다.
+// 헤더는 네비 배지의 navIdle 색을 그대로 쓴다(헤더 전용 색 없음) — 페이지 최상단부터
+// 하단 네비까지 그 탭의 색 정체성이 한 번에 읽히게.
 export const THEME = {
   camera: {
-    header: "bg-sky-300",
     body: "bg-[#eaf4fc]",
     navIdle: "bg-[#bfe0f7]",
     navActive: "bg-[#4f9fe0]",
     navMark: "bg-[#8cc7ef]",
   },
   calendar: {
-    header: "bg-violet-300",
     body: "bg-[#fdf6e3]",
     navIdle: "bg-[#f6e2a0]",
     navActive: "bg-[#f2c230]",
     navMark: "bg-[#f6d466]",
   },
   feed: {
-    header: "bg-rose-300",
     body: "bg-[#fdeef0]",
     navIdle: "bg-[#f8c6cd]",
     navActive: "bg-[#e8536b]",
