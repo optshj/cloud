@@ -49,6 +49,7 @@ const getBodyColor = (theme: ThemeKey) => {
 };
 
 export const PageTransitionProvider = ({ children }: { children: ReactNode }) => {
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const wipeRef = useRef<HTMLDivElement>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
   const isPageReadyRef = useRef(false);
@@ -63,13 +64,14 @@ export const PageTransitionProvider = ({ children }: { children: ReactNode }) =>
   }, []);
 
   const triggerTransition = useCallback<TriggerTransition>((originEl, theme, onCovered) => {
+    const wrapper = wrapperRef.current;
     const wipe = wipeRef.current;
     const frameEl = document.getElementById("app-frame");
     const isReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // 애니메이션을 못 그리거나(엘리먼트 못 찾음) 재생 안 할 상황(reduced motion)이면
     // 연출 없이 바로 이동만 시킨다 — 어떤 경우에도 라우팅 자체는 보장한다.
-    if (!wipe || !frameEl || isReducedMotion) {
+    if (!wrapper || !wipe || !frameEl || isReducedMotion) {
       onCovered();
       return;
     }
@@ -81,6 +83,14 @@ export const PageTransitionProvider = ({ children }: { children: ReactNode }) =>
     onPageReadyRef.current = null;
 
     const frameRect = frameEl.getBoundingClientRect();
+    // 오버레이 래퍼도 CSS(mx-auto max-w-md)로 따로 흉내내지 않고, 실제 측정한
+    // app-frame 사각형에 그대로 맞춘다 — 두 박스가 CSS 트릭으로 "우연히" 같은
+    // 위치에 오길 바라면, 스크롤바 등 아주 작은 오차로도 한쪽 귀퉁이가 안 덮인다.
+    wrapper.style.left = `${frameRect.left}px`;
+    wrapper.style.top = `${frameRect.top}px`;
+    wrapper.style.width = `${frameRect.width}px`;
+    wrapper.style.height = `${frameRect.height}px`;
+
     const originRect = originEl.getBoundingClientRect();
     const x = originRect.left + originRect.width / 2 - frameRect.left;
     const y = originRect.top + originRect.height / 2 - frameRect.top;
@@ -182,7 +192,7 @@ export const PageTransitionProvider = ({ children }: { children: ReactNode }) =>
           </filter>
         </defs>
       </svg>
-      <div className="pointer-events-none fixed inset-0 z-50 mx-auto h-dvh w-full max-w-md overflow-hidden">
+      <div ref={wrapperRef} className="pointer-events-none fixed z-50 overflow-hidden">
         <div
           ref={wipeRef}
           aria-hidden="true"
