@@ -120,7 +120,10 @@ export const PageTransitionProvider = ({ children }: { children: ReactNode }) =>
     wipe.style.transform = "translate(-50%, -50%) scale(0)";
     void wipe.offsetHeight; // reflow 강제 — transition:none이 실제로 적용된 뒤에 다음 단계로 넘어가게
 
-    wipe.style.transition = "transform 1.05s cubic-bezier(0.32, 0.72, 0.18, 1)";
+    // 커버 여유(1.7배)를 키우면서 반경이 커진 만큼, 예전과 같은 체감 속도를 유지하려면
+    // 시간도 같은 비율로 늘려야 한다(1.05s는 여유 1.15배 기준으로 맞춘 값이었다) —
+    // 안 늘리면 더 먼 거리를 같은 시간에 가느라 훨씬 빨라 보인다.
+    wipe.style.transition = "transform 1.55s cubic-bezier(0.32, 0.72, 0.18, 1)";
     const rafId = requestAnimationFrame(() => {
       wipe.style.transform = `translate(-50%, -50%) scale(${scaleEnd})`;
     });
