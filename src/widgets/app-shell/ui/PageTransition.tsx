@@ -105,7 +105,12 @@ export const PageTransitionProvider = ({ children }: { children: ReactNode }) =>
       [frameRect.width, frameRect.height],
     ];
     const maxDist = Math.max(...corners.map(([cx, cy]) => Math.hypot(cx - x, cy - y)));
-    const scaleEnd = (maxDist / (WIPE_SIZE / 2)) * 1.15;
+    // 노이즈 필터가 둘레를 최대 ±24px(feDisplacementMap scale=48의 절반)까지 안으로도
+    // 파먹는다 — 원의 로컬 반경(32px) 대비 크게 작지 않은 값이라, 1.15배 여유로는
+    // 하필 그 방향(피드처럼 origin에서 가장 먼 모서리 쪽)에 깊은 골이 나면 모서리가
+    // 안 덮인 채 남는다(실제 리포트됨). 노이즈 세기는 건드리지 않고 원 자체를
+    // 넉넉히 더 키워서 흡수한다.
+    const scaleEnd = (maxDist / (WIPE_SIZE / 2)) * 1.7;
 
     wipe.style.left = `${x}px`;
     wipe.style.top = `${y}px`;
