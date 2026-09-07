@@ -66,9 +66,6 @@
   --animate-modal-out: modal-out 0.12s ease-in;
   --animate-overlay-in: overlay-in 0.15s ease-out;
   --animate-overlay-out: overlay-out 0.12s ease-in;
-
-  /* 하단 네비 활성 탭이 눌린 자리에서 튀어오르는 모션. */
-  --animate-nav-rise: nav-rise 0.22s ease-out;
 }
 
 /* transform(scale)만 쓴다 — Tailwind v4의 translate/rotate는 별도 CSS 속성이라
@@ -96,14 +93,6 @@
 @keyframes overlay-out {
   to {
     opacity: 0;
-  }
-}
-
-/* "from"만 정의해 100%는 요소에 이미 적용된 -translate-y-2.5(활성 위치)로 자연히 수렴한다 —
-   위 modal-in과 같은 패턴. */
-@keyframes nav-rise {
-  from {
-    translate: 0 0;
   }
 }
 
@@ -193,8 +182,7 @@ body {
   [data-slot="dialog-content"],
   [data-slot="dialog-overlay"],
   [data-slot="alert-dialog-content"],
-  [data-slot="alert-dialog-overlay"],
-  .animate-nav-rise {
+  [data-slot="alert-dialog-overlay"] {
     animation: none;
   }
 }

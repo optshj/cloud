@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import type { ComponentType, MouseEvent } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -16,12 +16,24 @@ const TABS = [
 
 export const BottomNav = () => {
   const pathname = usePathname();
-  const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+  // 실제 라우트 전환은 화면이 다 덮인 뒤에야 일어나 pathname이 한참 늦게 바뀐다 —
+  // 누른 즉시 그 탭이 튀어오르게 하려면 pathname과 별개로 "방금 누른 탭"을 따로 든다.
+  // 페이지가 바뀌면 이 BottomNav 자체가 새로 마운트되며 자연히 초기화된다.
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const isActive = (href: string) => {
+    if (pendingHref) return href === pendingHref;
+    return href === "/" ? pathname === "/" : pathname.startsWith(href);
+  };
 
   return (
     <nav className="relative z-[60] flex items-end justify-around px-4 py-1">
       {TABS.map((tab) => (
-        <NavTab key={tab.href} {...tab} active={isActive(tab.href)} />
+        <NavTab
+          key={tab.href}
+          {...tab}
+          active={isActive(tab.href)}
+          onNavigate={() => setPendingHref(tab.href)}
+        />
       ))}
     </nav>
   );
@@ -33,12 +45,14 @@ const NavTab = ({
   Icon,
   theme,
   active,
+  onNavigate,
 }: {
   href: string;
   label: string;
   Icon: ComponentType<{ className?: string }>;
   theme: ThemeKey;
   active: boolean;
+  onNavigate: () => void;
 }) => {
   const t = THEME[theme];
   const isCamera = theme === "camera";
@@ -54,6 +68,8 @@ const NavTab = ({
     e.preventDefault();
     if (active) return; // 이미 활성화된 탭 재클릭 — 전환/이동 없음
 
+    onNavigate(); // 배지가 실제 페이지 전환보다 먼저 튀어오른다 — 눌렀다는 반응은 즉시 와야 한다.
+
     if (badgeRef.current) {
       // 실제 이동은 화면이 다 덮인 뒤(onCovered)에 일어난다 — 배지를 못 찾은 경우에만 즉시 이동.
       triggerTransition(badgeRef.current, theme, () => router.push(href));
@@ -64,11 +80,14 @@ const NavTab = ({
 
   return (
     <Link href={href} onClick={handleClick} className="flex flex-1 flex-col items-center gap-1.5">
+      {/* pendingHref 덕에 클릭 즉시 이 인스턴스에서 active가 바뀌므로 transition-transform이
+          진짜로 들어올려주는 걸 보여준다 — 새 페이지가 마운트된 뒤엔 이미 이 위치라 다시
+          안 움직인다. (키프레임 방식은 마운트할 때마다 다시 재생돼 두 번 튀는 버그였다.) */}
       <span
         ref={badgeRef}
         className={`${PRESS} flex items-center justify-center rounded-2xl border-[2.5px] border-black shadow-[3px_3px_0_0_#000] transition-transform duration-200 ease-out ${
           isCamera ? "h-12 w-12" : "h-11 w-11"
-        } ${active ? `${t.navActive} animate-nav-rise -translate-y-2.5` : `${t.navIdle} translate-y-0`}`}
+        } ${active ? `${t.navActive} -translate-y-2.5` : `${t.navIdle} translate-y-0`}`}
       >
         <Icon
           className={`${isCamera ? "h-6 w-6" : "h-5 w-5"} ${

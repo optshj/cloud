@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useRef } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { THEME, type ThemeKey } from "@/shared/ui/tokens";
 
@@ -8,12 +8,18 @@ import { THEME, type ThemeKey } from "@/shared/ui/tokens";
 const WIPE_SIZE = 64;
 const FADE_DELAY_MS = 80;
 const FADE_DURATION_MS = 180;
+// 목적지 화면이 이 시간 안에 준비(setPageReady(true))를 못 알리면, 계속 덮여있지
+// 않도록 강제로 걷어낸다 — 네트워크 문제로 로딩이 끝없이 길어지는 상황의 안전장치.
+const MAX_COVER_WAIT_MS = 4000;
 
 // onCovered는 원이 화면을 다 덮은 시점에 불린다 — 실제 라우트 이동은 여기서 해야
 // "이미 바뀐 화면 위에서 뒤늦게 애니메이션만 재생되는" 어색함이 없다.
 type TriggerTransition = (originEl: HTMLElement, theme: ThemeKey, onCovered: () => void) => void;
 
 const PageTransitionContext = createContext<TriggerTransition | null>(null);
+// 목적지 화면이 자기 로딩이 끝났음을 알리는 채널 — 덮여있는 동안 진짜로 로딩이
+// 끝나야 걷히게 하려면(스켈레톤이 뒤에 가려진 채로 실제 로딩이 이루어져야) 필요하다.
+const SetPageReadyContext = createContext<((isReady: boolean) => void) | null>(null);
 
 export const usePageTransition = () => {
   const triggerTransition = useContext(PageTransitionContext);
@@ -21,6 +27,15 @@ export const usePageTransition = () => {
     throw new Error("usePageTransition은 PageTransitionProvider 내부에서만 쓸 수 있습니다.");
   }
   return { triggerTransition };
+};
+
+// 각 View가 자신의 로딩 상태를 그대로 넘기면 된다: usePageReady(!isLoading).
+// PageTransitionProvider 밖(예: 스토리북)에서도 안전하게 no-op으로 동작한다.
+export const usePageReady = (isReady: boolean) => {
+  const setPageReady = useContext(SetPageReadyContext);
+  useEffect(() => {
+    setPageReady?.(isReady);
+  }, [isReady, setPageReady]);
 };
 
 // wipe 배경색은 THEME.body(bg-[#xxxxxx] 형태)에서 그대로 뽑아 쓴다 — 별도 hex 토큰을
@@ -36,6 +51,16 @@ const getBodyColor = (theme: ThemeKey) => {
 export const PageTransitionProvider = ({ children }: { children: ReactNode }) => {
   const wipeRef = useRef<HTMLDivElement>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
+  const isPageReadyRef = useRef(false);
+  // 화면이 다 덮인 뒤 목적지가 준비되길 기다리는 콜백 — setPageReady(true)가 이걸 부른다.
+  const onPageReadyRef = useRef<(() => void) | null>(null);
+
+  const setPageReady = useCallback((isReady: boolean) => {
+    isPageReadyRef.current = isReady;
+    if (isReady) {
+      onPageReadyRef.current?.();
+    }
+  }, []);
 
   const triggerTransition = useCallback<TriggerTransition>((originEl, theme, onCovered) => {
     const wipe = wipeRef.current;
@@ -51,6 +76,9 @@ export const PageTransitionProvider = ({ children }: { children: ReactNode }) =>
 
     // 연타로 재트리거될 때 이전 애니메이션의 리스너/타이머가 겹치지 않게 먼저 정리한다.
     cleanupRef.current?.();
+    // 이전 화면이 준비 상태였더라도 이번 전환에서는 목적지가 새로 알려줄 때까지 기다린다.
+    isPageReadyRef.current = false;
+    onPageReadyRef.current = null;
 
     const frameRect = frameEl.getBoundingClientRect();
     const originRect = originEl.getBoundingClientRect();
@@ -81,39 +109,59 @@ export const PageTransitionProvider = ({ children }: { children: ReactNode }) =>
 
     const timeoutIds: number[] = [];
 
+    const fadeOutAndReset = () => {
+      wipe.style.transition = `opacity ${FADE_DURATION_MS}ms ease-out`;
+      wipe.style.opacity = "0";
+
+      const resetTimeoutId = window.setTimeout(() => {
+        wipe.style.transition = "none";
+        wipe.style.transform = "translate(-50%, -50%) scale(0)";
+        wipe.style.opacity = "1";
+      }, FADE_DURATION_MS);
+      timeoutIds.push(resetTimeoutId);
+    };
+
     const handleTransitionEnd = (e: TransitionEvent) => {
       if (e.propertyName !== "transform") return;
       wipe.removeEventListener("transitionend", handleTransitionEnd);
 
       // 화면이 다 덮인 지금 실제로 페이지를 이동시킨다 — 그래야 wipe가 걷힐 때
-      // 진짜로 "바뀌는" 게 보인다.
+      // 진짜로 "바뀌는" 게 보인다. 목적지가 준비됐다고 알려올 때까지는 덮은 채로
+      // 기다린다 — 스켈레톤이 아니라 이 원이 곧 로딩 상태다.
       onCovered();
 
-      const fadeTimeoutId = window.setTimeout(() => {
-        wipe.style.transition = `opacity ${FADE_DURATION_MS}ms ease-out`;
-        wipe.style.opacity = "0";
+      const proceed = () => {
+        onPageReadyRef.current = null;
+        const fadeTimeoutId = window.setTimeout(fadeOutAndReset, FADE_DELAY_MS);
+        timeoutIds.push(fadeTimeoutId);
+      };
 
-        const resetTimeoutId = window.setTimeout(() => {
-          wipe.style.transition = "none";
-          wipe.style.transform = "translate(-50%, -50%) scale(0)";
-          wipe.style.opacity = "1";
-        }, FADE_DURATION_MS);
-        timeoutIds.push(resetTimeoutId);
-      }, FADE_DELAY_MS);
-      timeoutIds.push(fadeTimeoutId);
+      if (isPageReadyRef.current) {
+        proceed();
+        return;
+      }
+
+      onPageReadyRef.current = proceed;
+      const maxWaitId = window.setTimeout(() => {
+        if (onPageReadyRef.current === proceed) {
+          proceed();
+        }
+      }, MAX_COVER_WAIT_MS);
+      timeoutIds.push(maxWaitId);
     };
     wipe.addEventListener("transitionend", handleTransitionEnd);
 
     cleanupRef.current = () => {
       cancelAnimationFrame(rafId);
       wipe.removeEventListener("transitionend", handleTransitionEnd);
+      onPageReadyRef.current = null;
       timeoutIds.forEach((id) => window.clearTimeout(id));
     };
   }, []);
 
   return (
     <PageTransitionContext.Provider value={triggerTransition}>
-      {children}
+      <SetPageReadyContext.Provider value={setPageReady}>{children}</SetPageReadyContext.Provider>
       <svg width="0" height="0" aria-hidden="true" className="absolute">
         <defs>
           <filter id="paint-edge" x="-60%" y="-60%" width="220%" height="220%">

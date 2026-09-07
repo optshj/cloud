@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { AppShell } from "@/widgets/app-shell";
+import { AppShell, usePageReady } from "@/widgets/app-shell";
 import { EntryFeedCard, EntryFeedCardSkeleton, FeedDetailModal } from "@/widgets/entry-card";
 import { useCloudEntries } from "@/entities/cloud-entry";
 import { useSession } from "@/entities/session";
@@ -16,6 +16,8 @@ export const FeedView = () => {
   const { user } = useSession();
   const { entries, isLoading, error, refresh, toggleLike } = useCloudEntries();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // 탭 전환 오버레이가 덮여있는 동안 실제로 이 로딩이 끝나야 걷힌다.
+  usePageReady(!isLoading);
 
   const handleToggleLike = (id: string) => {
     if (!user) {

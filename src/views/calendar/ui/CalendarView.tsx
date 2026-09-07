@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { AppShell } from "@/widgets/app-shell";
+import { AppShell, usePageReady } from "@/widgets/app-shell";
 import { BRUTAL, BRUTAL_SM, LIST_CONTAINER, LIST_ITEM } from "@/shared/ui/tokens";
 import { Camera, ChevronLeft, ChevronRight, Cloud } from "lucide-react";
 import { Button } from "@/shared/ui/button";
@@ -17,6 +17,9 @@ import { dateKey, seoulDateKey } from "@/shared/lib/date";
 export const CalendarView = () => {
   const { user, isLoading: isSessionLoading } = useSession();
   const { entries: allEntries, isLoading, error, refresh } = useCloudEntries();
+  // 탭 전환 오버레이가 덮여있는 동안 실제로 이 로딩이 끝나야 걷힌다 —
+  // 아래 "구름 모으는 중..." 스켈레톤은 오버레이 없이(직접 진입) 들어왔을 때를 위한 것.
+  usePageReady(!isLoading && !isSessionLoading);
   // 사진첩은 내 앨범이다 — 피드와 같은 조회를 쓰되 내 기록만 남긴다.
   // (전체공개라 조회 자체는 남의 기록도 내려오지만 여기선 보여주지 않는다.)
   const entries = allEntries.filter((e) => e.isMine);

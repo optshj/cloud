@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AppShell } from "@/widgets/app-shell";
+import { AppShell, usePageReady } from "@/widgets/app-shell";
 import { BRUTAL } from "@/shared/ui/tokens";
 import { Cloud } from "lucide-react";
 import { Button } from "@/shared/ui/button";
@@ -51,6 +51,9 @@ export const CameraView = () => {
   const [stage, setStage] = useState<Stage>({ kind: "permission" });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 탭 전환 오버레이가 덮여있는 동안 세션 확인이 끝나야 걷힌다 — 카메라 화면 자체는
+  // 데이터 로딩 없이 바로 그려지지만, 로그인 여부에 따라 흐름이 갈리니 그것만 기다린다.
+  usePageReady(!isSessionLoading);
 
   const todayKey = seoulDateKey();
 
