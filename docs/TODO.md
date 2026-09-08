@@ -1,66 +1,23 @@
 # TODO — 남은 작업
 
-이 프로젝트에서 열려 있는 작업 **전부**. 여기가 유일한 목록이다.
-
-원래는 열린 항목이 `UI-SYSTEM.md` "남은 것" / `PRODUCT.md` "미정 사항" / `CONVENTIONS.md`·`ERD.md`
-"알려진 한계" / `test-results/*.md` "다음에 볼 것" / 코드 주석에 흩어져 있었고 `BACKLOG.md`가 그걸
-가리키기만 했다. 같은 항목이 여러 자리에 앉아 서로 어긋나는 일이 반복돼서
-**배경까지 전부 여기로 모았다.** 다른 문서들은 이제 "지금 어떻게 동작하고 왜 그렇게 정했는지"만 서술한다.
-
-**새 미해결 항목이 생기면 그 문서가 아니라 여기 적는다.** 원문 문서에는 결정·현재 동작만 남긴다.
-
-기준: 2026-09-07에 전 항목을 코드와 실제 API 응답에 대조해 재확인했다(2026-09-05 재확인 이후 하단 네비 원형 배지·탭 전환 물결 애니메이션·`API-DOCS.md` 신설이 들어왔다 — 관련 코드를 대조했고 §2-1·2-2·2-3·2-4·2-6·2-7의 파일 경로·동작 서술은 전부 그대로 유효했다). 열린 GitHub 이슈 없음.
-
-**항목 번호는 안정 ID다.** 코드 주석이 번호로 이 문서를 가리키므로(`capture-frame.ts` → §2-7)
-재번호하지 않는다. 번호가 비어 있으면 그 항목이 끝나서 지워진 것이다 — `2-5`(원본 좌표 노출)는
-`0003`이 해결했다(커밋 `5361608`, 2026-09-05 적용).
-
----
-
-## 1. 바로 할 수 있는 것
-
-**지금 비어 있다.** 막힌 것 없이 착수 가능한 항목이 생기면 여기 적는다.
-
----
-
 ## 2. 트리거가 오면 반드시 — 조건부
 
 지금 고치면 과설계지만, 아래 조건이 오는 순간 **같이** 해야 하는 것들.
 조건 없이 미리 하지 말 것.
 
-### 2-1. `photo_path`가 user_id를 노출한다 → **프로필·팔로우가 붙을 때**
+### 2-1. `entry_likes`가 user_id를 그대로 내보낸다 → **프로필·팔로우가 붙을 때**
 
-(2026-09-02 확인 / 2026-09-05 재확인 — 아래 두 경로 다 여전히 열려 있다)
+(2026-09-08 확인 — `photo_path`/`cloud_entries.user_id` 노출을 `0004`로 막으면서 같은 뿌리로 남은 것)
 
-`entry_feed` 뷰는 `user_id`/`lat`/`lng`를 아예 컬럼에서 뺐지만(`0002`), 남아 있는 `photo_path`가
-`{user_id}/{entry_date}.jpg` 형태라 폴더명이 곧 user_id다. anon 키는 `NEXT_PUBLIC_`이라 공개값이므로
-누구나 `GET /rest/v1/entry_feed?select=photo_path`로 "이 사진들이 같은 사람 것"이라는 그룹핑을
-복원할 수 있다 — `0002`가 막으려던 정보 그 자체다.
+`entry_likes`의 select 정책이 `using (true)`고 컬럼 권한도 그대로라 anon 키로
+`GET /rest/v1/entry_likes?select=entry_id,user_id`가 응답한다 — "이 좋아요들이 같은 사람 것"이라는
+그룹핑이 나오고, 자기 글에 좋아요를 누른 사람은 기록 하나가 특정된다.
 
-그룹핑 쪽은 프로필 기능이 없어 user_id로 사람을 특정할 수단이 아직 없다. 그래서 v1에서는 알려진
-한계로 두기로 했다. **프로필이 붙는 순간 user_id로 사람을 특정할 수 있게 되고, 그때 `photo_path`가
-그룹핑을 그대로 넘겨준다.**
-
-고치려면 여러 군데가 함께 움직여야 해서 지금 하기엔 비용이 크다. **경로만 먼저 바꾸면 storage
-쓰기 권한이 열린다 — 반드시 함께 움직일 것:**
-
-- `storage.objects` RLS 3종(insert/update/delete)이 `(storage.foldername(name))[1] = auth.uid()::text`로
-  **폴더명이 user_id인 것에 쓰기 권한을 걸고 있다.** 경로를 바꾸면 소유권 판정을 폴더명 대신
-  `cloud_entries` 조인으로 옮겨야 한다(정책 원문은 → `ERD.md` "Storage").
-- 코드 세 곳이 같은 컨벤션에 기댄다 — `CameraView`의 업로드 경로, `deleteEntryRemote`의 경로
-  재구성(`{userId}/{entryDate}.jpg`), `DELETE /api/account`의 `storage.list(user.id)` + `remove`.
-- 기존 파일 이관 + `photo_path` 백필이 필요하다.
-
-**e2e는 여기 안 걸린다.** `smoke.spec.ts`가 `photo_path: "u/2026-08-28.jpg"`를 쓰지만 그건
-`page.route`로 갈아끼운 가짜 PostgREST 응답이라 실제 경로 규약과 무관하다. 이전 판에 "e2e와
-로컬 QA 시드 스크립트가 포맷을 하드코딩한다"고 적혀 있었으나 **시드 스크립트는 레포에 없고**
-e2e는 포맷에 기대지 않는다(2026-09-05 확인).
-
-**`user_id`는 더 짧은 누출 경로로도 샌다.** `photo_path`로 복원할 것도 없이 `GET /rest/v1/cloud_entries?select=user_id`가 그대로 응답한다. `0003`이 좌표는 컬럼 권한으로 막았지만 `user_id`는 남겼다 — `entry_feed`가 `security_invoker`라 `is_mine`을 계산하려면 조회자에게 그 컬럼 권한이 필요하고, `fetchMyTodayEntry`도 그 컬럼으로 필터한다(→ `ERD.md` "컬럼 권한"). 이걸 막으려면 위 항목들과 **같이** 움직여야 한다.
-
-덧붙여 이 포맷은 **규약이지 제약이 아니다.** `POST /api/entries/confirm`은 클라이언트가 보낸
-`photoPath` 문자열을 검증 없이 그대로 insert한다 — 포맷을 실제로 붙잡고 있는 건 `CameraView`의
-업로드 경로와 storage insert RLS(첫 세그먼트 = uid)뿐이다.
+사진 쪽(`0004`)만큼 직접적이지 않고 프로필이 없어 user_id로 사람을 특정할 수단이 아직 없어서 v1에선
+알려진 한계로 둔다. **프로필이 붙는 순간 같이 막는다.** 고칠 땐 `0004`와 같은 모양이 될 것이다 —
+`fetchEntries`가 `.eq("user_id", ...)`로 필터하니 그 컬럼 권한을 회수하려면 "내가 좋아요 했는지"를
+서버에서 계산해 내려주는 쪽으로 옮겨야 한다(뷰 컬럼 또는 `security definer` 함수).
+→ `src/entities/cloud-entry/model/api.ts`의 `fetchEntries`, `docs/ERD.md` "알려진 한계"
 
 ### 2-2. `PlaceholderPhoto`의 `isLoaded` 리셋 → **서버 프리페치를 도입할 때**
 
@@ -118,6 +75,17 @@ module 스코프 ref로 관리되는데, **어느 트랜지션의 신호인지 �
 다시 뒤집힐 수 있는 조건을 넣는 순간** 조용히 깨진다. 그때 트랜지션마다 세대(generation)
 토큰을 붙여 `setPageReady`가 "지금 활성 트랜지션의 신호인지"를 확인하도록 고친다.
 → `src/widgets/app-shell/ui/PageTransition.tsx`
+
+### 2-10. `POST /api/entries/confirm`이 `photoPath`를 검증하지 않는다 → **남의 사진으로 만든 기록이 실제로 보이면**
+
+(2026-09-08 확인 — `0004` 작업 중 §2-1에서 떼어낸 것. 경로 컨벤션과 무관하게 예전부터 열려 있었다)
+
+confirm은 클라이언트가 보낸 `photoPath` 문자열을 검증 없이 그대로 insert한다. 경로는 피드에
+그대로 실리는 공개값이라, 남의 사진 경로를 넣어 **자기 기록으로 올릴 수 있다.** 버킷이 public이라
+읽기는 어차피 열려 있으니 새로 새는 정보는 없고, 남는 건 "내 사진이 남의 기록으로 보인다"는
+표시상의 문제다. 막으려면 업로더(`owner_id`)가 요청자인지 확인해야 하는데 storage 스키마가
+PostgREST에 없어 `0004`의 `entry_photo_paths`처럼 함수를 하나 더 열어야 한다 — 지금 비용이 더 크다.
+→ `app/api/entries/confirm/route.ts`
 
 ### 2-8. e2e 확장 2건 → **각각 세션 주입/모킹 방법이 정해지면**
 

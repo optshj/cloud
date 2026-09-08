@@ -11,7 +11,7 @@ export const useTodaysEntry = (userId: string | undefined): TodayEntryStatus => 
   useEffect(() => {
     if (!userId) return;
     let isCancelled = false;
-    fetchMyTodayEntry(userId).then((entry) => {
+    fetchMyTodayEntry().then((entry) => {
       if (!isCancelled) setResult({ userId, entry });
     });
     return () => {

@@ -57,46 +57,55 @@ export const CameraView = () => {
 
   const todayKey = seoulDateKey();
 
-  const processCapture = useCallback(
-    async (currentUserId: string, photoDataUrl: string, coords: Coords) => {
-      setError(null);
-      setStage({ kind: "generating", photoDataUrl });
+  const processCapture = useCallback(async (photoDataUrl: string, coords: Coords) => {
+    setError(null);
+    setStage({ kind: "generating", photoDataUrl });
 
-      try {
-        const blob = await (await fetch(photoDataUrl)).blob();
-        const photoPath = `${currentUserId}/${todayKey}.jpg`;
-        const supabase = createClient();
-        const { error: uploadError } = await supabase.storage
-          .from(BUCKET)
-          .upload(photoPath, blob, { upsert: true, contentType: "image/jpeg" });
-        if (uploadError) throw uploadError;
+    try {
+      const blob = await (await fetch(photoDataUrl)).blob();
+      // 경로에 uid도 날짜도 담지 않는다 — public 피드에 그대로 실리는 값이라 폴더명이 곧
+      // user_id였고 그게 "이 사진들이 같은 사람 것"을 넘겨줬다(→ supabase/migrations/0004).
+      // 소유권은 이제 storage의 owner_id가 들고 있어서 경로가 불투명해도 된다.
+      const photoPath = `${crypto.randomUUID()}.jpg`;
+      const supabase = createClient();
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET)
+        .upload(photoPath, blob, { contentType: "image/jpeg" });
+      if (uploadError) throw uploadError;
 
-        const res = await fetch("/api/entries/preview", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ photoPath, lat: coords.lat, lng: coords.lng }),
-        });
-        if (!res.ok) {
-          const body = await res.json().catch(() => null);
-          throw new Error(body?.error ?? "미리보기 생성에 실패했어요");
-        }
-        const { tag, comment, locationDong } = await res.json();
-
-        setStage({
-          kind: "ready",
-          captured: { photoDataUrl, tag, comment },
-          locationDong,
-          photoPath,
-          coords,
-        });
-      } catch (err) {
-        console.error("capture processing failed", err);
-        setError(err instanceof Error ? err.message : "촬영 처리에 실패했어요");
-        setStage({ kind: "idle" });
+      const res = await fetch("/api/entries/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photoPath, lat: coords.lat, lng: coords.lng }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error ?? "미리보기 생성에 실패했어요");
       }
-    },
-    [todayKey],
-  );
+      const { tag, comment, locationDong } = await res.json();
+
+      setStage({
+        kind: "ready",
+        captured: { photoDataUrl, tag, comment },
+        locationDong,
+        photoPath,
+        coords,
+      });
+    } catch (err) {
+      console.error("capture processing failed", err);
+      setError(err instanceof Error ? err.message : "촬영 처리에 실패했어요");
+      setStage({ kind: "idle" });
+    }
+  }, []);
+
+  // 촬영마다 새 경로라 예전처럼 다음 업로드가 덮어써주지 않는다 — 기록되지 않은 사진은 직접 지운다.
+  // (놓쳐도 탈퇴 시 DELETE /api/account가 업로더 기준으로 전부 지운다.)
+  const discardUploaded = (photoPath: string) => {
+    void createClient()
+      .storage.from(BUCKET)
+      .remove([photoPath])
+      .catch((err) => console.error("camera: 버린 사진 삭제 실패", photoPath, err));
+  };
 
   const handleCapture = async (photoDataUrl: string, coords: Coords) => {
     if (!user) {
@@ -107,7 +116,7 @@ export const CameraView = () => {
       setStage({ kind: "anon-ready", photoDataUrl });
       return;
     }
-    await processCapture(user.id, photoDataUrl, coords);
+    await processCapture(photoDataUrl, coords);
   };
 
   // 비로그인 촬영 → 카카오 로그인(전체 페이지 이동) → 돌아왔을 때, 찍어둔 사진이 있으면 이어서 처리한다.
@@ -124,7 +133,7 @@ export const CameraView = () => {
       const pending = JSON.parse(raw) as PendingCapture;
       // effect 본문에서 곧바로 setState하지 않도록 한 틱 미룬다(react-hooks/set-state-in-effect).
       queueMicrotask(() => {
-        void processCapture(user.id, pending.photoDataUrl, pending.coords);
+        void processCapture(pending.photoDataUrl, pending.coords);
       });
     } catch (err) {
       console.error("failed to resume pending capture", err);
@@ -133,6 +142,9 @@ export const CameraView = () => {
 
   const handleRetake = () => {
     sessionStorage.removeItem(PENDING_CAPTURE_KEY);
+    if (stage.kind === "ready") {
+      discardUploaded(stage.photoPath);
+    }
     setStage({ kind: "idle" });
   };
 
@@ -155,6 +167,7 @@ export const CameraView = () => {
         }),
       });
       if (res.status === 409) {
+        discardUploaded(stage.photoPath);
         setStage({ kind: "already-done" });
         await refresh();
         return;

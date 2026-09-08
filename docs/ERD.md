@@ -1,6 +1,6 @@
 # ERD — Supabase 스키마 현황
 
-지금 Supabase에 **실제로 올라가 있는** 스키마. 진실 소스는 `supabase/migrations/`의 `0001_init.sql` + `0002_entry_feed_is_mine.sql` + `0003_revoke_coords_select.sql`이고 셋 다 적용 완료다(0003은 2026-09-05 적용) — 이 문서는 그 최종 상태를 그린 것이지 계획이 아니다. 스키마를 바꾸면 마이그레이션을 추가하고 이 문서를 같이 고친다.
+지금 Supabase에 **실제로 올라가 있는** 스키마. 진실 소스는 `supabase/migrations/`의 `0001_init.sql` + `0002_entry_feed_is_mine.sql` + `0003_revoke_coords_select.sql` + `0004_opaque_photo_path.sql`이고 넷 다 적용 완료다(0003은 2026-09-05, 0004는 2026-09-08 적용). `0005_backfill_photo_owner.sql`(데이터 보정, 스키마 변경 아님)도 2026-09-08 적용 완료다 — 이 문서는 그 최종 상태를 그린 것이지 계획이 아니다. 스키마를 바꾸면 마이그레이션을 추가하고 이 문서를 같이 고친다.
 
 `0002`가 `entry_feed` 뷰를 `drop` 후 재생성했으므로 `0001`의 뷰 정의(`e.*` + `likes_count`)는 더 이상 존재하지 않는다.
 
@@ -64,7 +64,7 @@ unique (user_id, entry_date)
 
 ## `entry_feed` — 테이블이 아니라 뷰
 
-`cloud_entries`를 감싼 **뷰**다. 행을 저장하지 않고, 쓰기도 하지 않는다. **피드·사진첩의 목록 조회는 이 뷰만 읽는다** — 단건 확인(`fetchMyTodayEntry`)과 삭제는 `cloud_entries`를 직접 친다.
+`cloud_entries`를 감싼 **뷰**다. 행을 저장하지 않고, 쓰기도 하지 않는다. **피드·사진첩의 목록 조회도, 단건 확인(`fetchMyTodayEntry`, `is_mine`으로 거른다)도 이 뷰만 읽는다** — `cloud_entries`를 직접 치는 건 삭제뿐이다.
 
 내보내는 컬럼은 정확히 8개:
 
@@ -72,9 +72,11 @@ unique (user_id, entry_date)
 | --- | --- |
 | `id`, `entry_date`, `location_dong`, `tag`, `comment`, `photo_path` | `cloud_entries`에서 그대로 |
 | `likes_count` | **계산** — `entry_likes`의 해당 `entry_id` 개수 서브쿼리 |
-| `is_mine` | **계산** — `e.user_id = auth.uid()` |
+| `is_mine` | **계산** — `public.entry_is_mine(e.id)` (아래 "컬럼 권한" 참고) |
 
 **`user_id` / `lat` / `lng` / `is_hidden` / `created_at`은 뷰에 없다.** 특히 앞의 셋은 의도적으로 뺀 것이다 — 이유는 `0002_entry_feed_is_mine.sql` 상단 주석에 적혀 있다.
+
+`is_mine`이 표현식이 아니라 함수인 이유도 같은 뿌리다 — 뷰가 `security_invoker`라 `e.user_id`를 직접 비교하면 조회자에게 그 컬럼 권한이 필요했고, 그 권한이 곧 `user_id` 노출 경로였다. `0004`가 비교만 `security definer` 함수로 내리고 컬럼 권한을 회수했다.
 
 `is_mine`은 비로그인일 때 `auth.uid()`가 `null`이라 **`null`로 내려온다**(실제 anon 조회로 확인). 앱에서 `false`로 접는다.
 
@@ -112,11 +114,20 @@ RLS는 **행**을 막고, 여기 권한은 **컬럼**을 막는다. 둘은 서�
 revoke select on public.cloud_entries from anon, authenticated;
 grant select (id, user_id, entry_date, location_dong, tag, comment, photo_path, is_hidden, created_at)
   on public.cloud_entries to anon, authenticated;
+
+revoke select (user_id) on public.cloud_entries from anon, authenticated;  -- 0004
 ```
 
 **`revoke select (lat, lng)` 한 줄로는 안 된다** — Postgres에서 테이블 단위 select 권한을 들고 있으면 그게 모든 컬럼을 덮어서 컬럼 단위 revoke가 효과가 없다. 테이블 권한을 먼저 회수하고 필요한 컬럼만 다시 줘야 한다.
 
-**`user_id`는 왜 남겨뒀나.** `entry_feed`가 `security_invoker = true`라 `is_mine`(`e.user_id = auth.uid()`)을 조회자 권한으로 계산한다 — 이 컬럼을 빼면 뷰가 통째로 깨진다. `fetchMyTodayEntry`도 `user_id`로 필터하는데 **Postgres는 필터에 쓰는 컬럼에도 select 권한을 요구한다.** `user_id` 노출은 별개 건이다(→ `TODO.md` §2-1).
+**`user_id`는 `0004`에서 빠졌다.** `0003`은 두 곳이 이 컬럼에 기대고 있어 남겨뒀었다 — `entry_feed`의 `is_mine`(`security_invoker`라 조회자 권한으로 계산)과 `fetchMyTodayEntry`의 필터(Postgres는 필터에 쓰는 컬럼에도 select 권한을 요구한다). 그 사이 `GET /rest/v1/cloud_entries?select=user_id,photo_path` 한 줄이면 "이 사진들이 같은 사람 것"이라는 그룹핑이 그대로 나왔고, 그건 `0002`가 막으려던 정보 그 자체였다.
+
+`0004`가 둘을 함께 옮겨서 회수했다:
+
+- `is_mine`은 `security definer` 함수 `public.entry_is_mine(entry uuid)`가 계산한다. 함수 본문이 소유자 권한으로 돌아 컬럼 권한이 필요 없고, 돌려주는 건 "네 것이냐" boolean 하나다. 뷰는 `security_invoker = true`인 채로 남아 RLS는 그대로 걸린다.
+- `fetchMyTodayEntry`는 `cloud_entries` + `user_id` 필터에서 `entry_feed` + `is_mine` 필터로 옮겼다.
+
+**RLS 정책은 이 회수와 무관하게 계속 동작한다** — `auth.uid() = user_id` 같은 정책 표현식은 조회자의 컬럼 권한 검사 대상이 아니다.
 
 좌표 **저장**은 계속 된다 — insert 권한은 select와 별개고, `POST /api/entries/confirm`의 `.select()` 반환 목록에 `lat`/`lng`가 없다.
 
@@ -140,19 +151,32 @@ entry_reports에 insert
 
 버킷 **`entry-photos`** (public). SQL로 만들 수 없어 대시보드에서 수동 생성했다 — 절차는 `0001_init.sql` 하단 "Storage 설정" 주석.
 
-경로 컨벤션: **`{user_id}/{entry_date}.jpg`**
+경로 컨벤션: **`{uuid}.jpg`** — 폴더 없이 촬영마다 새로 만든다(`0004`). uid도 날짜도 담지 않는다. `photo_path`는 `entry_feed`를 통해 전체공개로 나가는 값이라, 예전 컨벤션(`{user_id}/{entry_date}.jpg`)에선 폴더명이 곧 user_id였다.
 
 `storage.objects` 정책 4종:
 
 | 동작 | 조건 |
 | --- | --- |
-| insert / update / delete | `bucket_id = 'entry-photos' and (storage.foldername(name))[1] = auth.uid()::text` |
+| insert | `bucket_id = 'entry-photos'` (`to authenticated`) |
+| update / delete | `bucket_id = 'entry-photos' and owner_id = auth.uid()::text` (`to authenticated`) |
 | select | `bucket_id = 'entry-photos'` (누구나 읽기 — 피드가 전체공개라) |
 
-**쓰기 3종이 폴더명으로 소유권을 판정한다.** 파일의 첫 경로 세그먼트가 자기 uid인 경우에만 쓰기가 허용된다 — `cloud_entries`와의 조인이 아니라 문자열 비교다. 그래서 경로 컨벤션이 단순한 작명 규칙이 아니라 **권한 모델의 일부**이고, 경로를 바꾸려면 정책도 같이 바꿔야 한다.
+**소유권 판정은 `owner_id`가 한다** — storage-api가 업로드 시 채워주는 업로더 uid다. 경로가 불투명해진 대신 소유권이 경로 밖으로 나왔다. insert만 소유권을 안 따지는데, 새로 올리는 파일엔 "누구 것"이라 할 근거가 경로에도 DB에도 없기 때문이다. 이름이 uuid라 남의 파일을 겨냥할 수 없고 덮어쓰기는 update 정책이 막는다.
+
+**파일을 지우는 두 경로가 서로 다른 걸 쓴다:**
+
+- `deleteEntryRemote`(클라이언트)는 **삭제한 행이 돌려주는 `photo_path`**로 지운다 — 경로를 uid+날짜로 재구성할 수 없어서다. 행을 먼저 지우므로 스토리지 삭제가 실패해도 사진 없는 기록이 남지는 않는다.
+- `DELETE /api/account`는 **두 목록의 합집합**을 지운다 — `public.entry_photo_paths(target uuid)`(`security definer`, service_role 전용)가 주는 업로더 기준 목록과, 내 `cloud_entries`의 `photo_path`. 앞의 것만 쓰면 `owner_id`가 빈 파일이 빠지고, 뒤의 것만 쓰면 기록까지 안 간 사진(미리보기 후 이탈)이 빠진다. 둘 중 하나라도 조회에 실패하면 계정을 지우지 않고 멈춘다(사진만 남으면 되돌릴 수 없다). storage 스키마는 PostgREST에 노출돼 있지 않아 service_role 키로도 직접 못 읽어서 함수로 열었다.
+
+**service role로 `copy`/`move`하면 `owner_id`가 따라오지 않는다**(2026-09-08 확인 — 복사본이 `entry_photo_paths`에 안 잡혔다). 파일을 서버에서 옮기면 그 파일은 업로더를 잃어 탈퇴 삭제가 놓친다 — 옮길 일이 생기면 `owner_id` 복구를 같은 작업에 묶는다.
+
+**적용 시점(2026-09-08)에 남아 있던 옛 경로 파일은 같은 날 정리했다** — 기록이 참조하던 3행은 `{uuid}.jpg`로 이관하고(파일 copy → `photo_path` 백필 → 옛 파일 삭제), 참조 없던 1개는 지웠다. 버킷에 폴더가 없으니 목록으로도 uid가 안 샌다. 이관한 3개는 `0005`로 `owner_id`도 채워, `entry_photo_paths`로 잡힌다(anon 키·service role 키 둘 다로 확인).
 
 ## 알려진 한계
 
-원본 좌표는 `0003`의 컬럼 권한으로 막혔다(위 "컬럼 권한" 참고). 남은 건 **`user_id`가 두 경로로
-새는 것** — `photo_path`의 폴더명, 그리고 `cloud_entries`의 `user_id` 컬럼 자체다. 둘 다 뿌리가
-같고 배경·함께 움직여야 할 지점은 → [`TODO.md`](TODO.md) §2-1.
+원본 좌표는 `0003`의 컬럼 권한으로, `user_id`의 두 노출 경로(`photo_path` 폴더명 / `cloud_entries.user_id`
+컬럼)는 `0004`로 막혔다 — 위 "컬럼 권한"과 "Storage" 참고.
+
+**`entry_likes`는 아직 열려 있다.** select 정책이 `using (true)`라
+`GET /rest/v1/entry_likes?select=entry_id,user_id`가 그대로 응답한다 — 사진이 아니라 좋아요 기준의
+그룹핑이지만 뿌리는 같다. 배경과 고칠 조건은 → [`TODO.md`](TODO.md) §2-1.

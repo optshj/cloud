@@ -18,14 +18,14 @@
 | 인증 | 필요. 미인증 시 `401 { error: "로그인이 필요해요" }` |
 | 요청 바디 | 없음 |
 | 응답(성공) | `204 No Content` (본문 없음) |
-| 응답(실패) | `500 { error: "탈퇴 처리에 실패했어요" }` — `admin.auth.admin.deleteUser` 실패 시 |
+| 응답(실패) | `500 { error: "사진 목록을 불러오지 못해 탈퇴를 중단했어요. 잠시 후 다시 시도해주세요" }` — 사진 경로 조회(RPC) 실패 시 / `500 { error: "탈퇴 처리에 실패했어요" }` — `admin.auth.admin.deleteUser` 실패 시 |
 
 **동작:**
-1. `createAdminClient()`(service role)로 `entry-photos` 버킷의 `{userId}/` 하위 파일 목록을 조회 후 전부 삭제.
+1. `createAdminClient()`(service role)로 `entry_photo_paths(target)` RPC를 호출해 그 유저가 올린 `entry-photos` 파일 경로를 전부 받아 삭제. 경로에 uid가 없어 폴더 목록으로는 찾을 수 없고, 업로더(`owner_id`) 기준이라 기록까지 안 간 사진도 같이 지워진다(→ `docs/ERD.md` "Storage").
 2. `admin.auth.admin.deleteUser(user.id)`로 auth 계정 삭제.
 3. `cloud_entries`/`entry_likes`/`entry_reports` 행은 별도 삭제 코드 없이 `auth.users` FK의 `on delete cascade`로 같이 삭제된다(DB 제약에 위임, 앱 코드가 아님).
 
-파일 목록 조회가 비어있으면(`files`가 falsy/빈 배열) 삭제 호출 자체를 건너뛴다. Storage 삭제 실패는 별도 분기 없이 무시되고 auth 계정 삭제로 진행한다(에러를 던지지 않음).
+파일 목록이 비어있으면 삭제 호출 자체를 건너뛴다. **목록 조회가 실패하면 탈퇴를 중단한다**(`500 { error: "사진 목록을 불러오지 못해 탈퇴를 중단했어요..." }`) — 사진을 남긴 채 계정만 지우면 되돌릴 수 없다. 반면 `remove` 자체의 실패는 별도 분기 없이 무시되고 auth 계정 삭제로 진행한다.
 
 ---
 

@@ -65,14 +65,15 @@ export const fetchEntries = async (): Promise<CloudEntry[]> => {
 
 export type TodayEntryStatus = { comment: string } | null;
 
-// "내가 오늘 이미 기록했는지" 확인 전용 — entry_feed(공개 피드, 전체 유저)가 아니라
-// cloud_entries를 user_id로 직접 걸러서 다른 유저의 기록을 내 기록으로 착각하지 않게 한다.
-export const fetchMyTodayEntry = async (userId: string): Promise<TodayEntryStatus> => {
+// "내가 오늘 이미 기록했는지" 확인 전용 — 다른 유저의 오늘 기록을 내 것으로 착각하면 안 되므로
+// 소유 판정이 필요한데, user_id는 클라이언트가 읽을 수 없다(0004에서 컬럼 권한 회수). 대신
+// 뷰가 서버에서 계산해주는 is_mine으로 거른다.
+export const fetchMyTodayEntry = async (): Promise<TodayEntryStatus> => {
   const supabase = createClient();
   const { data, error } = await supabase
-    .from("cloud_entries")
+    .from("entry_feed")
     .select("comment")
-    .eq("user_id", userId)
+    .eq("is_mine", true)
     .eq("entry_date", seoulDateKey())
     .maybeSingle();
   if (error) throw error;
@@ -100,17 +101,21 @@ export const toggleLikeRemote = async (entryId: string, currentlyLiked: boolean)
   }
 };
 
-// 업로드 경로가 항상 `{userId}/{entry_date}.jpg`로 고정돼 있어서(카메라 업로드 컨벤션),
-// entryId를 지울 땐 본인 세션의 uid로 같은 경로를 재구성해 스토리지 파일도 같이 지운다.
-export const deleteEntryRemote = async (entryId: string, entryDate: string): Promise<void> => {
+// 경로가 불투명한 uuid라 uid+날짜로 재구성할 수 없다 — 삭제한 행이 알려주는 경로로 파일을 지운다.
+// 행을 먼저 지우는 순서라 스토리지 삭제가 실패해도 사진 없는 기록이 남지는 않는다(반대는 남았다).
+// 남의 글이면 RLS가 행 삭제를 막아 data가 null이고, 그러면 파일도 건드리지 않는다.
+export const deleteEntryRemote = async (entryId: string): Promise<void> => {
   const supabase = createClient();
-  const { data: userData } = await supabase.auth.getUser();
-  const userId = userData.user?.id;
-  if (userId) {
-    await supabase.storage.from(BUCKET).remove([`${userId}/${entryDate}.jpg`]);
-  }
-  const { error } = await supabase.from("cloud_entries").delete().eq("id", entryId);
+  const { data, error } = await supabase
+    .from("cloud_entries")
+    .delete()
+    .eq("id", entryId)
+    .select("photo_path")
+    .maybeSingle();
   if (error) throw error;
+  if (data) {
+    await supabase.storage.from(BUCKET).remove([data.photo_path]);
+  }
 };
 
 export const reportEntryRemote = async (entryId: string): Promise<void> => {
