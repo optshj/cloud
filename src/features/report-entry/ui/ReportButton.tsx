@@ -36,7 +36,11 @@ export const ReportButton = ({ entryId, className }: { entryId: string; classNam
     } catch (err) {
       console.error("report-entry: 신고 접수 요청 실패", entryId, err);
       setIsReported(false);
-      setErrorMessage("신고 접수에 실패했어요. 로그인 상태를 확인해주세요.");
+      setErrorMessage(
+        err instanceof Error && err.message
+          ? `신고 접수에 실패했어요: ${err.message}`
+          : "신고 접수에 실패했어요. 잠시 후 다시 시도해주세요.",
+      );
     }
   };
 

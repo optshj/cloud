@@ -94,7 +94,8 @@ export const CapturePermissionGate = ({ onGranted }: { onGranted: () => void }) 
       <div className={`${BRUTAL_SM} rounded-full bg-white p-3`}>
         <CameraOff className="h-8 w-8 text-sky-300" />
       </div>
-      <p className="text-sm font-bold">
+      {/* 거부 사실을 알리는 유일한 신호가 이 문구 변화다 — 상시 DOM에 있으니 live region이 붙는다. */}
+      <p role="status" className="text-sm font-bold">
         {isDenied ? (
           <>
             카메라와 위치 권한이 필요해요.
@@ -114,7 +115,7 @@ export const CapturePermissionGate = ({ onGranted }: { onGranted: () => void }) 
         onClick={handleRequest}
         disabled={isRequesting}
         aria-busy={isRequesting}
-        className="gap-1.5 py-1.5"
+        className="min-h-11 gap-1.5"
       >
         {isDenied && <RefreshCw className="h-3.5 w-3.5" />}
         {isDenied ? "다시 시도" : "권한 허용하기"}

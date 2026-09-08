@@ -4,7 +4,8 @@ const loadImage = (src: string): Promise<HTMLImageElement> => {
     // Storage의 https URL은 cross-origin이라, 이게 없으면 canvas가 tainted 상태가 돼서 toDataURL이 실패한다.
     img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
-    img.onerror = reject;
+    // Event로 reject하면 호출부의 로그에 원인이 한 글자도 안 남는다.
+    img.onerror = () => reject(new Error(`공유카드 이미지 로드 실패: ${src}`));
     img.src = src;
   });
 };

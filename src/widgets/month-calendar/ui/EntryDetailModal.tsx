@@ -25,6 +25,7 @@ import {
 import { PlaceholderPhoto } from "@/shared/ui/PlaceholderPhoto";
 import { buildShareCardDataUrl, downloadDataUrl } from "@/features/share-card";
 import type { CloudEntry } from "@/entities/cloud-entry";
+import { toast } from "sonner";
 
 // 사진첩 모달 참고 이미지: 그리드에서 날짜를 탭하면 폴라로이드처럼 살짝 기울어진 큰 카드가
 // 화면 중앙에 뜨고, 카드 모서리에 겹쳐진 작은 X 버튼으로 닫는다.
@@ -40,6 +41,7 @@ export const EntryDetailModal = ({
   onDelete: (id: string) => void;
 }) => {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   // 닫히는 동안에도 카드를 계속 그려야 Radix가 exit 애니메이션을 재생한다.
   const entry = useLastNonNull(openEntry);
 
@@ -60,13 +62,21 @@ export const EntryDetailModal = ({
     if (!entry?.photoDataUrl) {
       return;
     }
-    const dataUrl = await buildShareCardDataUrl({
-      photoDataUrl: entry.photoDataUrl,
-      location: entry.location,
-      comment: entry.comment,
-      displayDate: formatDisplayDate(entry.date),
-    });
-    downloadDataUrl(dataUrl, `구름-${entry.date}.png`);
+    setIsSaving(true);
+    try {
+      const dataUrl = await buildShareCardDataUrl({
+        photoDataUrl: entry.photoDataUrl,
+        location: entry.location,
+        comment: entry.comment,
+        displayDate: formatDisplayDate(entry.date),
+      });
+      downloadDataUrl(dataUrl, `구름-${entry.date}.png`);
+    } catch (err) {
+      console.error("calendar: 공유카드 생성 실패", entry.id, err);
+      toast.error("카드 이미지를 만들지 못했어요. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -92,6 +102,7 @@ export const EntryDetailModal = ({
           </DialogClose>
           <PlaceholderPhoto
             photoDataUrl={entry.photoDataUrl}
+            alt={`${formatDisplayDate(entry.date)} ${entry.location}에서 기록한 하늘 사진`}
             className="aspect-square w-full border-2 border-black"
           />
 
@@ -105,10 +116,11 @@ export const EntryDetailModal = ({
             </div>
             <Button
               onClick={handleSave}
-              disabled={!entry.photoDataUrl}
+              disabled={!entry.photoDataUrl || isSaving}
+              aria-busy={isSaving}
               className="mt-2 w-full bg-violet-200 font-extrabold disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400 disabled:opacity-100"
             >
-              저장하기
+              {isSaving ? "만드는 중..." : "저장하기"}
             </Button>
             <Button
               variant="link"

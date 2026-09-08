@@ -41,6 +41,7 @@ export const SettingsView = () => {
       const body = await res.json().catch(() => null);
       console.error("settings: 탈퇴(DELETE /api/account) 실패", res.status, body);
       setErrorMessage(body?.error ?? "탈퇴 처리에 실패했어요. 잠시 후 다시 시도해주세요.");
+      setIsDeleteOpen(false);
       setIsBusy(false);
       return;
     }
@@ -139,8 +140,17 @@ export const SettingsView = () => {
           </AlertDialogDescription>
           <AlertDialogFooter>
             <AlertDialogCancel>취소</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={handleDeleteAccount}>
-              탈퇴하기
+            <AlertDialogAction
+              variant="destructive"
+              // preventDefault가 없으면 창이 즉시 닫혀 삭제가 도는 동안 화면에 아무 표시가 없다.
+              onClick={(e) => {
+                e.preventDefault();
+                void handleDeleteAccount();
+              }}
+              disabled={isBusy}
+              aria-busy={isBusy}
+            >
+              {isBusy ? "탈퇴 처리 중..." : "탈퇴하기"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

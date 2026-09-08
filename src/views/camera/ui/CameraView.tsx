@@ -74,6 +74,8 @@ export const CameraView = () => {
   // 값이 남아 "이미 기록했어요" 화면으로 되돌아간다 — 그걸 이 플래그가 덮는다.
   const [hasDeletedToday, setHasDeletedToday] = useState(false);
   const [isDeletingToday, setIsDeletingToday] = useState(false);
+  // 캔버스 합성 + 원격 이미지 로드라 수백 ms~수 초 걸린다 — 누른 티가 나야 두 번 안 누른다.
+  const [isDownloading, setIsDownloading] = useState(false);
   // 탭 전환 오버레이가 덮여있는 동안 세션 확인이 끝나야 걷힌다 — 카메라 화면 자체는
   // 데이터 로딩 없이 바로 그려지지만, 로그인 여부에 따라 흐름이 갈리니 그것만 기다린다.
   usePageReady(!isSessionLoading);
@@ -131,10 +133,17 @@ export const CameraView = () => {
 
   const handleCapture = async (photoDataUrl: string, coords: Coords) => {
     if (!user) {
-      sessionStorage.setItem(
-        PENDING_CAPTURE_KEY,
-        JSON.stringify({ photoDataUrl, coords } satisfies PendingCapture),
-      );
+      try {
+        // 사진 데이터 URL이라 용량이 커서 QuotaExceededError가 날 수 있다 — 여기서 throw되면
+        // 미리보기까지 통째로 죽는다. 보관에 실패해도 미리보기·다운로드는 그대로 되고,
+        // 로그인 후 이어받기만 안 될 뿐이다.
+        sessionStorage.setItem(
+          PENDING_CAPTURE_KEY,
+          JSON.stringify({ photoDataUrl, coords } satisfies PendingCapture),
+        );
+      } catch (err) {
+        console.error("camera: 비로그인 촬영 임시 보관 실패", err);
+      }
       setStage({ kind: "anon-ready", photoDataUrl });
       return;
     }
@@ -189,6 +198,7 @@ export const CameraView = () => {
     }
     // 목록을 다시 받지 않는다 — 이 화면은 useCloudEntries의 entries를 읽지 않고,
     // 사진첩은 라우트 이동 때 자기 인스턴스로 새로 조회한다. 기다리면 복귀만 늦다.
+    setIsRetakeOpen(false);
     setHasDeletedToday(true);
     setStage({ kind: "idle" });
   };
@@ -234,13 +244,21 @@ export const CameraView = () => {
     if (stage.kind !== "ready") {
       return;
     }
-    const dataUrl = await buildShareCardDataUrl({
-      photoDataUrl: stage.captured.photoDataUrl,
-      location: stage.locationDong,
-      comment: stage.captured.comment,
-      displayDate: formatDisplayDate(todayKey),
-    });
-    downloadDataUrl(dataUrl, `구름-${todayKey}.png`);
+    setIsDownloading(true);
+    try {
+      const dataUrl = await buildShareCardDataUrl({
+        photoDataUrl: stage.captured.photoDataUrl,
+        location: stage.locationDong,
+        comment: stage.captured.comment,
+        displayDate: formatDisplayDate(todayKey),
+      });
+      downloadDataUrl(dataUrl, `구름-${todayKey}.png`);
+    } catch (err) {
+      console.error("camera: 공유카드 생성 실패", err);
+      toast.error("카드 이미지를 만들지 못했어요. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   // 세션 조회 중 {null}을 렌더하면 빈 흰 화면이 깜빡인다 — 뷰파인더 골격을 그대로 잡아둔다.
@@ -275,16 +293,15 @@ export const CameraView = () => {
           {todaysEntry && !hasDeletedToday && (
             <p className="text-sm text-neutral-600">&ldquo;{todaysEntry.comment}&rdquo;</p>
           )}
-          <Button onClick={() => router.push("/calendar")}>사진첩에서 보기</Button>
+          {/* 두 버튼은 같은 층의 선택지다 — variant/size를 다르게 주면 한쪽만 테두리가 얇아져
+              "덜 눌러도 되는 것"처럼 보인다. min-h-11은 둘 다 44px 터치 타겟을 넘기려고 준다. */}
+          <Button onClick={() => router.push("/calendar")} className="min-h-11">
+            사진첩에서 보기
+          </Button>
           {/* 오늘 기록이 확인된 경우에만 — confirm이 409로 돌려준 already-done 상태나 방금 지운
               뒤에는 지울 행의 id가 없다(있어도 stale이다). */}
           {todaysEntry && !hasDeletedToday && (
-            <Button
-              variant="thin"
-              size="none"
-              onClick={() => setIsRetakeOpen(true)}
-              className="min-h-11 bg-white px-4 text-sm"
-            >
+            <Button onClick={() => setIsRetakeOpen(true)} className="min-h-11">
               오늘 다시 찍기
             </Button>
           )}
@@ -298,7 +315,12 @@ export const CameraView = () => {
                 <AlertDialogCancel>취소</AlertDialogCancel>
                 <AlertDialogAction
                   variant="destructive"
-                  onClick={handleRetakeToday}
+                  // preventDefault가 없으면 Radix가 클릭 즉시 창을 닫아, 아래 "지우는 중..."과
+                  // disabled가 화면에 한 프레임도 안 뜬다. 끝난 뒤 직접 닫는다.
+                  onClick={(e) => {
+                    e.preventDefault();
+                    void handleRetakeToday();
+                  }}
                   disabled={isDeletingToday}
                   aria-busy={isDeletingToday}
                 >
@@ -376,17 +398,16 @@ export const CameraView = () => {
 
     if (stage.kind === "ready") {
       return (
-        <>
-          <CapturePreview
-            captured={stage.captured}
-            location={stage.locationDong}
-            dateKeyStr={todayKey}
-            isSaving={isSaving}
-            onRetake={handleRetake}
-            onRecord={handleRecord}
-            onDownload={handleDownload}
-          />
-        </>
+        <CapturePreview
+          captured={stage.captured}
+          location={stage.locationDong}
+          dateKeyStr={todayKey}
+          isSaving={isSaving}
+          isDownloading={isDownloading}
+          onRetake={handleRetake}
+          onRecord={handleRecord}
+          onDownload={handleDownload}
+        />
       );
     }
 

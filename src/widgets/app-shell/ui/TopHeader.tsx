@@ -15,7 +15,7 @@ export const TopHeader = ({ headerClass, title }: { headerClass: string; title: 
       <Link
         href="/settings"
         aria-label="설정"
-        className={`${BRUTAL_SM} flex h-10 w-10 items-center justify-center bg-amber-300 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none`}
+        className={`${BRUTAL_SM} flex h-11 w-11 items-center justify-center bg-amber-300 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none`}
       >
         <Settings className="h-4 w-4" />
       </Link>

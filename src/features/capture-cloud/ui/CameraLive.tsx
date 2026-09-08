@@ -13,6 +13,18 @@ import { forgetCapturePermission } from "./CapturePermissionGate";
 // 하드웨어 줌을 못 쓰는 기기(iOS Safari가 대표적이다)에서 CSS scale()로 흉내 낼 폭.
 const DIGITAL_ZOOM_RANGE = { min: 1, max: 5, step: 0.1 };
 
+// getUserMedia가 던지는 DOMException.name별 안내. 권한 문제가 아닌 실패에 "설정에서 허용해주세요"라고
+// 하면 사용자는 고칠 수 없는 곳을 헤맨다.
+const CAMERA_ERROR_MESSAGE: Record<string, string> = {
+  NotAllowedError: "카메라 권한이 필요해요. 브라우저 설정에서 허용해주세요.",
+  SecurityError: "카메라 권한이 필요해요. 브라우저 설정에서 허용해주세요.",
+  NotReadableError: "다른 앱이 카메라를 쓰고 있어요. 그 앱을 닫고 다시 시도해주세요.",
+  TrackStartError: "다른 앱이 카메라를 쓰고 있어요. 그 앱을 닫고 다시 시도해주세요.",
+  NotFoundError: "이 기기에서 카메라를 찾지 못했어요.",
+  DevicesNotFoundError: "이 기기에서 카메라를 찾지 못했어요.",
+  default: "카메라를 열지 못했어요. 다시 시도해주세요.",
+};
+
 // zoom은 Image Capture 스펙이라 lib.dom 타입에 없다 — 지원 기기에만 있는 확장 필드다.
 type ZoomCapabilities = MediaTrackCapabilities & { zoom?: Partial<ZoomRange> };
 
@@ -71,7 +83,10 @@ export const CameraLive = ({
   // 그래서 배지에는 절대값이 아니라 최소값 대비 배율을 띄운다.
   const [zoomRange, setZoomRange] = useState<ZoomRange>(DIGITAL_ZOOM_RANGE);
   const [isHardwareZoom, setIsHardwareZoom] = useState(false);
-  const [hasCameraError, setHasCameraError] = useState(false);
+  // 원인을 안 나누면 "다른 앱이 카메라를 쓰는 중"에도 "브라우저 설정에서 허용해주세요"라고
+  // 안내하게 된다 — 설정을 열어도 고칠 게 없다. DOMException.name을 그대로 들고 있는다.
+  const [cameraErrorName, setCameraErrorName] = useState<string | null>(null);
+  const hasCameraError = cameraErrorName !== null;
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
@@ -96,14 +111,17 @@ export const CameraLive = ({
         setIsHardwareZoom(hardwareRange !== null);
         setZoomRange(hardwareRange ?? DIGITAL_ZOOM_RANGE);
         setZoom((hardwareRange ?? DIGITAL_ZOOM_RANGE).min);
-        setHasCameraError(false);
+        setCameraErrorName(null);
       })
-      .catch((err) => {
-        // 게이트를 건너뛸 수 있게 된 뒤로 권한 취소가 표면화되는 지점이 여기다 —
-        // NotAllowedError인지 NotReadableError인지가 로그에 남아야 한다.
-        console.error("capture-cloud: 카메라 스트림 열기 실패", err);
-        forgetCapturePermission();
-        setHasCameraError(true);
+      .catch((err: unknown) => {
+        const name = err instanceof Error ? err.name : "";
+        console.error("capture-cloud: 카메라 스트림 열기 실패", name, err);
+        // 권한 기억은 실제 거부일 때만 지운다 — 카메라를 다른 앱이 잡고 있는 경우까지 지우면
+        // 멀쩡한 권한이 날아가 게이트를 다시 세운다.
+        if (name === "NotAllowedError" || name === "SecurityError") {
+          forgetCapturePermission();
+        }
+        setCameraErrorName(name || "UnknownError");
       });
 
     return () => {
@@ -240,18 +258,17 @@ export const CameraLive = ({
           <div className={`${BRUTAL_SM} rounded-full bg-white p-3`}>
             <CameraOff className="h-8 w-8 text-sky-300" />
           </div>
-          <p className="text-sm font-bold">
-            카메라 권한이 필요해요.
-            <br />
-            브라우저 설정에서 허용해주세요.
+          <p role="alert" className="text-sm font-bold">
+            {CAMERA_ERROR_MESSAGE[cameraErrorName] ?? CAMERA_ERROR_MESSAGE.default}
           </p>
           <Button
             variant="thin"
             onClick={() => {
               setIsVideoReady(false);
+              setCameraErrorName(null);
               setRetryKey((k) => k + 1);
             }}
-            className="gap-1.5 py-1.5"
+            className="min-h-11 gap-1.5"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             다시 시도

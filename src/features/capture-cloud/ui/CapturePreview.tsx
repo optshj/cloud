@@ -11,6 +11,7 @@ export const CapturePreview = ({
   location,
   dateKeyStr,
   isSaving,
+  isDownloading,
   isLoggedIn = true,
   loginSlot,
   onRetake,
@@ -21,6 +22,7 @@ export const CapturePreview = ({
   location?: string;
   dateKeyStr: string;
   isSaving?: boolean;
+  isDownloading?: boolean;
   isLoggedIn?: boolean;
   loginSlot?: ReactNode;
   onRetake: () => void;
@@ -83,8 +85,13 @@ export const CapturePreview = ({
               <Button onClick={onRetake} className="bg-emerald-100 py-2">
                 다시찍기
               </Button>
-              <Button onClick={onDownload} className="bg-amber-100 py-2">
-                다운로드
+              <Button
+                onClick={onDownload}
+                disabled={isDownloading}
+                aria-busy={isDownloading}
+                className="bg-amber-100 py-2"
+              >
+                {isDownloading ? "만드는 중..." : "다운로드"}
               </Button>
             </div>
           </div>

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Gothic_A1 } from "next/font/google";
 import "../globals.css";
-import { QueryProvider } from "./QueryProvider";
+import { MotionProvider } from "./MotionProvider";
 import { PageTransitionProvider } from "@/widgets/app-shell";
 import { Toaster } from "@/shared/ui/sonner";
 
@@ -22,11 +22,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko" className={`${gothicA1.variable} h-full antialiased`}>
       <body className="min-h-full">
-        <QueryProvider>
+        <MotionProvider>
           <PageTransitionProvider>{children}</PageTransitionProvider>
           {/* 에러 메시지 공통 채널 — 화면 어디서든 toast.error()로 띄운다. */}
           <Toaster />
-        </QueryProvider>
+        </MotionProvider>
       </body>
     </html>
   );

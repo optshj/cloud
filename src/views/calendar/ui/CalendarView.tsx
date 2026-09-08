@@ -13,6 +13,7 @@ import { deleteEntryRemote, useCloudEntries } from "@/entities/cloud-entry";
 import { useSession } from "@/entities/session";
 import { KakaoLoginButton } from "@/features/login-kakao";
 import { dateKey, seoulDateKey } from "@/shared/lib/date";
+import { toast } from "sonner";
 
 export const CalendarView = () => {
   const { user, isLoading: isSessionLoading } = useSession();
@@ -58,6 +59,8 @@ export const CalendarView = () => {
     // 비로그인이거나 남의 글이면 RLS가 막아서 여기선 실패를 조용히 무시하고 그냥 다시 불러온다.
     await deleteEntryRemote(id).catch((err) => {
       console.error("calendar: 기록 삭제 실패", id, entry.date, err);
+      // 토스트가 없으면 지운 줄 알았던 카드가 새로고침 뒤 말없이 되살아난다.
+      toast.error("기록을 지우지 못했어요. 잠시 후 다시 시도해주세요.");
     });
     await refresh();
   };
@@ -124,9 +127,10 @@ export const CalendarView = () => {
           {/* 달력 칸의 미니 폴라로이드와 같은 언어 — 아래 여백을 넓게 둬 사진 대지처럼 보이게 한다. */}
           <div className={`${BRUTAL_SM} -rotate-2 bg-white px-5 pt-1.5 pb-2 text-center`}>
             <p className="text-xl leading-tight font-extrabold">{month + 1}월</p>
+            {/* 조회가 실패했는데 "0장 기록"을 띄우면 확정값처럼 읽힌다 — 그 자리를 비운다. */}
             <p className="text-[11px] text-neutral-500">
               {isThisYear ? "" : `${year}년 · `}
-              {monthEntries.length}장 기록
+              {error ? "기록을 못 불러왔어요" : `${monthEntries.length}장 기록`}
             </p>
           </div>
           <Button
@@ -153,9 +157,13 @@ export const CalendarView = () => {
         {/* pb는 기존 여백 + 떠 있는 BottomNav 높이(약 80px) — 마지막 카드가 탭에 안 가리게. */}
         <div className="flex flex-col gap-4 px-4 pb-24">
           {error && (
-            <p role="alert" className="py-8 text-center text-sm font-bold text-rose-600">
-              {error}
-            </p>
+            <div className="flex flex-col items-center gap-3 py-8">
+              <p role="alert" className="text-center text-sm font-bold text-rose-600">
+                {error}
+              </p>
+              {/* 피드에는 있던 재시도가 여기만 없었다 — 같은 실패에 같은 탈출구를 준다. */}
+              <Button onClick={() => refresh()}>다시 시도</Button>
+            </div>
           )}
           {!error && monthEntries.length === 0 && (
             /* 달력 칸의 미니 폴라로이드를 그대로 키운 빈 대지 — 아직 안 붙인 사진 한 장으로 읽힌다.

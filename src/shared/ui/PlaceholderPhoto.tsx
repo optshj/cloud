@@ -7,9 +7,13 @@ import { Cloud } from "lucide-react";
 export const PlaceholderPhoto = ({
   photoDataUrl,
   className,
+  alt = "",
 }: {
   photoDataUrl?: string;
   className?: string;
+  // 격자·카드에서는 부모 버튼의 aria-label이 사진을 대신 설명하므로 빈 값이 맞다.
+  // 상세 모달처럼 사진 자체가 주 콘텐츠인 자리에서만 값을 넘긴다.
+  alt?: string;
 }) => {
   // Supabase Storage 사진은 네트워크로 받아오므로 도착 전까진 배경색만 덩그러니 남는다 —
   // 그동안 광택을 흘려 "로딩 중"임을 알리고, 도착하면 툭 튀지 않게 페이드인시킨다.
@@ -31,7 +35,7 @@ export const PlaceholderPhoto = ({
           {!isLoaded && <span aria-hidden className="shimmer absolute inset-0 block" />}
           <img
             src={photoDataUrl}
-            alt=""
+            alt={alt}
             onLoad={() => setIsLoaded(true)}
             onError={() => setIsLoaded(true)}
             className={`absolute inset-0 h-full w-full object-cover ${
