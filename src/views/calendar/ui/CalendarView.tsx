@@ -56,7 +56,7 @@ export const CalendarView = () => {
       return;
     }
     // 비로그인이거나 남의 글이면 RLS가 막아서 여기선 실패를 조용히 무시하고 그냥 다시 불러온다.
-    await deleteEntryRemote(id, entry.date).catch((err) => {
+    await deleteEntryRemote(id).catch((err) => {
       console.error("calendar: 기록 삭제 실패", id, entry.date, err);
     });
     await refresh();
@@ -95,7 +95,7 @@ export const CalendarView = () => {
             </div>
           </div>
           <p className="text-sm font-bold text-neutral-500">
-            로그인하면 내가 모은 구름을 볼 수 있어요
+            로그인하면 내가 찍은 구름을 볼 수 있어요
           </p>
           <KakaoLoginButton />
         </div>

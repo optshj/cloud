@@ -35,7 +35,7 @@ test("비로그인 사진첩은 '기록 없음'이 아니라 로그인 유도를
   // 사진첩이 본인 기록만 보여주게 되면서 비로그인은 항상 빈 화면이 된다.
   // 여기서 "이 달엔 기록된 구름이 없어요"가 뜨면 원인을 가리는 회귀다(기록은 있고 내 게 없을 뿐).
   await page.goto("/calendar");
-  await expect(page.getByText("로그인하면 내가 모은 구름을 볼 수 있어요")).toBeVisible();
+  await expect(page.getByText("로그인하면 내가 찍은 구름을 볼 수 있어요")).toBeVisible();
   await expect(page.getByRole("button", { name: "카카오로 로그인" })).toBeVisible();
   await expect(page.getByText("이 달엔 기록된 구름이 없어요")).toBeHidden();
 });
