@@ -115,7 +115,12 @@ export const deleteEntryRemote = async (entryId: string): Promise<void> => {
     .maybeSingle();
   if (error) throw error;
   if (data) {
-    await supabase.storage.from(BUCKET).remove([data.photo_path]);
+    // supabase-js는 스토리지 실패를 throw하지 않고 { error }로 돌려준다 — 버리면 사진만 남은
+    // 고아 파일이 아무 흔적 없이 생긴다(버킷이 public이라 URL로 계속 서빙된다).
+    const { error: removeError } = await supabase.storage.from(BUCKET).remove([data.photo_path]);
+    if (removeError) {
+      console.error("cloud-entry: 사진 파일 삭제 실패", data.photo_path, removeError);
+    }
   }
 };
 

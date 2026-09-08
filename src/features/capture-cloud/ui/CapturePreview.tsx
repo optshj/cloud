@@ -44,11 +44,15 @@ export const CapturePreview = ({
       </Button>
       {/* 버튼까지 카드 안에 들어간다 — 밖에 두면 카드와 버튼이 높이를 두고 다퉈서, 카드가
           줄거나(사진이 작아진다) 버튼이 접힌 아래로 밀린다(스크롤해야 보인다). 한 덩어리로
-          묶고 사진만 flex로 남은 높이를 먹게 하면 어느 화면에서도 스크롤이 안 생긴다. */}
-      <div className={`animate-modal-in flex min-h-0 flex-1 flex-col ${BRUTAL} bg-white p-3`}>
+          묶고 사진만 flex로 남은 높이를 먹게 하면 세로 화면에서는 스크롤이 안 생긴다.
+          overflow-y-auto는 그게 불가능한 경우(아래 사진 하한에 걸리는 짧은 화면)의 안전망이다. */}
+      <div
+        className={`animate-modal-in flex min-h-0 flex-1 flex-col overflow-y-auto ${BRUTAL} bg-white p-3`}
+      >
         {/* 이 화면에서 유일하게 늘었다 줄었다 하는 칸이다 — aspect 고정을 버리고 남은 높이를
-            채운 뒤 object-cover로 잘라낸다. */}
-        <div className="min-h-0 flex-1 overflow-hidden border-2 border-black">
+            채운 뒤 object-cover로 잘라낸다. 하한은 필수다: basis가 0이라 축소 배분에서 이 칸만
+            0으로 깎여, 가로 모드처럼 세로가 짧으면 사진이 통째로 사라졌다. */}
+        <div className="min-h-[30dvh] flex-1 overflow-hidden border-2 border-black">
           <img
             src={captured.photoDataUrl}
             alt="촬영한 하늘 사진"

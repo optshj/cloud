@@ -73,6 +73,7 @@ export const CameraView = () => {
   // 오늘 기록을 방금 지웠다는 사실. todaysEntry는 마운트 때 한 번만 조회하므로 지운 뒤에도
   // 값이 남아 "이미 기록했어요" 화면으로 되돌아간다 — 그걸 이 플래그가 덮는다.
   const [hasDeletedToday, setHasDeletedToday] = useState(false);
+  const [isDeletingToday, setIsDeletingToday] = useState(false);
   // 탭 전환 오버레이가 덮여있는 동안 세션 확인이 끝나야 걷힌다 — 카메라 화면 자체는
   // 데이터 로딩 없이 바로 그려지지만, 로그인 여부에 따라 흐름이 갈리니 그것만 기다린다.
   usePageReady(!isSessionLoading);
@@ -176,14 +177,18 @@ export const CameraView = () => {
     if (!todaysEntry) {
       return;
     }
+    setIsDeletingToday(true);
     try {
       await deleteEntryRemote(todaysEntry.id);
     } catch (err) {
       console.error("camera: 오늘 기록 삭제 실패", todaysEntry.id, err);
       toast.error("오늘 기록을 지우지 못했어요. 잠시 후 다시 시도해주세요.");
       return;
+    } finally {
+      setIsDeletingToday(false);
     }
-    await refresh();
+    // 목록을 다시 받지 않는다 — 이 화면은 useCloudEntries의 entries를 읽지 않고,
+    // 사진첩은 라우트 이동 때 자기 인스턴스로 새로 조회한다. 기다리면 복귀만 늦다.
     setHasDeletedToday(true);
     setStage({ kind: "idle" });
   };
@@ -267,17 +272,18 @@ export const CameraView = () => {
             <Cloud className="h-10 w-10 text-sky-300" fill="currentColor" strokeWidth={0} />
           </div>
           <p className="font-bold">오늘 구름은 이미 기록했어요</p>
-          {todaysEntry && (
+          {todaysEntry && !hasDeletedToday && (
             <p className="text-sm text-neutral-600">&ldquo;{todaysEntry.comment}&rdquo;</p>
           )}
           <Button onClick={() => router.push("/calendar")}>사진첩에서 보기</Button>
-          {/* 오늘 기록이 확인된 경우에만 — confirm이 409로 돌려준 already-done 상태에서는
-              지울 행의 id를 모른다. */}
-          {todaysEntry && (
+          {/* 오늘 기록이 확인된 경우에만 — confirm이 409로 돌려준 already-done 상태나 방금 지운
+              뒤에는 지울 행의 id가 없다(있어도 stale이다). */}
+          {todaysEntry && !hasDeletedToday && (
             <Button
               variant="thin"
+              size="none"
               onClick={() => setIsRetakeOpen(true)}
-              className="bg-white py-1.5"
+              className="min-h-11 bg-white px-4 text-sm"
             >
               오늘 다시 찍기
             </Button>
@@ -290,8 +296,13 @@ export const CameraView = () => {
               </AlertDialogDescription>
               <AlertDialogFooter>
                 <AlertDialogCancel>취소</AlertDialogCancel>
-                <AlertDialogAction variant="destructive" onClick={handleRetakeToday}>
-                  지우고 다시 찍기
+                <AlertDialogAction
+                  variant="destructive"
+                  onClick={handleRetakeToday}
+                  disabled={isDeletingToday}
+                  aria-busy={isDeletingToday}
+                >
+                  {isDeletingToday ? "지우는 중..." : "지우고 다시 찍기"}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -320,9 +331,9 @@ export const CameraView = () => {
       return (
         <div className="animate-overlay-in flex min-h-0 flex-1 flex-col bg-black/60 p-6 pb-28">
           <div
-            className={`animate-modal-in flex min-h-0 flex-1 flex-col ${BRUTAL} relative bg-white p-3`}
+            className={`animate-modal-in flex min-h-0 flex-1 flex-col overflow-y-auto ${BRUTAL} relative bg-white p-3`}
           >
-            <div className="relative min-h-0 flex-1 overflow-hidden border-2 border-black">
+            <div className="relative min-h-[30dvh] flex-1 overflow-hidden border-2 border-black">
               <img
                 src={stage.photoDataUrl}
                 alt="방금 촬영한 하늘 사진"
