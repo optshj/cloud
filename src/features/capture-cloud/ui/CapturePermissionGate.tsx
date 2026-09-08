@@ -115,7 +115,7 @@ export const CapturePermissionGate = ({ onGranted }: { onGranted: () => void }) 
         onClick={handleRequest}
         disabled={isRequesting}
         aria-busy={isRequesting}
-        className="min-h-11 gap-1.5"
+        className="gap-1.5"
       >
         {isDenied && <RefreshCw className="h-3.5 w-3.5" />}
         {isDenied ? "다시 시도" : "권한 허용하기"}

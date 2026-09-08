@@ -294,16 +294,12 @@ export const CameraView = () => {
             <p className="text-sm text-neutral-600">&ldquo;{todaysEntry.comment}&rdquo;</p>
           )}
           {/* 두 버튼은 같은 층의 선택지다 — variant/size를 다르게 주면 한쪽만 테두리가 얇아져
-              "덜 눌러도 되는 것"처럼 보인다. min-h-11은 둘 다 44px 터치 타겟을 넘기려고 준다. */}
-          <Button onClick={() => router.push("/calendar")} className="min-h-11">
-            사진첩에서 보기
-          </Button>
+              "덜 눌러도 되는 것"처럼 보인다. */}
+          <Button onClick={() => router.push("/calendar")}>사진첩에서 보기</Button>
           {/* 오늘 기록이 확인된 경우에만 — confirm이 409로 돌려준 already-done 상태나 방금 지운
               뒤에는 지울 행의 id가 없다(있어도 stale이다). */}
           {todaysEntry && !hasDeletedToday && (
-            <Button onClick={() => setIsRetakeOpen(true)} className="min-h-11">
-              오늘 다시 찍기
-            </Button>
+            <Button onClick={() => setIsRetakeOpen(true)}>오늘 다시 찍기</Button>
           )}
           <AlertDialog open={isRetakeOpen} onOpenChange={setIsRetakeOpen}>
             <AlertDialogContent>

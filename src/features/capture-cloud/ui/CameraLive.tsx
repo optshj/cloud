@@ -268,7 +268,7 @@ export const CameraLive = ({
               setCameraErrorName(null);
               setRetryKey((k) => k + 1);
             }}
-            className="min-h-11 gap-1.5"
+            className="gap-1.5"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             다시 시도

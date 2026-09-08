@@ -17,13 +17,16 @@ const buttonVariants = cva(
         destructive: `${BRUTAL} ${PRESS} bg-destructive text-white`,
         link: "font-bold underline underline-offset-2",
       },
+      // 터치 타겟 최소 44px(accessibility 스킬)를 프리미티브가 보장한다. 예전엔 패딩만 줘서
+      // default가 36px, sm이 28px이었고, 중요한 자리마다 호출부에서 min-h-11을 덧붙이고 있었다 —
+      // 새 버튼을 만들 때마다 같은 실수가 반복돼서 기본값 쪽을 올렸다.
       size: {
-        default: "px-4 py-2 text-sm",
-        lg: "px-4 py-3 text-base font-extrabold",
-        sm: "px-3 py-1.5 text-xs",
-        // 터치 타겟 최소 44px (accessibility 스킬)
+        default: "min-h-11 px-4 py-2 text-sm",
+        lg: "min-h-11 px-4 py-3 text-base font-extrabold",
+        sm: "min-h-11 px-3 py-1.5 text-xs",
         icon: "h-11 w-11",
-        // 크기를 호출부가 직접 정하는 경우(폴라로이드 카드 위 X 버튼 등)
+        // 크기를 호출부가 직접 정하는 경우(폴라로이드 카드 위 X 버튼, 카드 안 링크 등) —
+        // 여기서만 높이 책임이 호출부로 넘어간다.
         none: "",
       },
     },
