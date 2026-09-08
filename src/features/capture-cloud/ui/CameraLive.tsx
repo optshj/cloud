@@ -163,7 +163,9 @@ export const CameraLive = ({
   // 줌은 "손가락이 트랙의 어디에 있나"(절대)가 아니라 "얼마나 움직였나"(상대)로 정한다.
   // 절대 방식이면 보이는 건 가운데 배지 하나뿐인데 값은 트랙 전체에 매핑돼 있어서, 5x에서 배지를
   // 잡는 순간 가운데 값(3x)으로 튄다 — 확대하려고 오른쪽으로 미는데 먼저 축소되는 것처럼 느껴진다.
-  // 상대로 두면 어디를 잡든 현재 배율에서 이어지고, 오른쪽으로 밀면 항상 확대다.
+  // 상대로 두면 어디를 잡든 현재 배율에서 이어진다. 방향은 네이티브 카메라 다이얼과 같게
+  // 뒤집어 뒀다 — 다이얼을 왼쪽으로 밀면 확대, 오른쪽으로 밀면 축소다(눈금 위 인디케이터도
+  // 같이 왼쪽으로 간다 — 손가락과 반대로 움직이면 고장 난 것처럼 보인다).
   const zoomDragRef = useRef<{ startX: number; startZoom: number } | null>(null);
 
   const handleZoomPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -182,7 +184,7 @@ export const CameraLive = ({
     }
     const trackWidth = event.currentTarget.getBoundingClientRect().width;
     const moved = ((event.clientX - drag.startX) / trackWidth) * (zoomRange.max - zoomRange.min);
-    const next = Math.min(zoomRange.max, Math.max(zoomRange.min, drag.startZoom + moved));
+    const next = Math.min(zoomRange.max, Math.max(zoomRange.min, drag.startZoom - moved));
     // 눈금은 기기 범위의 최소값을 기준으로 잡는다 — min이 1이 아닌 기기가 있다.
     setZoom(zoomRange.min + Math.round((next - zoomRange.min) / zoomRange.step) * zoomRange.step);
   };
@@ -314,7 +316,8 @@ export const CameraLive = ({
                 <span
                   className="absolute top-0 h-full w-[2px] -translate-x-1/2 bg-amber-300"
                   style={{
-                    left: `${((zoom - zoomRange.min) / (zoomRange.max - zoomRange.min)) * 100}%`,
+                    // 축이 뒤집혀 있다(왼쪽 끝이 최대 배율) — 위 드래그 방향과 짝이다.
+                    left: `${(1 - (zoom - zoomRange.min) / (zoomRange.max - zoomRange.min)) * 100}%`,
                   }}
                 />
               </div>
@@ -331,6 +334,9 @@ export const CameraLive = ({
               // 기기 범위를 그대로 쓰므로 value가 100~400 같은 값일 수 있다. 스크린리더가
               // 화면의 배지와 다른 숫자를 읽지 않도록 배율로 환산해 들려준다.
               aria-valuetext={`${zoomRatio.toFixed(1)}배`}
+              // 축이 뒤집힌 화면과 화살표 키를 맞춘다 — rtl이면 ArrowRight가 min 방향으로
+              // 매핑돼 마커도 오른쪽(축소)으로 간다. value/aria 의미는 그대로다.
+              dir="rtl"
               // 포인터 조작은 위 래퍼가 상대 드래그로 처리한다. 이 range는 지우지 않는다 —
               // Tab 포커스와 화살표 키, 스크린리더의 slider 시맨틱이 여기 달려 있다.
               className="pointer-events-none absolute inset-0 h-full w-full appearance-none bg-transparent opacity-0"
