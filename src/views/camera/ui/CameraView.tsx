@@ -257,10 +257,13 @@ export const CameraView = () => {
   const renderOverlay = () => {
     // 업로드 + AI 코멘트 생성은 몇 초 걸린다 — 빈 화면 대신 방금 찍은 사진을 보여준 채로 기다린다.
     if (stage.kind === "generating") {
+      // 여백/높이 규칙은 CapturePreview와 맞춘다. 사진이 aspect-[4/5] w-full이라 보통은 폭이
+      // 높이를 정해서 결과가 도착해도 카드가 제자리다 — 다만 여기엔 버튼 자리가 없어
+      // 상한이 그만큼 더 크다. 세로가 아주 짧은 기기에서는 결과 카드만 더 잘린다.
       return (
-        <div className="animate-overlay-in flex flex-1 flex-col gap-4 bg-black/60 p-6">
+        <div className="animate-overlay-in flex min-h-0 flex-1 flex-col gap-4 bg-black/60 p-6 pb-28">
           <div
-            className={`animate-modal-in max-h-[70dvh] overflow-y-auto ${BRUTAL} relative bg-white p-3`}
+            className={`animate-modal-in max-h-full overflow-y-auto ${BRUTAL} relative bg-white p-3`}
           >
             <div className="relative overflow-hidden border-2 border-black">
               <img
@@ -287,7 +290,6 @@ export const CameraView = () => {
               <Skeleton className="ml-auto h-3 w-20" />
             </div>
           </div>
-          <Skeleton className={`${BRUTAL} h-12 w-full`} />
         </div>
       );
     }

@@ -52,3 +52,9 @@ CONVENTIONS 쪽이 더 많이 읽히므로 틀린 주장이 이긴다).
 남아 있었다. UI-SYSTEM 표와 달리 이쪽은 **진입 순서 자체가 틀린 서술**이 된다.
 → `CameraView`의 `stage` 초기값·early return 순서, 또는 `CapturePermissionGate`의 통과 조건을
 건드리는 diff는 `docs/FLOWS.md` §1을 같이 읽는다(§1이 촬영 진입 플로우의 진실 소스다).
+
+**표뿐 아니라 §8 본문도 드리프트 면이다 (2026-09-08, 미리보기 높이 diff):** `UI-SYSTEM.md` §8이
+카메라 오버레이의 구현을 **구체적인 Tailwind 값째로** 서술한다("카드 내부에서만 스크롤시킨다
+(`max-h-[70dvh]`)"). 그 값이 `min-h-0 flex-1` + `max-h-full`로 바뀌었는데 문서는 그대로였다.
+→ 상태 3종 표만 grep하지 말고, **레이아웃 클래스(높이·여백·z-index)를 바꾸는 diff는 그 클래스
+문자열 자체를 `docs/`에 grep**한다(`max-h-`, `z-20`, `pb-28`, `absolute inset-0` 등).
