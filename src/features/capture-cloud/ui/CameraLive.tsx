@@ -6,10 +6,13 @@ import { BRUTAL, BRUTAL_SM } from "@/shared/ui/tokens";
 import { CameraOff, Cloud, RefreshCw } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { captureFrame } from "../lib/capture-frame";
+import { resolveZoomRange, type ZoomRange } from "../lib/zoom-range";
 
-const ZOOM_MIN = 1;
-const ZOOM_MAX = 5;
-const ZOOM_STEP = 0.1;
+// 하드웨어 줌을 못 쓰는 기기(iOS Safari가 대표적이다)에서 CSS scale()로 흉내 낼 폭.
+const DIGITAL_ZOOM_RANGE = { min: 1, max: 5, step: 0.1 };
+
+// zoom은 Image Capture 스펙이라 lib.dom 타입에 없다 — 지원 기기에만 있는 확장 필드다.
+type ZoomCapabilities = MediaTrackCapabilities & { zoom?: Partial<ZoomRange> };
 
 export type Coords = { lat: number; lng: number };
 
@@ -49,7 +52,11 @@ export const CameraLive = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const [zoom, setZoom] = useState(ZOOM_MIN);
+  const [zoom, setZoom] = useState(DIGITAL_ZOOM_RANGE.min);
+  // 기기가 돌려주는 범위를 그대로 쓴다 — 단위가 기기마다 다르다(1~8도 있고 100~400도 있다).
+  // 그래서 배지에는 절대값이 아니라 최소값 대비 배율을 띄운다.
+  const [zoomRange, setZoomRange] = useState<ZoomRange>(DIGITAL_ZOOM_RANGE);
+  const [isHardwareZoom, setIsHardwareZoom] = useState(false);
   const [hasCameraError, setHasCameraError] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isVideoReady, setIsVideoReady] = useState(false);
@@ -69,6 +76,13 @@ export const CameraLive = ({
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
+        // 지원 기기면 렌즈/센서가 직접 당기게 맡긴다 — CSS scale()과 달리 화질이 깎이지 않는다.
+        const [track] = stream.getVideoTracks();
+        const zoomCapability = (track?.getCapabilities?.() as ZoomCapabilities | undefined)?.zoom;
+        const hardwareRange = resolveZoomRange(zoomCapability, DIGITAL_ZOOM_RANGE.step);
+        setIsHardwareZoom(hardwareRange !== null);
+        setZoomRange(hardwareRange ?? DIGITAL_ZOOM_RANGE);
+        setZoom((hardwareRange ?? DIGITAL_ZOOM_RANGE).min);
         setHasCameraError(false);
       })
       .catch(() => setHasCameraError(true));
@@ -110,6 +124,23 @@ export const CameraLive = ({
     }
   }, [isPaused]);
 
+  // 하드웨어 줌은 값을 트랙에 걸어야 실제로 당겨진다. capability만 광고하고 거절하는 기기가
+  // 있어서, 실패하면 조용히 두지 않고 디지털 줌으로 내려간다 — 안 그러면 슬라이더가 먹통이 된다.
+  useEffect(() => {
+    if (!isHardwareZoom) {
+      return;
+    }
+    const [track] = streamRef.current?.getVideoTracks() ?? [];
+    track
+      ?.applyConstraints({ advanced: [{ zoom }] } as unknown as MediaTrackConstraints)
+      .catch((err) => {
+        console.error("capture-cloud: 하드웨어 줌 적용 실패, 디지털 줌으로 전환", zoom, err);
+        setIsHardwareZoom(false);
+        setZoomRange(DIGITAL_ZOOM_RANGE);
+        setZoom(DIGITAL_ZOOM_RANGE.min);
+      });
+  }, [zoom, isHardwareZoom]);
+
   // 줌은 "손가락이 트랙의 어디에 있나"(절대)가 아니라 "얼마나 움직였나"(상대)로 정한다.
   // 절대 방식이면 보이는 건 가운데 배지 하나뿐인데 값은 트랙 전체에 매핑돼 있어서, 5x에서 배지를
   // 잡는 순간 가운데 값(3x)으로 튄다 — 확대하려고 오른쪽으로 미는데 먼저 축소되는 것처럼 느껴진다.
@@ -131,14 +162,18 @@ export const CameraLive = ({
       return;
     }
     const trackWidth = event.currentTarget.getBoundingClientRect().width;
-    const moved = ((event.clientX - drag.startX) / trackWidth) * (ZOOM_MAX - ZOOM_MIN);
-    const next = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, drag.startZoom + moved));
-    setZoom(Math.round(next / ZOOM_STEP) * ZOOM_STEP);
+    const moved = ((event.clientX - drag.startX) / trackWidth) * (zoomRange.max - zoomRange.min);
+    const next = Math.min(zoomRange.max, Math.max(zoomRange.min, drag.startZoom + moved));
+    // 눈금은 기기 범위의 최소값을 기준으로 잡는다 — min이 1이 아닌 기기가 있다.
+    setZoom(zoomRange.min + Math.round((next - zoomRange.min) / zoomRange.step) * zoomRange.step);
   };
 
   const handleZoomPointerUp = () => {
     zoomDragRef.current = null;
   };
+
+  // 기기 단위(1~8, 100~400 등)를 그대로 보여주면 "100x"가 뜬다 — 최소값 대비 배율로 환산한다.
+  const zoomRatio = zoom / zoomRange.min;
 
   const handleShutter = async () => {
     if (!videoRef.current) {
@@ -150,7 +185,8 @@ export const CameraLive = ({
       // 위에서 마운트 때 미리 받아둔 덕에 보통 캐시에서 즉시 돌아온다 — 셔터가 잠깐
       // 비활성화되는 것 외에 별도 진행 UI는 두지 않는다.
       const coords = await getCurrentPosition();
-      const photoDataUrl = captureFrame(videoRef.current, zoom);
+      // 하드웨어 줌이면 프레임이 이미 당겨진 채로 들어오므로 추가 크롭은 하지 않는다.
+      const photoDataUrl = captureFrame(videoRef.current, isHardwareZoom ? 1 : zoom);
       onCapture(photoDataUrl, coords);
     } catch (err) {
       console.error("capture-cloud: 촬영 시 위치 조회 실패", err);
@@ -210,7 +246,10 @@ export const CameraLive = ({
             muted
             onLoadedData={() => setIsVideoReady(true)}
             className="absolute inset-0 z-[1] h-full w-full object-cover"
-            style={{ transform: `scale(${zoom})`, transformOrigin: "center" }}
+            style={{
+              transform: `scale(${isHardwareZoom ? 1 : zoom})`,
+              transformOrigin: "center",
+            }}
           />
           <div className="pointer-events-none absolute top-4 left-4 z-10 h-12 w-12 border-t-4 border-l-4 border-black" />
           <div className="pointer-events-none absolute right-4 bottom-6 z-10 h-12 w-12 border-r-4 border-b-4 border-black" />
@@ -231,7 +270,7 @@ export const CameraLive = ({
             aria-hidden
             className="mb-1 text-sm font-extrabold text-amber-300 opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100 group-active:opacity-100"
           >
-            {zoom.toFixed(1)} x
+            {zoomRatio.toFixed(1)} x
           </span>
           <div
             className="relative flex h-11 w-full touch-none items-center justify-center"
@@ -242,7 +281,7 @@ export const CameraLive = ({
           >
             <div className="pointer-events-none relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-black/55 transition-[width] duration-200 ease-out group-focus-within:w-full group-hover:w-full group-active:w-full">
               <span className="text-xs font-extrabold text-white transition-opacity duration-150 group-focus-within:opacity-0 group-hover:opacity-0 group-active:opacity-0">
-                {Number.isInteger(zoom) ? zoom : zoom.toFixed(1)}x
+                {Number.isInteger(zoomRatio) ? zoomRatio : zoomRatio.toFixed(1)}x
               </span>
               {/* 눈금과 range가 같은 폭(줄 전체)을 써야 인디케이터가 손가락과 어긋나지 않는다. */}
               <div className="absolute inset-x-0 top-1/2 h-3.5 -translate-y-1/2 opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100 group-active:opacity-100">
@@ -256,20 +295,23 @@ export const CameraLive = ({
                 <span
                   className="absolute top-0 h-full w-[2px] -translate-x-1/2 bg-amber-300"
                   style={{
-                    left: `${((zoom - ZOOM_MIN) / (ZOOM_MAX - ZOOM_MIN)) * 100}%`,
+                    left: `${((zoom - zoomRange.min) / (zoomRange.max - zoomRange.min)) * 100}%`,
                   }}
                 />
               </div>
             </div>
             <input
               type="range"
-              min={ZOOM_MIN}
-              max={ZOOM_MAX}
-              step={ZOOM_STEP}
+              min={zoomRange.min}
+              max={zoomRange.max}
+              step={zoomRange.step}
               value={zoom}
               onChange={(e) => setZoom(Number(e.target.value))}
               disabled={hasCameraError}
               aria-label="줌 배율"
+              // 기기 범위를 그대로 쓰므로 value가 100~400 같은 값일 수 있다. 스크린리더가
+              // 화면의 배지와 다른 숫자를 읽지 않도록 배율로 환산해 들려준다.
+              aria-valuetext={`${zoomRatio.toFixed(1)}배`}
               // 포인터 조작은 위 래퍼가 상대 드래그로 처리한다. 이 range는 지우지 않는다 —
               // Tab 포커스와 화살표 키, 스크린리더의 slider 시맨틱이 여기 달려 있다.
               className="pointer-events-none absolute inset-0 h-full w-full appearance-none bg-transparent opacity-0"
