@@ -274,7 +274,8 @@ export const CameraView = () => {
           {/* pb는 기존 여백(32px) + 떠 있는 BottomNav 높이(약 80px) — 뷰파인더는 탭 뒤까지
               차오르되 셔터/줌은 탭 위에 그대로 남는다. */}
           <div className="relative z-10 mt-auto flex flex-col items-center gap-4 px-4 pt-6 pb-28">
-            <Skeleton aria-hidden className="h-9 w-9 rounded-full" />
+            {/* 줌 배지 자리는 비워둔다 — 뷰파인더가 뜨기 전에 조작할 수 없는 컨트롤이라
+                자리만 잡아두면 로딩 화면만 복잡해진다. 셔터는 이 화면의 주 동작이라 남긴다. */}
             <Skeleton className={`${BRUTAL} h-16 w-16 rounded-full`} />
           </div>
         </div>
