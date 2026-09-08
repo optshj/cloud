@@ -49,9 +49,3 @@ export const getMonthGrid = (year: number, month: number): MonthCell[] => {
   }
   return cells;
 };
-
-// 2열 카드에선 "2026. 08. 30"이 지역명과 한 줄에 못 들어간다 — 목록에선 월/일만 쓴다.
-export const formatShortDate = (key: string): string => {
-  const [, m, d] = key.split("-");
-  return `${m}. ${d}`;
-};

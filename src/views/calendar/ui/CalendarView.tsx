@@ -8,7 +8,7 @@ import { BRUTAL, BRUTAL_SM, LIST_CONTAINER, LIST_ITEM } from "@/shared/ui/tokens
 import { Camera, ChevronLeft, ChevronRight, Cloud } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { EntryDetailModal, MonthCalendarGrid } from "@/widgets/month-calendar";
-import { EntryListCard } from "@/widgets/entry-card";
+import { EntryFeedCard } from "@/widgets/entry-card";
 import { deleteEntryRemote, useCloudEntries } from "@/entities/cloud-entry";
 import { useSession } from "@/entities/session";
 import { KakaoLoginButton } from "@/features/login-kakao";
@@ -17,7 +17,7 @@ import { toast } from "sonner";
 
 export const CalendarView = () => {
   const { user, isLoading: isSessionLoading } = useSession();
-  const { entries: allEntries, isLoading, error, refresh } = useCloudEntries();
+  const { entries: allEntries, isLoading, error, refresh, toggleLike } = useCloudEntries();
   // 탭 전환 오버레이가 덮여있는 동안 실제로 이 로딩이 끝나야 걷힌다 —
   // 아래 "구름 모으는 중..." 스켈레톤은 오버레이 없이(직접 진입) 들어왔을 때를 위한 것.
   usePageReady(!isLoading && !isSessionLoading);
@@ -197,7 +197,7 @@ export const CalendarView = () => {
             >
               {monthEntries.map((entry) => (
                 <motion.div key={entry.id} {...LIST_ITEM} className="grid">
-                  <EntryListCard entry={entry} onSelect={setSelectedId} />
+                  <EntryFeedCard entry={entry} onSelect={setSelectedId} onToggleLike={toggleLike} />
                 </motion.div>
               ))}
             </motion.div>
@@ -210,6 +210,7 @@ export const CalendarView = () => {
         entry={selectedEntry}
         onClose={() => setSelectedId(null)}
         onDelete={handleDelete}
+        onToggleLike={toggleLike}
       />
     </AppShell>
   );

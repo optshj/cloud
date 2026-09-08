@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/shared/lib/supabase/client";
+import { toast } from "sonner";
 import { fetchEntries, toggleLikeRemote } from "./api";
 import type { CloudEntry } from "./types";
 
@@ -74,9 +75,11 @@ export const useCloudEntries = () => {
     try {
       await toggleLikeRemote(id, previous.liked);
     } catch (err) {
-      console.error("toggleLike failed", err);
-      // 실패하면 낙관적 업데이트 롤백
+      console.error("cloud-entry: 좋아요 토글 실패", id, err);
+      // 실패하면 낙관적 업데이트 롤백. 롤백만 하고 조용히 두면 하트가 스스로 되돌아간 것처럼
+      // 보인다 — 에러는 토스트 한 채널로 모은다(→ docs/UI-SYSTEM.md "토스트").
       setEntries((prev) => prev.map((e) => (e.id === id ? previous! : e)));
+      toast.error("좋아요를 반영하지 못했어요. 잠시 후 다시 시도해주세요.");
     }
   }, []);
 

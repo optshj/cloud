@@ -4,11 +4,14 @@ import { motion } from "framer-motion";
 import { BRUTAL_SM, HEART_POP, HEART_TAP, PRESS } from "@/shared/ui/tokens";
 import { Heart } from "lucide-react";
 import { PlaceholderPhoto } from "@/shared/ui/PlaceholderPhoto";
+import { formatDisplayDate } from "@/shared/lib/date";
 import type { CloudEntry } from "@/entities/cloud-entry";
 import { tiltClass } from "../lib/tilt";
 
-// 사진첩과 같은 폴라로이드 어휘. 대지는 흰색이고 아래엔 날짜 대신 태그·좋아요가 온다 —
-// 두 탭이 같은 2열 격자라 대지 톤과 메타 정보로 구분한다.
+// 피드와 사진첩이 같이 쓰는 카드다. 원래 사진첩은 EntryListCard(날짜+코멘트, 좋아요 없음)를
+// 따로 들고 있었는데, 같은 기록이 탭마다 다르게 읽히고 사진첩에선 좋아요 수를 볼 수 없었다 —
+// 카드를 하나로 합치고 두 탭의 구분은 배경 테마(라벤더/코랄)에 맡긴다.
+// 대지는 흰색이다 — 크림(amber-50)으로 깔아봤더니 2열로 채우는 순간 화면이 누레졌다.
 export const EntryFeedCard = ({
   entry,
   onSelect,
@@ -26,7 +29,7 @@ export const EntryFeedCard = ({
     <button
       type="button"
       onClick={() => onSelect(entry.id)}
-      aria-label={`${entry.location} 기록 보기`}
+      aria-label={`${formatDisplayDate(entry.date)} ${entry.location} 기록 보기`}
       className="block text-left"
     >
       <PlaceholderPhoto
