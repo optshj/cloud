@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { createClient } from "@/shared/lib/supabase/server";
-import { reverseGeocodeToDong } from "@/shared/lib/kakao/reverse-geocode";
+import { reverseGeocodeToDong } from "@/shared/lib/geo/reverse-geocode";
 import { generateAiComment } from "@/features/capture-cloud";
 
 const BUCKET = "entry-photos";
@@ -23,7 +23,12 @@ export const POST = async (request: NextRequest) => {
   const photoUrl = supabase.storage.from(BUCKET).getPublicUrl(photoPath).data.publicUrl;
 
   const [locationDong, aiComment] = await Promise.all([
-    reverseGeocodeToDong(lat, lng).catch(() => null),
+    // 원인을 삼키면 502만 남아 지오코더 장애와 좌표 문제를 구분할 수 없다 —
+    // 지오코더가 돌려준 메시지를 그대로 남긴다.
+    reverseGeocodeToDong(lat, lng).catch((err) => {
+      console.error("entries/preview: 역지오코딩 실패", { lat, lng }, err);
+      return null;
+    }),
     generateAiComment(photoUrl),
   ]);
 

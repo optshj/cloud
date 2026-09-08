@@ -34,7 +34,7 @@ vi.mock("@/shared/lib/supabase/server", () => ({
   })),
 }));
 
-vi.mock("@/shared/lib/kakao/reverse-geocode", () => ({
+vi.mock("@/shared/lib/geo/reverse-geocode", () => ({
   reverseGeocodeToDong: mockReverseGeocode,
 }));
 

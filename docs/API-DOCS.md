@@ -53,12 +53,12 @@ if (!photoPath || typeof lat !== "number" || typeof lng !== "number") → 400
 | 상태 코드 | 조건 | 메시지 |
 |---|---|---|
 | 400 | `photoPath`/`lat`/`lng` 누락 또는 타입 불일치 | `"잘못된 요청이에요"` |
-| 502 | `reverseGeocodeToDong` 실패(카카오 API 실패, 키 미설정 등) | `"위치 확인에 실패했어요"` |
+| 502 | `reverseGeocodeToDong` 실패(Nominatim 응답 실패, 동·상위 지역명 둘 다 없음) | `"위치 확인에 실패했어요"` |
 
 **서버 재계산:** 클라이언트가 보낸 `lat`/`lng`는 신뢰하지 않고 서버가 `reverseGeocodeToDong(lat, lng)`로 동 단위 위치를 직접 계산한다. 응답에는 변환된 `locationDong`만 담고 원본 좌표는 응답에 포함하지 않는다(`privacy-security` 스킬).
 
 **외부 연동:**
-- 카카오 로컬 API(`coord2regioncode`)로 좌표 → 행정동 변환 (`reverseGeocodeToDong`, `src/shared/lib/kakao/reverse-geocode.ts`).
+- OSM Nominatim(`/reverse`)으로 좌표 → 동 단위 변환 (`reverseGeocodeToDong`, `src/shared/lib/geo/reverse-geocode.ts`). 키가 없어 발급·활성화 절차가 없는 대신 **정책상 초당 1건, 연락처가 담긴 User-Agent 필수**다. 행정동(`suburb`) 우선, 없으면 법정동(`quarter`)으로 접고, 동이 안 잡히면 상위 단위(구/시)만 돌려준다.
 - 학교 AI Gateway(Anthropic SDK, `baseURL`을 gateway로 교체)로 사진에 대한 태그/코멘트 생성 (`generateAiComment`, `src/features/capture-cloud/lib/generate-ai-comment.ts`). `ANTHROPIC_API_KEY` 미설정이거나 호출/파싱 실패 시 **조용히** 더미 코멘트(`pickRandomComment`)로 폴백한다 — 구름 여부 검증 로직 없음(`docs/PRODUCT.md` 스코프).
 - 위치 변환과 AI 코멘트 생성은 `Promise.all`로 병렬 호출된다.
 
@@ -114,4 +114,4 @@ if (!photoPath || typeof lat !== "number" || typeof lng !== "number" || !tag || 
 - `entry_date` unique 제약 위반 시 Postgres 에러 코드 `23505`로 하루 중복 저장을 막는다.
 - 저장된 `photo_path`로 Storage public URL(`getPublicUrl`)을 만들어 `photoDataUrl`로 응답.
 
-**외부 연동:** 카카오 로컬 API(`reverseGeocodeToDong`)만 호출한다. AI 코멘트는 이 엔드포인트에서 생성하지 않는다 — `tag`/`comment`는 `/api/entries/preview`에서 이미 생성된 값을 클라이언트가 그대로 전달받아 보낸 것을 서버가 검증 없이(타입만 확인) 저장한다.
+**외부 연동:** OSM Nominatim(`reverseGeocodeToDong`)만 호출한다. AI 코멘트는 이 엔드포인트에서 생성하지 않는다 — `tag`/`comment`는 `/api/entries/preview`에서 이미 생성된 값을 클라이언트가 그대로 전달받아 보낸 것을 서버가 검증 없이(타입만 확인) 저장한다.

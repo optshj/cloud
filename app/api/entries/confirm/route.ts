@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { createClient } from "@/shared/lib/supabase/server";
-import { reverseGeocodeToDong } from "@/shared/lib/kakao/reverse-geocode";
+import { reverseGeocodeToDong } from "@/shared/lib/geo/reverse-geocode";
 import { seoulDateKey } from "@/shared/lib/date";
 
 const BUCKET = "entry-photos";
@@ -30,7 +30,10 @@ export const POST = async (request: NextRequest) => {
   let locationDong: string;
   try {
     locationDong = await reverseGeocodeToDong(lat, lng);
-  } catch {
+  } catch (err) {
+    // 원인을 삼키면 502만 남아 지오코더 장애와 좌표 문제를 구분할 수 없다 —
+    // 지오코더가 돌려준 메시지를 그대로 남긴다.
+    console.error("entries/confirm: 역지오코딩 실패", { lat, lng }, err);
     return NextResponse.json({ error: "위치 확인에 실패했어요" }, { status: 502 });
   }
 
