@@ -31,13 +31,8 @@ export const CapturePreview = ({
   // 보이게만 한다(실제 Dialog의 포커스 트랩 등은 필요 없다는 게 결정사항 — animate-overlay-in/
   // animate-modal-in은 Radix Dialog와 같은 시각 언어를 재사용하려고 globals.css 토큰만 가져온 것).
   // pb는 떠 있는 BottomNav(약 80px) 몫이다 — 안 두면 아래 버튼이 탭 뒤로 들어간다.
-  // 카드가 min-h-0 flex-1 안에서 max-h-full로 잘리므로 버튼은 항상 화면 안에 남는다
-  // (예전엔 카드가 70dvh를 차지해 버튼이 접힌 아래로 밀려 스크롤해야 보였다).
-  // 래퍼의 flex-1은 지우면 안 된다 — 빠지면 부모 높이가 auto가 돼 max-h-full이 조용히
-  // 무효가 된다. min-h는 반대쪽 하한이다: 가로 모드처럼 세로가 짧을 때 사진이 띠로
-  // 찌그러지는 대신 바깥 컨테이너가 스크롤을 받게 한다.
-  <div className="animate-overlay-in flex min-h-0 flex-1 flex-col gap-4 bg-black/60 p-6 pb-28">
-    <div className="relative min-h-[40dvh] flex-1">
+  <div className="animate-overlay-in flex min-h-0 flex-1 flex-col bg-black/60 p-6 pb-28">
+    <div className="relative flex min-h-0 flex-1 flex-col">
       <Button
         variant="thin"
         size="icon"
@@ -47,56 +42,60 @@ export const CapturePreview = ({
       >
         <X className="h-4 w-4" />
       </Button>
-      {/* 내용(특히 AI 코멘트)이 뷰포트보다 길어질 수 있어 카드 안에서만 스크롤되게 한다 —
-          전체 페이지가 넘치는 대신 이 안에서 갇힌다. */}
-      <div className={`animate-modal-in max-h-full overflow-y-auto ${BRUTAL} bg-white p-3`}>
-        <div className="overflow-hidden border-2 border-black">
+      {/* 버튼까지 카드 안에 들어간다 — 밖에 두면 카드와 버튼이 높이를 두고 다퉈서, 카드가
+          줄거나(사진이 작아진다) 버튼이 접힌 아래로 밀린다(스크롤해야 보인다). 한 덩어리로
+          묶고 사진만 flex로 남은 높이를 먹게 하면 어느 화면에서도 스크롤이 안 생긴다. */}
+      <div className={`animate-modal-in flex min-h-0 flex-1 flex-col ${BRUTAL} bg-white p-3`}>
+        {/* 이 화면에서 유일하게 늘었다 줄었다 하는 칸이다 — aspect 고정을 버리고 남은 높이를
+            채운 뒤 object-cover로 잘라낸다. */}
+        <div className="min-h-0 flex-1 overflow-hidden border-2 border-black">
           <img
             src={captured.photoDataUrl}
             alt="촬영한 하늘 사진"
-            className="aspect-[4/5] w-full object-cover"
+            className="h-full w-full object-cover"
           />
         </div>
         {isLoggedIn && (
-          <div className="space-y-1 pt-3">
+          // AI 코멘트가 유난히 길면 이 칸만 스크롤한다 — 사진과 버튼은 제자리에 남는다.
+          <div className="min-h-0 space-y-1 overflow-y-auto pt-3">
             <p className="font-extrabold">{location}</p>
             <p className="text-sm text-neutral-700">{captured.comment}</p>
             <p className="text-right text-xs text-neutral-500">{formatDisplayDate(dateKeyStr)}</p>
           </div>
         )}
+
+        {isLoggedIn ? (
+          <div className="flex flex-col gap-2 pt-3">
+            <Button
+              size="lg"
+              onClick={onRecord}
+              disabled={isSaving}
+              aria-busy={isSaving}
+              className="bg-violet-300"
+            >
+              {isSaving ? "기록하는 중..." : "기록하기"}
+            </Button>
+            <div className="grid grid-cols-2 gap-2">
+              <Button onClick={onRetake} className="bg-emerald-100 py-2">
+                다시찍기
+              </Button>
+              <Button onClick={onDownload} className="bg-amber-100 py-2">
+                다운로드
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2 pt-3">
+            <p className="text-center text-sm font-bold">
+              로그인하면 AI 코멘트와 함께 기록할 수 있어요
+            </p>
+            {loginSlot}
+            <Button onClick={onRetake} className="bg-emerald-100 py-2">
+              다시찍기
+            </Button>
+          </div>
+        )}
       </div>
     </div>
-
-    {isLoggedIn ? (
-      <>
-        <Button
-          size="lg"
-          onClick={onRecord}
-          disabled={isSaving}
-          aria-busy={isSaving}
-          className="bg-violet-300"
-        >
-          {isSaving ? "기록하는 중..." : "기록하기"}
-        </Button>
-        <div className="grid grid-cols-2 gap-3">
-          <Button onClick={onRetake} className="bg-emerald-100 py-2">
-            다시찍기
-          </Button>
-          <Button onClick={onDownload} className="bg-amber-100 py-2">
-            다운로드
-          </Button>
-        </div>
-      </>
-    ) : (
-      <>
-        <p className="text-center text-sm font-bold text-white">
-          로그인하면 AI 코멘트와 함께 기록할 수 있어요
-        </p>
-        {loginSlot}
-        <Button onClick={onRetake} className="bg-emerald-100 py-2">
-          다시찍기
-        </Button>
-      </>
-    )}
   </div>
 );

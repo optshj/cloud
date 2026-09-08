@@ -314,19 +314,19 @@ export const CameraView = () => {
   const renderOverlay = () => {
     // 업로드 + AI 코멘트 생성은 몇 초 걸린다 — 빈 화면 대신 방금 찍은 사진을 보여준 채로 기다린다.
     if (stage.kind === "generating") {
-      // 여백/높이 규칙은 CapturePreview와 맞춘다. 사진이 aspect-[4/5] w-full이라 보통은 폭이
-      // 높이를 정해서 결과가 도착해도 카드가 제자리다 — 다만 여기엔 버튼 자리가 없어
-      // 상한이 그만큼 더 크다. 세로가 아주 짧은 기기에서는 결과 카드만 더 잘린다.
+      // 카드 골격은 CapturePreview와 같다 — 카드가 영역을 꽉 채우고 사진이 남은 높이를 먹는다.
+      // 카드 테두리 위치는 두 상태에서 같고, 결과가 도착하면 코멘트·버튼이 들어오는 만큼
+      // 사진 칸만 줄어든다(자리를 미리 비워두면 사용자가 지적한 "빈 줄"이 다시 생긴다).
       return (
-        <div className="animate-overlay-in flex min-h-0 flex-1 flex-col gap-4 bg-black/60 p-6 pb-28">
+        <div className="animate-overlay-in flex min-h-0 flex-1 flex-col bg-black/60 p-6 pb-28">
           <div
-            className={`animate-modal-in max-h-full overflow-y-auto ${BRUTAL} relative bg-white p-3`}
+            className={`animate-modal-in flex min-h-0 flex-1 flex-col ${BRUTAL} relative bg-white p-3`}
           >
-            <div className="relative overflow-hidden border-2 border-black">
+            <div className="relative min-h-0 flex-1 overflow-hidden border-2 border-black">
               <img
                 src={stage.photoDataUrl}
                 alt="방금 촬영한 하늘 사진"
-                className="aspect-[4/5] w-full object-cover"
+                className="h-full w-full object-cover"
               />
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/40 text-white">
                 <div className={`${BRUTAL} bg-white p-4`}>
