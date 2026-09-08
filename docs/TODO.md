@@ -154,15 +154,6 @@ confirm은 클라이언트가 보낸 `tag`/`comment`를 그대로 저장한다. 
 "탈퇴 시 즉시 전체 삭제"(→ `PRODUCT.md`)를 지키는 건 (a)지만, 스토리지 장애에 탈퇴가 막힌다.
 → `app/api/account/route.ts`
 
-### 3-5. 태그를 피드 밖에서도 보여줄지
-
-(2026-09-09 확인 — 전체 리뷰)
-
-`tag`는 지금 **피드 격자와 피드 상세에서만** 보인다. 사진첩 상세에도, 촬영 직후 미리보기에도 없어서
-**자기 기록의 태그를 저장 전에 한 번도 못 본다.** 같은 기록이 보는 자리마다 다르게 읽힌다.
-정할 것: **(a)** 사진첩 상세·미리보기에도 태그를 넣어 통일 · **(b)** 태그는 피드 전용 정보로 둔다.
-→ `src/features/capture-cloud/ui/CapturePreview.tsx`, `src/widgets/month-calendar/ui/EntryDetailModal.tsx`
-
 ### 3-6. `entry-photos` 버킷에 MIME/용량 제한을 걸지
 
 (2026-09-09 확인 — 전체 리뷰)

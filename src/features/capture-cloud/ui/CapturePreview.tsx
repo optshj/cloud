@@ -64,9 +64,16 @@ export const CapturePreview = ({
         {isLoggedIn && (
           // AI 코멘트가 유난히 길면 이 칸만 스크롤한다 — 사진과 버튼은 제자리에 남는다.
           <div className="min-h-0 space-y-1 overflow-y-auto pt-3">
-            <p className="font-extrabold">{location}</p>
+            {/* 위치·날짜 / 태그 / 코멘트 — 사진첩·피드 상세와 같은 순서다. 저장하고 나서
+                피드에서야 자기 태그를 처음 보던 것을 여기서 미리 보여준다. */}
+            <div className="flex items-end justify-between gap-2">
+              <p className="text-xs text-neutral-600">{location}</p>
+              <p className="text-xs whitespace-nowrap text-neutral-600">
+                {formatDisplayDate(dateKeyStr)}
+              </p>
+            </div>
+            <p className="text-[15px] font-extrabold">{captured.tag}</p>
             <p className="text-sm text-neutral-700">{captured.comment}</p>
-            <p className="text-right text-xs text-neutral-500">{formatDisplayDate(dateKeyStr)}</p>
           </div>
         )}
 

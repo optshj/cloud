@@ -106,14 +106,21 @@ export const EntryDetailModal = ({
             className="aspect-square w-full border-2 border-black"
           />
 
+          {/* 캡션 구성은 피드 상세(FeedDetailModal)와 같다 — 같은 기록을 어디서 열든
+              같은 순서로 읽혀야 한다: 위치·날짜 / 태그 / 코멘트. */}
           <div className="space-y-1 px-1 pt-3 pb-1">
-            <DialogTitle>{entry.location}</DialogTitle>
             <div className="flex items-end justify-between gap-2">
-              <DialogDescription>{entry.comment}</DialogDescription>
+              <DialogTitle className="text-xs font-normal text-neutral-600">
+                {entry.location}
+              </DialogTitle>
               <p className="text-xs whitespace-nowrap text-neutral-600">
                 {formatDisplayDate(entry.date)}
               </p>
             </div>
+            <p className="text-[15px] font-extrabold">{entry.tag}</p>
+            <DialogDescription className="text-sm text-neutral-700">
+              {entry.comment}
+            </DialogDescription>
             <Button
               onClick={handleSave}
               disabled={!entry.photoDataUrl || isSaving}
