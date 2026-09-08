@@ -150,7 +150,8 @@ export const CalendarView = () => {
           />
         </motion.div>
 
-        <div className="flex flex-col gap-4 px-4 pb-4">
+        {/* pb는 기존 여백 + 떠 있는 BottomNav 높이(약 80px) — 마지막 카드가 탭에 안 가리게. */}
+        <div className="flex flex-col gap-4 px-4 pb-24">
           {error && (
             <p role="alert" className="py-8 text-center text-sm font-bold text-rose-600">
               {error}

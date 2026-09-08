@@ -252,11 +252,15 @@ export const CameraLive = ({
             }}
           />
           <div className="pointer-events-none absolute top-4 left-4 z-10 h-12 w-12 border-t-4 border-l-4 border-black" />
-          <div className="pointer-events-none absolute right-4 bottom-6 z-10 h-12 w-12 border-r-4 border-b-4 border-black" />
+          {/* 뷰파인더가 탭 뒤까지 차오르게 되면서 이 모서리도 탭 라벨과 겹쳤다 — 컨트롤과
+              같은 높이로 올려 프레임이 "보이는 화면"의 모서리를 잡게 한다. */}
+          <div className="pointer-events-none absolute right-4 bottom-28 z-10 h-12 w-12 border-r-4 border-b-4 border-black" />
         </>
       )}
 
-      <div className="relative z-10 mt-auto flex flex-col items-center gap-4 px-4 pt-6 pb-8">
+      {/* pb는 기존 여백(32px) + 떠 있는 BottomNav 높이(약 80px) — 뷰파인더는 탭 뒤까지
+          차오르되 줌/셔터는 탭 위에 남는다. */}
+      <div className="relative z-10 mt-auto flex flex-col items-center gap-4 px-4 pt-6 pb-28">
         <p role="alert" className="min-h-4 text-xs font-bold text-rose-600">
           {locationError}
         </p>

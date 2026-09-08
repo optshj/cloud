@@ -209,7 +209,9 @@ export const CameraView = () => {
           aria-label="카메라 준비 중"
         >
           <span aria-hidden className="shimmer absolute inset-0 block" />
-          <div className="relative z-10 mt-auto flex flex-col items-center gap-4 px-4 pt-6 pb-8">
+          {/* pb는 기존 여백(32px) + 떠 있는 BottomNav 높이(약 80px) — 뷰파인더는 탭 뒤까지
+              차오르되 셔터/줌은 탭 위에 그대로 남는다. */}
+          <div className="relative z-10 mt-auto flex flex-col items-center gap-4 px-4 pt-6 pb-28">
             <Skeleton aria-hidden className="h-9 w-9 rounded-full" />
             <Skeleton className={`${BRUTAL} h-16 w-16 rounded-full`} />
           </div>

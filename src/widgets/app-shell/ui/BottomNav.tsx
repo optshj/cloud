@@ -26,7 +26,9 @@ export const BottomNav = () => {
   };
 
   return (
-    <nav className="relative z-[60] flex items-end justify-around px-4 py-1">
+    // 배경 없이 콘텐츠 위에 떠 있다 — 흐름에서 빼야 뒤(카메라 뷰파인더 등)가 탭 뒤까지 차오른다.
+    // 대신 각 화면이 이 높이(약 80px)만큼 아래 여백을 들고 있어야 마지막 요소가 안 가려진다.
+    <nav className="absolute inset-x-0 bottom-0 z-[60] flex items-end justify-around px-4 py-1">
       {TABS.map((tab) => (
         <NavTab
           key={tab.href}

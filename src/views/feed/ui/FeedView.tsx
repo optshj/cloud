@@ -34,7 +34,11 @@ export const FeedView = () => {
   if (isLoading) {
     return (
       <AppShell theme="feed" title="피드">
-        <div className="grid grid-cols-2 gap-3 p-4" aria-busy="true" aria-label="피드 불러오는 중">
+        <div
+          className="grid grid-cols-2 gap-3 p-4 pb-24"
+          aria-busy="true"
+          aria-label="피드 불러오는 중"
+        >
           {Array.from({ length: 4 }).map((_, index) => (
             <EntryFeedCardSkeleton key={index} />
           ))}
@@ -78,7 +82,8 @@ export const FeedView = () => {
 
   return (
     <AppShell theme="feed" title="피드">
-      <motion.div {...LIST_CONTAINER} className="grid grid-cols-2 gap-3 p-4">
+      {/* pb는 기존 여백 + 떠 있는 BottomNav 높이(약 80px) — 마지막 카드가 탭에 안 가리게. */}
+      <motion.div {...LIST_CONTAINER} className="grid grid-cols-2 gap-3 p-4 pb-24">
         {entries.map((entry) => (
           // grid로 감싸야 카드가 원래처럼 행 높이만큼 늘어난다(stagger 래퍼를 끼우기 전과 동일).
           <motion.div key={entry.id} {...LIST_ITEM} className="grid">

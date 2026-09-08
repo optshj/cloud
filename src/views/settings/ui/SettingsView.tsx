@@ -54,7 +54,7 @@ export const SettingsView = () => {
     return (
       <AppShell theme="calendar" title="설정">
         <div
-          className="flex flex-1 flex-col gap-6 p-4"
+          className="flex flex-1 flex-col gap-6 p-4 pb-24"
           aria-busy="true"
           aria-label="설정 불러오는 중"
         >
@@ -95,7 +95,7 @@ export const SettingsView = () => {
 
   return (
     <AppShell theme="calendar" title="설정">
-      <motion.div {...LIST_CONTAINER} className="flex flex-1 flex-col gap-6 p-4">
+      <motion.div {...LIST_CONTAINER} className="flex flex-1 flex-col gap-6 p-4 pb-24">
         <motion.h1 {...LIST_ITEM} className="px-1 pt-1 text-xl font-extrabold">
           설정
         </motion.h1>
