@@ -34,7 +34,7 @@ vi.mock("@/shared/lib/geo/reverse-geocode", () => ({
   reverseGeocodeToDong: mockReverseGeocode,
 }));
 
-vi.mock("@/features/capture-cloud", () => ({
+vi.mock("@/shared/lib/ai/generate-ai-comment", () => ({
   generateAiComment: mockGenerateAiComment,
 }));
 

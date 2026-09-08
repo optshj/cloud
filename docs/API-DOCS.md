@@ -41,7 +41,9 @@
 **요청 검증(수동 캐스팅):**
 ```ts
 const { photoPath, lat, lng } = body as { photoPath?: string; lat?: number; lng?: number };
-if (!photoPath || typeof lat !== "number" || typeof lng !== "number") → 400
+const body = await request.json().catch(() => null);
+if (!body) → 400 ("요청 본문(JSON)을 읽지 못했어요")
+if (!photoPath || !isValidLat(lat) || !isValidLng(lng)) → 400
 ```
 
 **응답(성공, `200`):**
@@ -52,14 +54,15 @@ if (!photoPath || typeof lat !== "number" || typeof lng !== "number") → 400
 **응답(실패):**
 | 상태 코드 | 조건 | 메시지 |
 |---|---|---|
-| 400 | `photoPath`/`lat`/`lng` 누락 또는 타입 불일치 | `"잘못된 요청이에요"` |
+| 400 | 바디가 JSON이 아님 | `"요청 본문(JSON)을 읽지 못했어요"` |
+| 400 | `photoPath` 누락, 또는 좌표가 숫자·유한·범위(±90/±180) 조건을 못 넘김 | `"잘못된 요청이에요"` |
 | 502 | `reverseGeocodeToDong` 실패(Nominatim 응답 실패, 동·상위 지역명 둘 다 없음) | `"위치 확인에 실패했어요"` |
 
 **서버 재계산:** 클라이언트가 보낸 `lat`/`lng`는 신뢰하지 않고 서버가 `reverseGeocodeToDong(lat, lng)`로 동 단위 위치를 직접 계산한다. 응답에는 변환된 `locationDong`만 담고 원본 좌표는 응답에 포함하지 않는다(`privacy-security` 스킬).
 
 **외부 연동:**
 - OSM Nominatim(`/reverse`)으로 좌표 → 동 단위 변환 (`reverseGeocodeToDong`, `src/shared/lib/geo/reverse-geocode.ts`). 키가 없어 발급·활성화 절차가 없는 대신 **정책상 초당 1건, 연락처가 담긴 User-Agent 필수**다. 행정동(`suburb`) 우선, 없으면 법정동(`quarter`)으로 접고, 동이 안 잡히면 상위 단위(구/시)만 돌려준다.
-- 학교 AI Gateway(Anthropic SDK, `baseURL`을 gateway로 교체)로 사진에 대한 태그/코멘트 생성 (`generateAiComment`, `src/features/capture-cloud/lib/generate-ai-comment.ts`). `ANTHROPIC_API_KEY` 미설정이거나 호출/파싱 실패 시 **조용히** 더미 코멘트(`pickRandomComment`)로 폴백한다 — 구름 여부 검증 로직 없음(`docs/PRODUCT.md` 스코프).
+- 학교 AI Gateway(Anthropic SDK, `baseURL`을 gateway로 교체)로 사진에 대한 태그/코멘트 생성 (`generateAiComment`, `src/shared/lib/ai/generate-ai-comment.ts` — 서버 전용이라 features 배럴에서 뺐다. 클라이언트 컴포넌트가 같은 배럴을 import하면서 Anthropic SDK가 클라이언트 모듈 그래프에 들어가고 있었다. 게이트웨이 타임아웃 15초·재시도 1회). `ANTHROPIC_API_KEY` 미설정이거나 호출/파싱 실패 시 **조용히** 더미 코멘트(`pickRandomComment`)로 폴백한다 — 구름 여부 검증 로직 없음(`docs/PRODUCT.md` 스코프).
 - 위치 변환과 AI 코멘트 생성은 `Promise.all`로 병렬 호출된다.
 
 Supabase Storage에서 `photoPath`의 public URL(`getPublicUrl`)을 만들어 AI Gateway에 이미지로 전달한다(DB 쓰기는 없음).
@@ -80,7 +83,10 @@ Supabase Storage에서 `photoPath`의 public URL(`getPublicUrl`)을 만들어 AI
 const { photoPath, lat, lng, tag, comment } = body as {
   photoPath?: string; lat?: number; lng?: number; tag?: string; comment?: string;
 };
-if (!photoPath || typeof lat !== "number" || typeof lng !== "number" || !tag || !comment) → 400
+const body = await request.json().catch(() => null);
+if (!body) → 400 ("요청 본문(JSON)을 읽지 못했어요")
+if (!photoPath || !isValidLat(lat) || !isValidLng(lng) || !tag || !comment) → 400
+if (tag.length > 20 || comment.length > 100) → 400
 ```
 
 **응답(성공, `200`):**
@@ -100,7 +106,9 @@ if (!photoPath || typeof lat !== "number" || typeof lng !== "number" || !tag || 
 **응답(실패):**
 | 상태 코드 | 조건 | 메시지 |
 |---|---|---|
-| 400 | 필드 누락/타입 불일치 | `"잘못된 요청이에요"` |
+| 400 | 바디가 JSON이 아님 | `"요청 본문(JSON)을 읽지 못했어요"` |
+| 400 | 필드 누락, 또는 좌표가 숫자·유한·범위 조건을 못 넘김 | `"잘못된 요청이에요"` |
+| 400 | `tag` 20자 / `comment` 100자 초과 | `"태그는 20자, 코멘트는 100자를 넘을 수 없어요"` |
 | 502 | `reverseGeocodeToDong` 실패 | `"위치 확인에 실패했어요"` |
 | 409 | Postgres unique violation(`error.code === "23505"`, 하루 1장 제한 위반) | `"오늘은 이미 기록했어요"` |
 | 500 | 그 외 insert 에러 | `"저장에 실패했어요"` |
@@ -114,4 +122,4 @@ if (!photoPath || typeof lat !== "number" || typeof lng !== "number" || !tag || 
 - `entry_date` unique 제약 위반 시 Postgres 에러 코드 `23505`로 하루 중복 저장을 막는다.
 - 저장된 `photo_path`로 Storage public URL(`getPublicUrl`)을 만들어 `photoDataUrl`로 응답.
 
-**외부 연동:** OSM Nominatim(`reverseGeocodeToDong`)만 호출한다. AI 코멘트는 이 엔드포인트에서 생성하지 않는다 — `tag`/`comment`는 `/api/entries/preview`에서 이미 생성된 값을 클라이언트가 그대로 전달받아 보낸 것을 서버가 검증 없이(타입만 확인) 저장한다.
+**외부 연동:** OSM Nominatim(`reverseGeocodeToDong`)만 호출한다. AI 코멘트는 이 엔드포인트에서 생성하지 않는다 — `tag`/`comment`는 `/api/entries/preview`에서 이미 생성된 값을 클라이언트가 그대로 전달받아 보낸 것이다. 서버는 **길이 상한만** 본다(태그 20자·코멘트 100자) — 공개 피드에 실리는 텍스트라 무제한 길이는 막지만, preview 결과와 같은 문구인지까지는 대조하지 않는다(→ [`TODO.md`](TODO.md) §2-11).

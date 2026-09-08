@@ -2,7 +2,8 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { createClient } from "@/shared/lib/supabase/server";
 import { reverseGeocodeToDong } from "@/shared/lib/geo/reverse-geocode";
-import { generateAiComment } from "@/features/capture-cloud";
+import { isValidLat, isValidLng } from "@/shared/lib/geo/coords";
+import { generateAiComment } from "@/shared/lib/ai/generate-ai-comment";
 
 const BUCKET = "entry-photos";
 
@@ -14,9 +15,12 @@ export const POST = async (request: NextRequest) => {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "로그인이 필요해요" }, { status: 401 });
 
-  const body = await request.json();
+  const body = await request.json().catch(() => null);
+  if (!body) {
+    return NextResponse.json({ error: "요청 본문(JSON)을 읽지 못했어요" }, { status: 400 });
+  }
   const { photoPath, lat, lng } = body as { photoPath?: string; lat?: number; lng?: number };
-  if (!photoPath || typeof lat !== "number" || typeof lng !== "number") {
+  if (!photoPath || !isValidLat(lat) || !isValidLng(lng)) {
     return NextResponse.json({ error: "잘못된 요청이에요" }, { status: 400 });
   }
 

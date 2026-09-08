@@ -36,7 +36,13 @@ export const formatRegion = (address: NominatimAddress): string => {
 
 export const reverseGeocodeToDong = async (lat: number, lng: number): Promise<string> => {
   const url = `${ENDPOINT}?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=ko&zoom=16`;
-  const res = await fetch(url, { headers: { "User-Agent": USER_AGENT } });
+  // 좌표별 결과는 사실상 불변이라 하루 캐시가 자연스럽다(공개 Nominatim의 "초당 1건" 정책과도 맞다).
+  // 타임아웃이 없으면 Nominatim이 늘어질 때 confirm/preview가 그대로 매달린다.
+  const res = await fetch(url, {
+    headers: { "User-Agent": USER_AGENT },
+    next: { revalidate: 86_400 },
+    signal: AbortSignal.timeout(5_000),
+  });
   if (!res.ok) throw new Error(`Nominatim 실패: ${res.status}`);
 
   const data = (await res.json()) as { address?: NominatimAddress };

@@ -39,11 +39,20 @@ export const DELETE = async () => {
   }
   const paths = [...new Set([...(uploaded ?? []), ...(entries ?? []).map((e) => e.photo_path)])];
   if (paths.length > 0) {
-    await admin.storage.from(BUCKET).remove(paths);
+    // remove()는 실패를 throw하지 않고 { error }로 돌려준다 — 버리면 계정이 사라진 뒤라
+    // 이 경로 목록을 재구성할 방법이 없어 public 버킷에 사진이 영구히 남는다.
+    // 여기서 중단할지는 아직 정해지지 않았다(남은 작업 문서 §3) — 지금은 최소한 흔적을 남긴다.
+    const { error: removeError } = await admin.storage.from(BUCKET).remove(paths);
+    if (removeError) {
+      console.error("account: 사진 파일 삭제 실패", user.id, paths.length, removeError);
+    }
   }
 
   const { error } = await admin.auth.admin.deleteUser(user.id);
-  if (error) return NextResponse.json({ error: "탈퇴 처리에 실패했어요" }, { status: 500 });
+  if (error) {
+    console.error("account: auth 계정 삭제 실패", user.id, error);
+    return NextResponse.json({ error: "탈퇴 처리에 실패했어요" }, { status: 500 });
+  }
 
   return new NextResponse(null, { status: 204 });
 };

@@ -190,4 +190,40 @@ describe("POST /api/entries/confirm", () => {
     expect(json).not.toHaveProperty("lat");
     expect(json).not.toHaveProperty("lng");
   });
+  // 아래 400 케이스들이 없어서 "typeof number면 통과"가 오래 남아 있었다.
+  it("바디가 JSON이 아니면 400을 받는다 — 검증 전에 throw돼 로그 없는 500이 되던 자리", async () => {
+    const broken = {
+      json: async () => {
+        throw new SyntaxError("Unexpected token");
+      },
+    } as unknown as NextRequest;
+
+    const res = await POST(broken);
+
+    expect(res.status).toBe(400);
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+
+  it("좌표가 NaN이거나 범위를 벗어나면 400을 받는다", async () => {
+    for (const bad of [{ lat: NaN }, { lat: 9999 }, { lng: 181 }, { lat: "37.5" }]) {
+      const res = await POST(makeRequest({ ...validBody, ...bad }));
+      expect(res.status).toBe(400);
+    }
+    expect(mockReverseGeocode).not.toHaveBeenCalled();
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+
+  it("필수 필드가 빠지면 400을 받는다", async () => {
+    const res = await POST(makeRequest({ ...validBody, photoPath: undefined }));
+
+    expect(res.status).toBe(400);
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+
+  it("tag/comment가 상한을 넘으면 400을 받는다 — 공개 피드에 실리는 텍스트라 서버가 막는다", async () => {
+    const res = await POST(makeRequest({ ...validBody, comment: "구".repeat(101) }));
+
+    expect(res.status).toBe(400);
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
 });
