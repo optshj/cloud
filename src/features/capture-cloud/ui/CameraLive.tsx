@@ -8,6 +8,7 @@ import { Button } from "@/shared/ui/button";
 import { toast } from "sonner";
 import { captureFrame } from "../lib/capture-frame";
 import { resolveZoomRange, type ZoomRange } from "../lib/zoom-range";
+import { forgetCapturePermission } from "./CapturePermissionGate";
 
 // 하드웨어 줌을 못 쓰는 기기(iOS Safari가 대표적이다)에서 CSS scale()로 흉내 낼 폭.
 const DIGITAL_ZOOM_RANGE = { min: 1, max: 5, step: 0.1 };
@@ -37,7 +38,19 @@ const getCurrentPosition = (): Promise<Coords> =>
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => reject(new Error("위치 확인에 실패했어요. 다시 시도해주세요.")),
+      (err) => {
+        // 문서 도중에 권한이 꺼진 경우 — 게이트 통과 기억을 지워 다음 진입에 다시 세운다.
+        if (err.code === err.PERMISSION_DENIED) {
+          forgetCapturePermission();
+        }
+        reject(
+          new Error(
+            err.code === err.PERMISSION_DENIED
+              ? "위치 권한이 꺼져 있어요. 브라우저 설정에서 허용해주세요."
+              : "위치 확인에 실패했어요. 다시 시도해주세요.",
+          ),
+        );
+      },
       GEO_OPTIONS,
     );
   });
@@ -85,7 +98,13 @@ export const CameraLive = ({
         setZoom((hardwareRange ?? DIGITAL_ZOOM_RANGE).min);
         setHasCameraError(false);
       })
-      .catch(() => setHasCameraError(true));
+      .catch((err) => {
+        // 게이트를 건너뛸 수 있게 된 뒤로 권한 취소가 표면화되는 지점이 여기다 —
+        // NotAllowedError인지 NotReadableError인지가 로그에 남아야 한다.
+        console.error("capture-cloud: 카메라 스트림 열기 실패", err);
+        forgetCapturePermission();
+        setHasCameraError(true);
+      });
 
     return () => {
       isCancelled = true;

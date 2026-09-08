@@ -29,6 +29,20 @@ const requestBothPermissions = async () => {
   });
 };
 
+// 탭을 오갈 때마다 이 게이트가 다시 뜨던 문제: 라우팅은 같은 문서 안에서 일어나서 브라우저가
+// 준 권한은 그대로 살아 있는데, 게이트만 새로 마운트돼 "권한 허용하기"를 또 누르게 했다.
+// 아래 permissions.query로는 못 막는다 — Safari가 "camera"에서 throw해 체크가 통째로 건너뛰어진다.
+// 그래서 통과 사실을 모듈에 들고 있는다. 새로고침하면 초기화되는데, 그게 브라우저가 실제로
+// 다시 묻는 주기(문서 단위)와 같다.
+let isGrantedInDocument = false;
+export const hasCapturePermission = () => isGrantedInDocument;
+// 문서 도중에 권한이 꺼지면(사이트 설정 등) 이 기억을 지워야 한다 — 안 그러면 게이트를
+// 건너뛴 채로 셔터에서야 실패가 드러난다. 쓰기는 effect/핸들러 안에서만 한다(렌더 경로에서
+// 건드리면 서버 모듈 인스턴스가 요청 간에 오염된다).
+export const forgetCapturePermission = () => {
+  isGrantedInDocument = false;
+};
+
 export const CapturePermissionGate = ({ onGranted }: { onGranted: () => void }) => {
   const [isRequesting, setIsRequesting] = useState(false);
   const [isDenied, setIsDenied] = useState(false);
@@ -48,6 +62,7 @@ export const CapturePermissionGate = ({ onGranted }: { onGranted: () => void }) 
           name: "geolocation",
         });
         if (!isCancelled && camera.state === "granted" && geolocation.state === "granted") {
+          isGrantedInDocument = true;
           onGranted();
         }
       } catch {
@@ -64,6 +79,7 @@ export const CapturePermissionGate = ({ onGranted }: { onGranted: () => void }) 
     setIsDenied(false);
     try {
       await requestBothPermissions();
+      isGrantedInDocument = true;
       onGranted();
     } catch (err) {
       console.error("capture-cloud: 카메라/위치 권한 요청 실패", err);

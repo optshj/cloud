@@ -44,3 +44,11 @@ CONVENTIONS 쪽이 더 많이 읽히므로 틀린 주장이 이긴다).
 못 담는다** — 비로그인은 이제 빈 달력이 아니라 달력 자체가 없는 화면이다.
 → 이 행은 코드가 바뀔 때마다 계속 걸린다. `CalendarView.tsx`의 `!user` 분기 모양이 바뀌면
 (문구 갈림 ↔ early return ↔ 그 사이 어떤 형태든) 표를 다시 읽고 실제 구조와 대조한다.
+
+**같은 유형이 `FLOWS.md`로도 번졌다 (2026-09-08, 권한 게이트 재노출 diff):** `CameraView`의
+`stage` 초기값이 조건부(`hasCapturePermission() ? idle : permission`)가 되면서 **탭 재진입 시
+게이트가 아예 마운트되지 않게** 됐는데, `docs/FLOWS.md` §1은 여전히 "촬영 화면에 들어오면 권한
+게이트를 먼저 통과한다 … 이미 허용된 상태면 `permissions.query`로 확인하고 스치듯 지나간다"로
+남아 있었다. UI-SYSTEM 표와 달리 이쪽은 **진입 순서 자체가 틀린 서술**이 된다.
+→ `CameraView`의 `stage` 초기값·early return 순서, 또는 `CapturePermissionGate`의 통과 조건을
+건드리는 diff는 `docs/FLOWS.md` §1을 같이 읽는다(§1이 촬영 진입 플로우의 진실 소스다).

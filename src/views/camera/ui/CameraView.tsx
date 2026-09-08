@@ -8,7 +8,12 @@ import { Cloud } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { formatDisplayDate, seoulDateKey } from "@/shared/lib/date";
-import { CameraLive, CapturePermissionGate, CapturePreview } from "@/features/capture-cloud";
+import {
+  CameraLive,
+  CapturePermissionGate,
+  CapturePreview,
+  hasCapturePermission,
+} from "@/features/capture-cloud";
 import type { Captured, Coords } from "@/features/capture-cloud";
 import { buildShareCardDataUrl, downloadDataUrl } from "@/features/share-card";
 import { useCloudEntries, useTodaysEntry } from "@/entities/cloud-entry";
@@ -49,7 +54,11 @@ export const CameraView = () => {
   // 공개 피드(entry_feed)에는 user_id가 없어 다른 유저의 오늘 기록과 구분이 안 된다 —
   // "내가 오늘 이미 기록했는지"는 별도로 본인 소유 행만 조회한다.
   const todaysEntry = useTodaysEntry(user?.id);
-  const [stage, setStage] = useState<Stage>({ kind: "permission" });
+  // 이 문서에서 이미 게이트를 통과했으면 다시 세우지 않는다 — 탭을 오갈 때마다 권한을
+  // 다시 묻는 것처럼 보이던 원인이다.
+  const [stage, setStage] = useState<Stage>(() =>
+    hasCapturePermission() ? { kind: "idle" } : { kind: "permission" },
+  );
   const [isSaving, setIsSaving] = useState(false);
   // 탭 전환 오버레이가 덮여있는 동안 세션 확인이 끝나야 걷힌다 — 카메라 화면 자체는
   // 데이터 로딩 없이 바로 그려지지만, 로그인 여부에 따라 흐름이 갈리니 그것만 기다린다.
