@@ -15,6 +15,7 @@ import { useCloudEntries, useTodaysEntry } from "@/entities/cloud-entry";
 import { useSession } from "@/entities/session";
 import { KakaoLoginButton } from "@/features/login-kakao";
 import { createClient } from "@/shared/lib/supabase/client";
+import { toast } from "sonner";
 
 const BUCKET = "entry-photos";
 // 카카오 로그인은 전체 페이지 이동(OAuth 리다이렉트)이라 React state가 다 날아간다 —
@@ -50,7 +51,6 @@ export const CameraView = () => {
   const todaysEntry = useTodaysEntry(user?.id);
   const [stage, setStage] = useState<Stage>({ kind: "permission" });
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   // 탭 전환 오버레이가 덮여있는 동안 세션 확인이 끝나야 걷힌다 — 카메라 화면 자체는
   // 데이터 로딩 없이 바로 그려지지만, 로그인 여부에 따라 흐름이 갈리니 그것만 기다린다.
   usePageReady(!isSessionLoading);
@@ -58,7 +58,6 @@ export const CameraView = () => {
   const todayKey = seoulDateKey();
 
   const processCapture = useCallback(async (photoDataUrl: string, coords: Coords) => {
-    setError(null);
     setStage({ kind: "generating", photoDataUrl });
 
     try {
@@ -93,7 +92,7 @@ export const CameraView = () => {
       });
     } catch (err) {
       console.error("capture processing failed", err);
-      setError(err instanceof Error ? err.message : "촬영 처리에 실패했어요");
+      toast.error(err instanceof Error ? err.message : "촬영 처리에 실패했어요");
       setStage({ kind: "idle" });
     }
   }, []);
@@ -153,7 +152,6 @@ export const CameraView = () => {
       return;
     }
     setIsSaving(true);
-    setError(null);
     try {
       const res = await fetch("/api/entries/confirm", {
         method: "POST",
@@ -180,7 +178,7 @@ export const CameraView = () => {
       router.push("/calendar");
     } catch (err) {
       console.error("camera: 기록 저장(POST /api/entries/confirm) 실패", err);
-      setError(err instanceof Error ? err.message : "저장에 실패했어요");
+      toast.error(err instanceof Error ? err.message : "저장에 실패했어요");
     } finally {
       setIsSaving(false);
     }
@@ -309,16 +307,6 @@ export const CameraView = () => {
             onRecord={handleRecord}
             onDownload={handleDownload}
           />
-          {/* 뒤가 사용자가 찍는 하늘이라 배경 밝기를 예측할 수 없다 — 딤에 기대지 않고
-              문구 자체에 불투명 칩을 준다. */}
-          {error && (
-            <p
-              role="alert"
-              className="bg-black/85 px-6 pt-2 pb-4 text-center text-xs font-bold text-rose-200"
-            >
-              {error}
-            </p>
-          )}
         </>
       );
     }
@@ -330,11 +318,6 @@ export const CameraView = () => {
 
   return (
     <AppShell theme="camera" title="카메라">
-      {error && !overlay && (
-        <p role="alert" className="px-6 pt-2 text-center text-xs font-bold text-rose-600">
-          {error}
-        </p>
-      )}
       <div className="relative flex min-h-0 flex-1 flex-col">
         {/* 오버레이는 포인터만 막는다 — Tab/스크린리더는 뒤의 셔터·줌에 그대로 닿아서
             미리보기를 보는 중에 촬영이 덮어써질 수 있다. inert로 트리째 빼둔다. */}

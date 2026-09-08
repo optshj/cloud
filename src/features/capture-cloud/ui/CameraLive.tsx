@@ -5,6 +5,7 @@ import type { PointerEvent as ReactPointerEvent } from "react";
 import { BRUTAL, BRUTAL_SM } from "@/shared/ui/tokens";
 import { CameraOff, Cloud, RefreshCw } from "lucide-react";
 import { Button } from "@/shared/ui/button";
+import { toast } from "sonner";
 import { captureFrame } from "../lib/capture-frame";
 import { resolveZoomRange, type ZoomRange } from "../lib/zoom-range";
 
@@ -58,7 +59,6 @@ export const CameraLive = ({
   const [zoomRange, setZoomRange] = useState<ZoomRange>(DIGITAL_ZOOM_RANGE);
   const [isHardwareZoom, setIsHardwareZoom] = useState(false);
   const [hasCameraError, setHasCameraError] = useState(false);
-  const [locationError, setLocationError] = useState<string | null>(null);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
@@ -179,7 +179,6 @@ export const CameraLive = ({
     if (!videoRef.current) {
       return;
     }
-    setLocationError(null);
     setIsCapturing(true);
     try {
       // 위에서 마운트 때 미리 받아둔 덕에 보통 캐시에서 즉시 돌아온다 — 셔터가 잠깐
@@ -190,7 +189,7 @@ export const CameraLive = ({
       onCapture(photoDataUrl, coords);
     } catch (err) {
       console.error("capture-cloud: 촬영 시 위치 조회 실패", err);
-      setLocationError(
+      toast.error(
         err instanceof Error ? err.message : "위치 확인에 실패했어요. 다시 시도해주세요.",
       );
     } finally {
@@ -261,9 +260,6 @@ export const CameraLive = ({
       {/* pb는 기존 여백(32px) + 떠 있는 BottomNav 높이(약 80px) — 뷰파인더는 탭 뒤까지
           차오르되 줌/셔터는 탭 위에 남는다. */}
       <div className="relative z-10 mt-auto flex flex-col items-center gap-4 px-4 pt-6 pb-28">
-        <p role="alert" className="min-h-4 text-xs font-bold text-rose-600">
-          {locationError}
-        </p>
         {/* 평소엔 현재 배율만 보여주는 동그란 배지, 호버/드래그(포커스) 중에만 눈금 슬라이더로
             펼쳐진다 — iOS 카메라 줌과 같은 언어. 조작 자체는 계속 네이티브 range가 한다(투명하게
             줄 전체를 덮고 있어서 접힘/펼침에 상관없이 값 매핑이 동일하다). */}
