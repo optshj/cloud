@@ -29,3 +29,11 @@ metadata:
 
 **How to apply:** 새 중복을 발견하면 위 배치를 먼저 적용한다. 위에 없는 주제만 머리말의
 관할 선언으로 새로 판정하고, 겹쳐서 안 서면 사용자에게 묻는다.
+
+**2026-09-07: `docs/API-DOCS.md` 신설.** `api-developer`가 쓰고 관리, `frontend-dev`는
+read-only(관할 선언이 문서 머리말에 있음) — Route Handler 3종(account/entries/preview/confirm)의
+인증·요청/응답 스키마·에러 케이스·서버 재계산 지점·외부 연동을 담는다. `CLAUDE.md`의
+`docs/*.md` 목록(PRODUCT/FLOWS/UI-SYSTEM/ERD/CONVENTIONS/REVIEW-STANDARD/TODO)엔 아직
+안 올라 있지만 `docs/*.md` 전체가 doc-keeper 범위이므로 자동으로 포함이다. FLOWS.md·
+ERD.md와 내용이 안 겹치는지(FLOWS는 화면 순서, ERD는 스키마, API-DOCS는 Route Handler
+계약) 다음 정리 때도 확인.
