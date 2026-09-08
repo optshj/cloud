@@ -63,7 +63,8 @@ export const fetchEntries = async (): Promise<CloudEntry[]> => {
   return rows.map((row) => toCloudEntry(row as EntryFeedRow, likedIds.has(row.id)));
 };
 
-export type TodayEntryStatus = { comment: string } | null;
+// id도 같이 들고 온다 — 카메라 화면의 "오늘 다시 찍기"가 이 행을 지우고 그 자리에 다시 찍는다.
+export type TodayEntryStatus = { id: string; comment: string } | null;
 
 // "내가 오늘 이미 기록했는지" 확인 전용 — 다른 유저의 오늘 기록을 내 것으로 착각하면 안 되므로
 // 소유 판정이 필요한데, user_id는 클라이언트가 읽을 수 없다(0004에서 컬럼 권한 회수). 대신
@@ -72,7 +73,7 @@ export const fetchMyTodayEntry = async (): Promise<TodayEntryStatus> => {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("entry_feed")
-    .select("comment")
+    .select("id, comment")
     .eq("is_mine", true)
     .eq("entry_date", seoulDateKey())
     .maybeSingle();

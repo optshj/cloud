@@ -16,7 +16,16 @@ import {
 } from "@/features/capture-cloud";
 import type { Captured, Coords } from "@/features/capture-cloud";
 import { buildShareCardDataUrl, downloadDataUrl } from "@/features/share-card";
-import { useCloudEntries, useTodaysEntry } from "@/entities/cloud-entry";
+import { deleteEntryRemote, useCloudEntries, useTodaysEntry } from "@/entities/cloud-entry";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from "@/shared/ui/alert-dialog";
 import { useSession } from "@/entities/session";
 import { KakaoLoginButton } from "@/features/login-kakao";
 import { createClient } from "@/shared/lib/supabase/client";
@@ -60,6 +69,10 @@ export const CameraView = () => {
     hasCapturePermission() ? { kind: "idle" } : { kind: "permission" },
   );
   const [isSaving, setIsSaving] = useState(false);
+  const [isRetakeOpen, setIsRetakeOpen] = useState(false);
+  // 오늘 기록을 방금 지웠다는 사실. todaysEntry는 마운트 때 한 번만 조회하므로 지운 뒤에도
+  // 값이 남아 "이미 기록했어요" 화면으로 되돌아간다 — 그걸 이 플래그가 덮는다.
+  const [hasDeletedToday, setHasDeletedToday] = useState(false);
   // 탭 전환 오버레이가 덮여있는 동안 세션 확인이 끝나야 걷힌다 — 카메라 화면 자체는
   // 데이터 로딩 없이 바로 그려지지만, 로그인 여부에 따라 흐름이 갈리니 그것만 기다린다.
   usePageReady(!isSessionLoading);
@@ -156,6 +169,25 @@ export const CameraView = () => {
     setStage({ kind: "idle" });
   };
 
+  // 하루 1장은 그대로다 — 새 슬롯을 여는 게 아니라 오늘 행을 지우고 그 자리에 다시 찍는다.
+  // (사진첩에서 삭제 → 카메라로 돌아오던 경로를 한 번에 줄인 것이고, DB의
+  // unique (user_id, entry_date)도 그대로다.)
+  const handleRetakeToday = async () => {
+    if (!todaysEntry) {
+      return;
+    }
+    try {
+      await deleteEntryRemote(todaysEntry.id);
+    } catch (err) {
+      console.error("camera: 오늘 기록 삭제 실패", todaysEntry.id, err);
+      toast.error("오늘 기록을 지우지 못했어요. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+    await refresh();
+    setHasDeletedToday(true);
+    setStage({ kind: "idle" });
+  };
+
   const handleRecord = async () => {
     if (stage.kind !== "ready") {
       return;
@@ -227,7 +259,7 @@ export const CameraView = () => {
     );
   }
 
-  if (todaysEntry || stage.kind === "already-done") {
+  if ((todaysEntry && !hasDeletedToday) || stage.kind === "already-done") {
     return (
       <AppShell theme="camera" title="카메라">
         <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
@@ -239,6 +271,31 @@ export const CameraView = () => {
             <p className="text-sm text-neutral-600">&ldquo;{todaysEntry.comment}&rdquo;</p>
           )}
           <Button onClick={() => router.push("/calendar")}>사진첩에서 보기</Button>
+          {/* 오늘 기록이 확인된 경우에만 — confirm이 409로 돌려준 already-done 상태에서는
+              지울 행의 id를 모른다. */}
+          {todaysEntry && (
+            <Button
+              variant="thin"
+              onClick={() => setIsRetakeOpen(true)}
+              className="bg-white py-1.5"
+            >
+              오늘 다시 찍기
+            </Button>
+          )}
+          <AlertDialog open={isRetakeOpen} onOpenChange={setIsRetakeOpen}>
+            <AlertDialogContent>
+              <AlertDialogTitle>오늘 기록을 지우고 다시 찍을까요?</AlertDialogTitle>
+              <AlertDialogDescription>
+                오늘 기록한 사진과 코멘트가 함께 지워져요. 되돌릴 수 없어요.
+              </AlertDialogDescription>
+              <AlertDialogFooter>
+                <AlertDialogCancel>취소</AlertDialogCancel>
+                <AlertDialogAction variant="destructive" onClick={handleRetakeToday}>
+                  지우고 다시 찍기
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </AppShell>
     );
