@@ -70,26 +70,34 @@ export const FeedDetailModal = ({
             <DialogDescription className="text-sm text-neutral-700">
               {entry.comment}
             </DialogDescription>
-            <motion.button
-              {...HEART_TAP}
-              type="button"
-              onClick={onToggleLike}
-              aria-pressed={entry.liked}
-              aria-label={`좋아요 ${entry.likes}개`}
-              className="-mx-2 flex min-h-11 items-center gap-1 px-2 pt-1 text-sm font-bold"
-            >
-              <motion.span
-                {...HEART_POP}
-                animate={entry.liked ? "popped" : "idle"}
-                className="inline-flex"
+            {entry.isMine ? (
+              <p className="flex min-h-11 items-center gap-1 pt-1 text-sm font-bold">
+                <Heart className="h-4 w-4 text-black" />
+                <span className="sr-only">좋아요</span>
+                {entry.likes}
+              </p>
+            ) : (
+              <motion.button
+                {...HEART_TAP}
+                type="button"
+                onClick={onToggleLike}
+                aria-pressed={entry.liked}
+                aria-label={`좋아요 ${entry.likes}개`}
+                className="-mx-2 flex min-h-11 items-center gap-1 px-2 pt-1 text-sm font-bold"
               >
-                <Heart
-                  className={`h-4 w-4 ${entry.liked ? "text-rose-500" : "text-black"}`}
-                  fill={entry.liked ? "currentColor" : "none"}
-                />
-              </motion.span>
-              {entry.likes}
-            </motion.button>
+                <motion.span
+                  {...HEART_POP}
+                  animate={entry.liked ? "popped" : "idle"}
+                  className="inline-flex"
+                >
+                  <Heart
+                    className={`h-4 w-4 ${entry.liked ? "text-rose-500" : "text-black"}`}
+                    fill={entry.liked ? "currentColor" : "none"}
+                  />
+                </motion.span>
+                {entry.likes}
+              </motion.button>
+            )}
           </div>
         </DialogContent>
       )}

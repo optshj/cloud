@@ -186,7 +186,6 @@ export const CalendarView = () => {
         entry={selectedEntry}
         onClose={() => setSelectedId(null)}
         onDelete={handleDelete}
-        onToggleLike={toggleLike}
       />
     </AppShell>
   );

@@ -26,10 +26,8 @@ test("비로그인 사진첩은 '기록 없음'이 아니라 로그인 유도를
   await expect(page.getByText("이 달엔 기록된 구름이 없어요")).toBeHidden();
 });
 
-test("피드 상세 모달의 신고 버튼은 남의 기록에만 붙는다", async ({ page }) => {
-  // 피드는 브라우저에서 PostgREST를 직접 때리므로 응답을 갈아끼울 수 있다.
-  // 실제 데이터에 기대면 (1) 피드가 비었을 때 조용히 skip되고 (2) 비로그인은 is_mine이
-  // 항상 false라 "내 기록엔 신고 버튼이 없다"는 정작 새로 생긴 규칙을 못 덮는다.
+test("신고·좋아요 버튼은 남의 기록에만 붙는다", async ({ page }) => {
+  // 비로그인은 is_mine이 항상 false라 실제 데이터로는 못 덮어서 응답을 갈아끼운다.
   const row = {
     entry_date: "2026-08-28",
     location_dong: "제주시 이도이동",
@@ -52,17 +50,21 @@ test("피드 상세 모달의 신고 버튼은 남의 기록에만 붙는다", a
   await expect(page.getByLabel("피드 불러오는 중")).toBeHidden();
   const cards = page.getByRole("button", { name: /기록 보기$/ });
   await expect(cards).toHaveCount(2);
+  await expect(page.getByRole("button", { name: /^좋아요/ })).toHaveCount(1);
 
   await cards.first().click();
-  await expect(page.getByRole("dialog")).toBeVisible();
-  await expect(page.getByRole("button", { name: "신고" })).toBeVisible();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("button", { name: "신고" })).toBeVisible();
+  await expect(dialog.getByRole("button", { name: /^좋아요/ })).toBeVisible();
   await expect(page).toHaveURL(/\/feed$/);
 
   await page.getByRole("button", { name: "닫기" }).click();
-  await expect(page.getByRole("dialog")).toBeHidden();
+  await expect(dialog).toBeHidden();
   await cards.nth(1).click();
-  await expect(page.getByRole("dialog")).toBeVisible();
-  await expect(page.getByRole("button", { name: "신고" })).toBeHidden();
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("button", { name: "신고" })).toBeHidden();
+  await expect(dialog.getByRole("button", { name: /^좋아요/ })).toBeHidden();
 });
 
 test("피드 상세 모달은 닫힐 때 exit 애니메이션을 재생한다", async ({ page }) => {

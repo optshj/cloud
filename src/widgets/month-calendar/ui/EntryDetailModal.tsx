@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { BRUTAL, HEART_POP, HEART_TAP } from "@/shared/ui/tokens";
+import { BRUTAL } from "@/shared/ui/tokens";
 import { Heart, X } from "lucide-react";
 import { formatDisplayDate } from "@/shared/lib/date";
 import { useLastNonNull } from "@/shared/lib/use-last-non-null";
@@ -32,12 +31,10 @@ export const EntryDetailModal = ({
   entry: openEntry,
   onClose,
   onDelete,
-  onToggleLike,
 }: {
   entry: CloudEntry | null;
   onClose: () => void;
   onDelete: (id: string) => void;
-  onToggleLike: (id: string) => void;
 }) => {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -118,28 +115,11 @@ export const EntryDetailModal = ({
             <DialogDescription className="text-sm text-neutral-700">
               {entry.comment}
             </DialogDescription>
-            {/* 카드가 좋아요 수를 싣는데 상세에 없으면 격자에서 날짜를 탭해 들어온 사람은
-                그 수를 아예 못 본다 — 상세는 카드의 상위집합이어야 한다(UI-SYSTEM §1). */}
-            <motion.button
-              {...HEART_TAP}
-              type="button"
-              onClick={() => onToggleLike(entry.id)}
-              aria-pressed={entry.liked}
-              aria-label={`좋아요 ${entry.likes}개`}
-              className="-mx-2 flex min-h-11 items-center gap-1 px-2 pt-1 text-sm font-bold"
-            >
-              <motion.span
-                {...HEART_POP}
-                animate={entry.liked ? "popped" : "idle"}
-                className="inline-flex"
-              >
-                <Heart
-                  className={`h-4 w-4 ${entry.liked ? "text-rose-500" : "text-black"}`}
-                  fill={entry.liked ? "currentColor" : "none"}
-                />
-              </motion.span>
+            <p className="flex min-h-11 items-center gap-1 pt-1 text-sm font-bold">
+              <Heart className="h-4 w-4 text-black" />
+              <span className="sr-only">좋아요</span>
               {entry.likes}
-            </motion.button>
+            </p>
             <Button
               onClick={handleSave}
               disabled={!entry.photoDataUrl || isSaving}

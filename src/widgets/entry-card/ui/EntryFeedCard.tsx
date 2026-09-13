@@ -36,29 +36,34 @@ export const EntryFeedCard = ({
         <p className="truncate text-[10px] text-neutral-600">{entry.location}</p>
         <p className="text-[13px] font-extrabold">{entry.tag}</p>
       </button>
-      <motion.button
-        {...HEART_TAP}
-        type="button"
-        onClick={() => onToggleLike(entry.id)}
-        aria-pressed={entry.liked}
-        // 상태는 aria-pressed가 알린다 — 라벨까지 상태를 담으면 이중 안내가 되고,
-        // 라벨이 버튼 내용을 덮어써서 좋아요 수가 안 읽힌다.
-        aria-label={`좋아요 ${entry.likes}개`}
-        // 아이콘만큼(~20px)이던 히트 영역을 44px로 — 카드 안이라 음수 마진으로 여백만 먹인다.
-        className="-mx-2 mt-auto -mb-2 flex min-h-11 w-fit items-center gap-1.5 px-2 pt-1"
-      >
-        <motion.span
-          {...HEART_POP}
-          animate={entry.liked ? "popped" : "idle"}
-          className="inline-flex"
+      {entry.isMine ? (
+        <p className="mt-auto -mb-2 flex min-h-11 w-fit items-center gap-1.5 pt-1">
+          <Heart className="h-4 w-4 text-black" />
+          <span className="sr-only">좋아요</span>
+          <span className="text-base font-extrabold">{entry.likes}</span>
+        </p>
+      ) : (
+        <motion.button
+          {...HEART_TAP}
+          type="button"
+          onClick={() => onToggleLike(entry.id)}
+          aria-pressed={entry.liked}
+          aria-label={`좋아요 ${entry.likes}개`}
+          className="-mx-2 mt-auto -mb-2 flex min-h-11 w-fit items-center gap-1.5 px-2 pt-1"
         >
-          <Heart
-            className={`h-4 w-4 ${entry.liked ? "text-rose-500" : "text-black"}`}
-            fill={entry.liked ? "currentColor" : "none"}
-          />
-        </motion.span>
-        <span className="text-base font-extrabold">{entry.likes}</span>
-      </motion.button>
+          <motion.span
+            {...HEART_POP}
+            animate={entry.liked ? "popped" : "idle"}
+            className="inline-flex"
+          >
+            <Heart
+              className={`h-4 w-4 ${entry.liked ? "text-rose-500" : "text-black"}`}
+              fill={entry.liked ? "currentColor" : "none"}
+            />
+          </motion.span>
+          <span className="text-base font-extrabold">{entry.likes}</span>
+        </motion.button>
+      )}
     </div>
   </div>
 );
