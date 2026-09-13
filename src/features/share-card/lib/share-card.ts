@@ -1,3 +1,5 @@
+import { formatDisplayDate } from "@/shared/lib/date";
+
 const loadImage = (src: string): Promise<HTMLImageElement> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -37,8 +39,7 @@ type ShareCardInput = {
   displayDate: string;
 };
 
-// 외부 공유용 카드 이미지를 합성한다. 워터마크(서비스명 자리)를 항상 포함 — 바이럴 도달용.
-export const buildShareCardDataUrl = async (input: ShareCardInput): Promise<string> => {
+const buildShareCardDataUrl = async (input: ShareCardInput): Promise<string> => {
   const width = 800;
   const height = 1000;
   const photoHeight = Math.round(height * 0.6);
@@ -79,9 +80,34 @@ export const buildShareCardDataUrl = async (input: ShareCardInput): Promise<stri
   return canvas.toDataURL("image/png");
 };
 
-export const downloadDataUrl = (dataUrl: string, filename: string) => {
+const downloadUrl = async (url: string, filename: string) => {
+  // cross-origin URL(Storage)엔 download 속성이 안 먹어서 blob URL로 바꿔 받는다.
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`이미지 다운로드 실패: ${res.status} ${url}`);
+  const href = URL.createObjectURL(await res.blob());
   const a = document.createElement("a");
-  a.href = dataUrl;
+  a.href = href;
   a.download = filename;
   a.click();
+  // 즉시 revoke하면 일부 브라우저(Safari)가 받기 전에 끊는다 — 넉넉히 두고 해제.
+  setTimeout(() => URL.revokeObjectURL(href), 10_000);
+};
+
+export type DownloadKind = "original" | "card";
+
+export const downloadEntryImage = async (
+  kind: DownloadKind,
+  entry: { photoDataUrl: string; location: string; comment: string; dateKey: string },
+) => {
+  if (kind === "original") {
+    await downloadUrl(entry.photoDataUrl, `구름-${entry.dateKey}-원본.jpg`);
+    return;
+  }
+  const cardUrl = await buildShareCardDataUrl({
+    photoDataUrl: entry.photoDataUrl,
+    location: entry.location,
+    comment: entry.comment,
+    displayDate: formatDisplayDate(entry.dateKey),
+  });
+  await downloadUrl(cardUrl, `구름-${entry.dateKey}-카드.png`);
 };

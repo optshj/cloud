@@ -11,7 +11,7 @@ export const CapturePreview = ({
   location,
   dateKeyStr,
   isSaving,
-  isDownloading,
+  downloading = null,
   isLoggedIn = true,
   loginSlot,
   onRetake,
@@ -22,12 +22,12 @@ export const CapturePreview = ({
   location?: string;
   dateKeyStr: string;
   isSaving?: boolean;
-  isDownloading?: boolean;
+  downloading?: "original" | "card" | null;
   isLoggedIn?: boolean;
   loginSlot?: ReactNode;
   onRetake: () => void;
   onRecord?: () => void;
-  onDownload?: () => void;
+  onDownload?: (kind: "original" | "card") => void;
 }) => (
   <div className="animate-overlay-in flex min-h-0 flex-1 flex-col bg-black/60 p-6 pb-28">
     <div className="relative flex min-h-0 flex-1 flex-col">
@@ -65,7 +65,10 @@ export const CapturePreview = ({
         )}
 
         {isLoggedIn ? (
-          <div className="flex flex-col gap-2 pt-3">
+          <div className="grid grid-cols-2 gap-2 pt-3">
+            <Button onClick={onRetake} className="bg-emerald-100 py-2">
+              다시찍기
+            </Button>
             <Button
               size="lg"
               onClick={onRecord}
@@ -75,19 +78,22 @@ export const CapturePreview = ({
             >
               {isSaving ? "기록하는 중..." : "기록하기"}
             </Button>
-            <div className="grid grid-cols-2 gap-2">
-              <Button onClick={onRetake} className="bg-emerald-100 py-2">
-                다시찍기
-              </Button>
-              <Button
-                onClick={onDownload}
-                disabled={isDownloading}
-                aria-busy={isDownloading}
-                className="bg-amber-100 py-2"
-              >
-                {isDownloading ? "만드는 중..." : "다운로드"}
-              </Button>
-            </div>
+            <Button
+              onClick={() => onDownload?.("original")}
+              disabled={downloading !== null}
+              aria-busy={downloading === "original"}
+              className="bg-amber-100 py-2"
+            >
+              {downloading === "original" ? "받는 중..." : "원본 저장"}
+            </Button>
+            <Button
+              onClick={() => onDownload?.("card")}
+              disabled={downloading !== null}
+              aria-busy={downloading === "card"}
+              className="bg-amber-100 py-2"
+            >
+              {downloading === "card" ? "만드는 중..." : "카드 저장"}
+            </Button>
           </div>
         ) : (
           <div className="flex flex-col gap-2 pt-3">

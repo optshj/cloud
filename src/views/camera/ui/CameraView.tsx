@@ -7,7 +7,7 @@ import { BRUTAL } from "@/shared/ui/tokens";
 import { Cloud } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
-import { formatDisplayDate, seoulDateKey } from "@/shared/lib/date";
+import { seoulDateKey } from "@/shared/lib/date";
 import {
   CameraLive,
   CapturePermissionGate,
@@ -15,7 +15,8 @@ import {
   hasCapturePermission,
 } from "@/features/capture-cloud";
 import type { Captured, Coords } from "@/features/capture-cloud";
-import { buildShareCardDataUrl, downloadDataUrl } from "@/features/share-card";
+import { downloadEntryImage } from "@/features/share-card";
+import type { DownloadKind } from "@/features/share-card";
 import { deleteEntryRemote, useCloudEntries, useTodaysEntry } from "@/entities/cloud-entry";
 import {
   AlertDialog,
@@ -64,10 +65,7 @@ export const CameraView = () => {
   // todaysEntry는 마운트 때 한 번만 조회하므로, 지운 뒤엔 이 플래그로 덮는다.
   const [hasDeletedToday, setHasDeletedToday] = useState(false);
   const [isDeletingToday, setIsDeletingToday] = useState(false);
-  // 캔버스 합성 + 원격 이미지 로드라 수백 ms~수 초 걸린다 — 누른 티가 나야 두 번 안 누른다.
-  const [isDownloading, setIsDownloading] = useState(false);
-  // 탭 전환 오버레이가 덮여있는 동안 세션 확인이 끝나야 걷힌다 — 카메라 화면 자체는
-  // 데이터 로딩 없이 바로 그려지지만, 로그인 여부에 따라 흐름이 갈리니 그것만 기다린다.
+  const [downloading, setDownloading] = useState<DownloadKind | null>(null);
   usePageReady(!isSessionLoading);
 
   const todayKey = seoulDateKey();
@@ -218,24 +216,27 @@ export const CameraView = () => {
     }
   };
 
-  const handleDownload = async () => {
+  const handleDownload = async (kind: DownloadKind) => {
     if (stage.kind !== "ready") {
       return;
     }
-    setIsDownloading(true);
+    setDownloading(kind);
     try {
-      const dataUrl = await buildShareCardDataUrl({
+      await downloadEntryImage(kind, {
         photoDataUrl: stage.captured.photoDataUrl,
         location: stage.locationDong,
         comment: stage.captured.comment,
-        displayDate: formatDisplayDate(todayKey),
+        dateKey: todayKey,
       });
-      downloadDataUrl(dataUrl, `구름-${todayKey}.png`);
     } catch (err) {
-      console.error("camera: 공유카드 생성 실패", err);
-      toast.error("카드 이미지를 만들지 못했어요. 잠시 후 다시 시도해주세요.");
+      console.error(`camera: ${kind === "card" ? "공유카드" : "원본 사진"} 다운로드 실패`, err);
+      toast.error(
+        kind === "card"
+          ? "카드 이미지를 만들지 못했어요. 잠시 후 다시 시도해주세요."
+          : "원본 사진을 받지 못했어요. 잠시 후 다시 시도해주세요.",
+      );
     } finally {
-      setIsDownloading(false);
+      setDownloading(null);
     }
   };
 
@@ -363,7 +364,7 @@ export const CameraView = () => {
           location={stage.locationDong}
           dateKeyStr={todayKey}
           isSaving={isSaving}
-          isDownloading={isDownloading}
+          downloading={downloading}
           onRetake={handleRetake}
           onRecord={handleRecord}
           onDownload={handleDownload}

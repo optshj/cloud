@@ -23,7 +23,8 @@ import {
   AlertDialogTitle,
 } from "@/shared/ui/alert-dialog";
 import { PlaceholderPhoto } from "@/shared/ui/PlaceholderPhoto";
-import { buildShareCardDataUrl, downloadDataUrl } from "@/features/share-card";
+import { downloadEntryImage } from "@/features/share-card";
+import type { DownloadKind } from "@/features/share-card";
 import type { CloudEntry } from "@/entities/cloud-entry";
 import { toast } from "sonner";
 
@@ -37,8 +38,7 @@ export const EntryDetailModal = ({
   onDelete: (id: string) => void;
 }) => {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  // 닫히는 동안에도 카드를 계속 그려야 Radix가 exit 애니메이션을 재생한다.
+  const [downloading, setDownloading] = useState<DownloadKind | null>(null);
   const entry = useLastNonNull(openEntry);
 
   const handleClose = () => {
@@ -54,24 +54,31 @@ export const EntryDetailModal = ({
     handleClose();
   };
 
-  const handleSave = async () => {
+  const handleDownload = async (kind: DownloadKind) => {
     if (!entry?.photoDataUrl) {
       return;
     }
-    setIsSaving(true);
+    setDownloading(kind);
     try {
-      const dataUrl = await buildShareCardDataUrl({
+      await downloadEntryImage(kind, {
         photoDataUrl: entry.photoDataUrl,
         location: entry.location,
         comment: entry.comment,
-        displayDate: formatDisplayDate(entry.date),
+        dateKey: entry.date,
       });
-      downloadDataUrl(dataUrl, `구름-${entry.date}.png`);
     } catch (err) {
-      console.error("calendar: 공유카드 생성 실패", entry.id, err);
-      toast.error("카드 이미지를 만들지 못했어요. 잠시 후 다시 시도해주세요.");
+      console.error(
+        `calendar: ${kind === "card" ? "공유카드" : "원본 사진"} 다운로드 실패`,
+        entry.id,
+        err,
+      );
+      toast.error(
+        kind === "card"
+          ? "카드 이미지를 만들지 못했어요. 잠시 후 다시 시도해주세요."
+          : "원본 사진을 받지 못했어요. 잠시 후 다시 시도해주세요.",
+      );
     } finally {
-      setIsSaving(false);
+      setDownloading(null);
     }
   };
 
@@ -120,14 +127,24 @@ export const EntryDetailModal = ({
               <span className="sr-only">좋아요</span>
               {entry.likes}
             </p>
-            <Button
-              onClick={handleSave}
-              disabled={!entry.photoDataUrl || isSaving}
-              aria-busy={isSaving}
-              className="mt-2 w-full bg-violet-200 font-extrabold disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400 disabled:opacity-100"
-            >
-              {isSaving ? "만드는 중..." : "저장하기"}
-            </Button>
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              <Button
+                onClick={() => handleDownload("original")}
+                disabled={!entry.photoDataUrl || downloading !== null}
+                aria-busy={downloading === "original"}
+                className="bg-violet-100 font-extrabold disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400 disabled:opacity-100"
+              >
+                {downloading === "original" ? "받는 중..." : "원본 저장"}
+              </Button>
+              <Button
+                onClick={() => handleDownload("card")}
+                disabled={!entry.photoDataUrl || downloading !== null}
+                aria-busy={downloading === "card"}
+                className="bg-violet-200 font-extrabold disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400 disabled:opacity-100"
+              >
+                {downloading === "card" ? "만드는 중..." : "카드 저장"}
+              </Button>
+            </div>
             <Button
               variant="link"
               size="none"
