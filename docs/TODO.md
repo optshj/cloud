@@ -98,21 +98,12 @@ confirm은 클라이언트가 보낸 `tag`/`comment`를 그대로 저장한다. 
 더 생긴다), 지금 스코프에서 그 비용이 더 크다. confirm에서 AI를 다시 부르는 건 비용 2배라 제외.
 → `app/api/entries/confirm/route.ts`
 
-### 2-12. 달력 그리드에 방향키 이동이 없다 → **키보드/스크린리더 사용자 제보가 오면, 또는 a11y를 한 번 훑을 때**
-
-(2026-09-09 확인 — 전체 리뷰)
-
-`accessibility` 스킬이 `MonthCalendarGrid`에 요구한 두 가지 중 `aria-current`만 돼 있다. 기록이
-있는 날만 `<button>`이라 Tab 순서가 달력 모양과 무관하게 흩어진다. roving tabindex + 방향키가
-정석인데 작업량이 있어 지금은 열어둔다.
-→ `src/widgets/month-calendar/ui/MonthCalendarGrid.tsx`
-
-### 2-13. `downloadDataUrl`의 `<a download>` → **웹뷰로 감쌀 때**
+### 2-13. `downloadUrl`의 `<a download>` → **웹뷰로 감쌀 때**
 
 (2026-09-09 확인 — 전체 리뷰)
 
 `<a download>`는 안드로이드 WebView/iOS WKWebView에서 아무 동작도 하지 않는 경우가 많다. 웹 우선
-정책상 지금은 문제가 없지만, 웹뷰 앱화(→ `CLAUDE.md` 기술 스택)를 시작하면 공유 카드 저장이
+정책상 지금은 문제가 없지만, 웹뷰 앱화(→ `CLAUDE.md` 기술 스택)를 시작하면 원본·카드 저장이
 조용히 죽는다. 그때 네이티브 브리지나 `share()` API로 갈아탄다.
 → `src/features/share-card/lib/share-card.ts`
 
@@ -147,8 +138,8 @@ confirm은 클라이언트가 보낸 `tag`/`comment`를 그대로 저장한다. 
 
 (2026-09-09 확인 — 전체 리뷰)
 
-`DELETE /api/account`는 *사진 경로 조회* 실패엔 "사진만 남으면 되돌릴 수 없다"며 중단하는데,
-정작 *삭제* 실패엔 그대로 `deleteUser`로 넘어간다 — 같은 이유에 앞뒤가 안 맞는다. 계정이 사라지면
+`DELETE /api/account`는 _사진 경로 조회_ 실패엔 "사진만 남으면 되돌릴 수 없다"며 중단하는데,
+정작 _삭제_ 실패엔 그대로 `deleteUser`로 넘어간다 — 같은 이유에 앞뒤가 안 맞는다. 계정이 사라지면
 경로 목록을 재구성할 수 없어 public 버킷에 사진이 영구히 남는다. 실패 로그는 2026-09-09에 붙였다.
 정할 것: **(a)** 삭제 실패도 500으로 중단(계정은 남고 사용자가 재시도) · **(b)** 현행 유지 + 로그만.
 "탈퇴 시 즉시 전체 삭제"(→ `PRODUCT.md`)를 지키는 건 (a)지만, 스토리지 장애에 탈퇴가 막힌다.
