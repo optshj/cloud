@@ -29,10 +29,6 @@ export const CapturePreview = ({
   onRecord?: () => void;
   onDownload?: () => void;
 }) => (
-  // 그냥 다른 화면으로 바뀐 것처럼 보이지 않게, 배경을 딤 처리하고 카드가 그 위에 뜬 것처럼
-  // 보이게만 한다(실제 Dialog의 포커스 트랩 등은 필요 없다는 게 결정사항 — animate-overlay-in/
-  // animate-modal-in은 Radix Dialog와 같은 시각 언어를 재사용하려고 globals.css 토큰만 가져온 것).
-  // pb는 떠 있는 BottomNav(약 80px) 몫이다 — 안 두면 아래 버튼이 탭 뒤로 들어간다.
   <div className="animate-overlay-in flex min-h-0 flex-1 flex-col bg-black/60 p-6 pb-28">
     <div className="relative flex min-h-0 flex-1 flex-col">
       <Button
@@ -44,16 +40,10 @@ export const CapturePreview = ({
       >
         <X className="h-4 w-4" />
       </Button>
-      {/* 버튼까지 카드 안에 들어간다 — 밖에 두면 카드와 버튼이 높이를 두고 다퉈서, 카드가
-          줄거나(사진이 작아진다) 버튼이 접힌 아래로 밀린다(스크롤해야 보인다). 한 덩어리로
-          묶고 사진만 flex로 남은 높이를 먹게 하면 세로 화면에서는 스크롤이 안 생긴다.
-          overflow-y-auto는 그게 불가능한 경우(아래 사진 하한에 걸리는 짧은 화면)의 안전망이다. */}
       <div
         className={`animate-modal-in flex min-h-0 flex-1 flex-col overflow-y-auto ${BRUTAL} bg-white p-3`}
       >
-        {/* 이 화면에서 유일하게 늘었다 줄었다 하는 칸이다 — aspect 고정을 버리고 남은 높이를
-            채운 뒤 object-cover로 잘라낸다. 하한은 필수다: basis가 0이라 축소 배분에서 이 칸만
-            0으로 깎여, 가로 모드처럼 세로가 짧으면 사진이 통째로 사라졌다. */}
+        {/* min-h 하한 필수 — 없으면 세로가 짧을 때 사진 칸이 0으로 깎인다. */}
         <div className="min-h-[30dvh] flex-1 overflow-hidden border-2 border-black">
           <img
             src={captured.photoDataUrl}
@@ -62,10 +52,7 @@ export const CapturePreview = ({
           />
         </div>
         {isLoggedIn && (
-          // AI 코멘트가 유난히 길면 이 칸만 스크롤한다 — 사진과 버튼은 제자리에 남는다.
           <div className="min-h-0 space-y-1 overflow-y-auto pt-3">
-            {/* 위치·날짜 / 태그 / 코멘트 — 사진첩·피드 상세와 같은 순서다. 저장하고 나서
-                피드에서야 자기 태그를 처음 보던 것을 여기서 미리 보여준다. */}
             <div className="flex items-end justify-between gap-2">
               <p className="text-xs text-neutral-600">{location}</p>
               <p className="text-xs whitespace-nowrap text-neutral-600">

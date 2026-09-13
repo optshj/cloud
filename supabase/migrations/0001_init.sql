@@ -1,8 +1,4 @@
--- 구름 앱 초기 스키마.
--- 적용 방법: Supabase 대시보드 > SQL Editor에 이 파일 내용을 붙여넣고 실행하거나,
--- Supabase CLI가 있으면 `supabase db push`로 적용.
--- Storage 버킷(entry-photos)은 SQL로 만들 수 없는 부분이 있어 아래 "Storage 설정" 섹션에
--- 대시보드에서 해야 할 단계를 별도로 적어둔다.
+-- 초기 스키마. entry-photos 버킷(Public)은 대시보드에서 먼저 만든다.
 
 create table if not exists cloud_entries (
   id uuid primary key default gen_random_uuid(),
@@ -16,7 +12,7 @@ create table if not exists cloud_entries (
   photo_path text not null,
   is_hidden boolean not null default false,
   created_at timestamptz not null default now(),
-  unique (user_id, entry_date) -- 하루 1장 제한을 DB 레벨에서 강제
+  unique (user_id, entry_date) -- 하루 1장
 );
 
 create table if not exists entry_likes (
@@ -34,7 +30,7 @@ create table if not exists entry_reports (
   unique (entry_id, reporter_id)
 );
 
--- 신고 3건 누적 시 자동 숨김 (CLAUDE.md: 신고 버튼 + 누적 시 자동 숨김, 생략 금지)
+-- 신고 3건 누적 시 자동 숨김
 create or replace function hide_entry_after_reports()
 returns trigger
 language plpgsql
@@ -54,10 +50,7 @@ create trigger trg_hide_entry_after_reports
   after insert on entry_reports
   for each row execute function hide_entry_after_reports();
 
--- 좋아요 수를 얹은 공개 조회용 뷰. lat/lng도 컬럼엔 포함되지만, 앱 코드가 select 목록에서
--- 항상 제외하므로(entities/cloud-entry/model/api.ts) 클라이언트로는 내려가지 않는다.
--- security_invoker = true 필수: Postgres 뷰는 기본적으로(false) 뷰 소유자(postgres, RLS 우회 가능) 권한으로
--- 실행되어 cloud_entries의 RLS를 그대로 뚫어버린다 — 이 옵션을 빼면 숨김/타인 글까지 다 노출된다.
+-- security_invoker 필수 — 빼면 뷰 소유자 권한으로 돌아 RLS를 우회한다.
 create or replace view entry_feed
   with (security_invoker = true)
 as
@@ -100,14 +93,6 @@ create policy "entry_reports_insert" on entry_reports
 drop policy if exists "entry_reports_select" on entry_reports;
 create policy "entry_reports_select" on entry_reports
   for select using (auth.uid() = reporter_id);
-
--- entry_feed 뷰는 security_invoker = true라서 cloud_entries의 RLS를 그대로 통과시키므로 별도 정책 불필요.
-
--- ============================================================
--- Storage 설정 (SQL Editor가 아니라 대시보드에서 수동으로 해야 함)
--- ============================================================
--- 1. Storage > New bucket > 이름 "entry-photos", Public bucket 체크.
--- 2. 아래 정책은 SQL Editor에서 실행 가능 (storage.objects는 이미 RLS가 켜져 있음):
 
 drop policy if exists "entry_photos_insert" on storage.objects;
 create policy "entry_photos_insert" on storage.objects

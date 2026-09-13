@@ -7,9 +7,6 @@ import { cn } from "@/shared/lib/cn";
 import { Button } from "@/shared/ui/button";
 import { BRUTAL } from "@/shared/ui/tokens";
 
-// `window.confirm` / `window.alert` 대체용. 브라우저 기본 창은 톤을 깨고 웹뷰 앱화 시 더 어색해진다.
-// shadcn 생성 코드의 size/media 변형은 이 프로젝트에서 쓸 일이 없어 걷어냈다.
-
 const AlertDialog = ({ ...props }: ComponentProps<typeof AlertDialogPrimitive.Root>) => (
   <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />
 );

@@ -1,9 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { NextRequest } from "next/server";
 
-// confirm은 인증 확인 → 검증 → (entryDate/locationDong 서버 재계산) → insert → 에러 코드별 분기가 핵심.
-// 클라이언트가 entryDate를 보내지 않는데도 서버가 seoulDateKey()로 "오늘"을 직접 계산한다는 계약(하루 1장 제한)을 반드시 검증한다.
-
 const {
   mockGetUser,
   mockGetPublicUrl,
@@ -113,7 +110,6 @@ describe("POST /api/entries/confirm", () => {
       error: null,
     });
 
-    // 바디에 entryDate 필드가 애초에 없다 — 그런데도 서버는 "오늘"을 직접 계산해야 한다.
     await POST(makeRequest(validBody));
 
     expect(mockSeoulDateKey).toHaveBeenCalledWith();
@@ -186,11 +182,10 @@ describe("POST /api/entries/confirm", () => {
       liked: false,
       photoDataUrl: "https://example.com/photo.jpg",
     });
-    // privacy-security: 정확한 GPS 좌표는 응답에 담지 않는다
     expect(json).not.toHaveProperty("lat");
     expect(json).not.toHaveProperty("lng");
   });
-  // 아래 400 케이스들이 없어서 "typeof number면 통과"가 오래 남아 있었다.
+
   it("바디가 JSON이 아니면 400을 받는다 — 검증 전에 throw돼 로그 없는 500이 되던 자리", async () => {
     const broken = {
       json: async () => {

@@ -28,16 +28,12 @@ import { buildShareCardDataUrl, downloadDataUrl } from "@/features/share-card";
 import type { CloudEntry } from "@/entities/cloud-entry";
 import { toast } from "sonner";
 
-// 사진첩 모달 참고 이미지: 그리드에서 날짜를 탭하면 폴라로이드처럼 살짝 기울어진 큰 카드가
-// 화면 중앙에 뜨고, 카드 모서리에 겹쳐진 작은 X 버튼으로 닫는다.
-// 껍데기(포커스 트랩·Escape·스크롤 잠금·백드롭)는 Radix Dialog가 맡는다.
 export const EntryDetailModal = ({
   entry: openEntry,
   onClose,
   onDelete,
   onToggleLike,
 }: {
-  // 열려 있지 않으면 null이다 — 호출부가 조건부 마운트하지 않고 이 prop만 비운다.
   entry: CloudEntry | null;
   onClose: () => void;
   onDelete: (id: string) => void;
@@ -49,7 +45,7 @@ export const EntryDetailModal = ({
   const entry = useLastNonNull(openEntry);
 
   const handleClose = () => {
-    // 모달이 언마운트되지 않으므로 확인창 상태가 살아남는다 — 다음에 열 때 바로 뜨지 않게 같이 접는다.
+    // 상시 마운트라 확인창 상태가 남는다 — 같이 접는다.
     setIsDeleteOpen(false);
     onClose();
   };
@@ -109,8 +105,6 @@ export const EntryDetailModal = ({
             className="aspect-square w-full border-2 border-black"
           />
 
-          {/* 캡션 구성은 피드 상세(FeedDetailModal)와 같다 — 같은 기록을 어디서 열든
-              같은 순서로 읽혀야 한다: 위치·날짜 / 태그 / 코멘트. */}
           <div className="space-y-1 px-1 pt-3 pb-1">
             <div className="flex items-end justify-between gap-2">
               <DialogTitle className="text-xs font-normal text-neutral-600">

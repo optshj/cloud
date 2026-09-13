@@ -1,11 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { NextRequest } from "next/server";
 
-// preview는 인증 확인 → 검증 → (지오코딩 + AI 코멘트) 병렬 호출만 하고 DB에는 아무것도 쓰지 않는다.
-// 각 의존성을 모듈 단위로 모킹해 라우트의 분기 로직만 검증한다 (supabase-patterns 스킬 참고).
-
-// vi.mock()은 파일 최상단으로 호이스팅되므로, 팩토리에서 참조할 mock은
-// vi.hoisted()로 만들어야 TDZ(ReferenceError)를 피할 수 있다.
 const {
   mockGetUser,
   mockGetPublicUrl,
@@ -97,9 +92,7 @@ describe("POST /api/entries/preview", () => {
       comment: "구름이 예뻐요",
       locationDong: "제주시 이도이동",
     });
-    // storage public URL이 AI 코멘트 생성에 그대로 전달됐는지 확인
     expect(mockGenerateAiComment).toHaveBeenCalledWith("https://example.com/photo.jpg");
-    // 미리보기 라우트는 DB에 아무것도 저장하지 않는다는 계약
     expect(mockFrom).not.toHaveBeenCalled();
   });
 });

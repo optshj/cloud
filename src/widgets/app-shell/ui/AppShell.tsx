@@ -15,7 +15,6 @@ export const AppShell = ({
 }) => {
   const t = THEME[theme];
   return (
-    // relative는 BottomNav의 위치 기준이다 — 그 nav는 배경 없이 콘텐츠 위에 떠 있다.
     <div
       id="app-frame"
       className={`relative mx-auto flex h-dvh w-full max-w-md flex-col ${t.body}`}

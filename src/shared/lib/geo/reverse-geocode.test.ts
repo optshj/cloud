@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { formatRegion } from "./reverse-geocode";
 
-// 아래 셋은 실제 Nominatim 응답에서 가져온 조합이다 — 지역마다 채워지는 키가 달라서
-// 우선순위가 어긋나면 "중구 태평로1가"(법정동)처럼 카카오와 다른 값이 나간다.
+// 실제 Nominatim 응답에서 가져온 조합이다.
 describe("formatRegion", () => {
   it("행정동(suburb)이 있으면 그걸 쓴다", () => {
     expect(

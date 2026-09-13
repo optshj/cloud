@@ -6,7 +6,6 @@ import { MotionProvider } from "./MotionProvider";
 import { PageTransitionProvider } from "@/widgets/app-shell";
 import { Toaster } from "@/shared/ui/sonner";
 
-// 네오브루탈리즘에 맞는 굵은 임팩트 + 한글 지원(100~900 전체 웨이트)
 const gothicA1 = Gothic_A1({
   variable: "--font-sans",
   subsets: ["latin"],
@@ -24,7 +23,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="min-h-full">
         <MotionProvider>
           <PageTransitionProvider>{children}</PageTransitionProvider>
-          {/* 에러 메시지 공통 채널 — 화면 어디서든 toast.error()로 띄운다. */}
           <Toaster />
         </MotionProvider>
       </body>

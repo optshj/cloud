@@ -4,8 +4,7 @@ import { createAdminClient } from "@/shared/lib/supabase/admin";
 
 const BUCKET = "entry-photos";
 
-// 탈퇴 즉시 전체 삭제(CLAUDE.md 필수 스펙, 유예기간 없음): 사진 파일 → auth 계정 순으로 지운다.
-// DB 행(cloud_entries/entry_likes/entry_reports)은 auth.users FK의 on delete cascade로 같이 지워진다.
+// 탈퇴 즉시 전체 삭제: 사진 → auth 계정 순. DB 행은 auth.users FK cascade로 지워진다.
 export const DELETE = async () => {
   const supabase = await createClient();
   const {
@@ -15,17 +14,14 @@ export const DELETE = async () => {
 
   const admin = createAdminClient();
 
-  // 경로에 uid가 없어져서 폴더 목록으로는 못 찾는다(→ supabase/migrations/0004). 두 목록을 합친다:
-  // - 업로더(owner_id) 기준: 기록까지 안 간 사진(미리보기 후 이탈)을 여기서만 찾을 수 있다.
-  // - 내 기록의 photo_path: owner_id가 빈 파일(시드 데이터, service role로 옮긴 파일 →
-  //   ERD.md "Storage")은 위 목록에서 빠지는데, 그 파일도 지워져야 "탈퇴 시 즉시 전체 삭제"가 선다.
+  // 경로에 uid가 없어 두 목록을 합친다: 업로더 기준(기록 안 한 사진) + 내 기록(owner_id 없는 파일).
   const [{ data: uploaded, error: uploadedError }, { data: entries, error: entriesError }] =
     await Promise.all([
       admin.rpc("entry_photo_paths", { target: user.id }),
       admin.from("cloud_entries").select("photo_path").eq("user_id", user.id),
     ]);
   if (uploadedError || entriesError) {
-    // 사진을 남긴 채 계정만 지우면 되돌릴 수 없어서 여기서 멈춘다.
+    // 사진을 남긴 채 계정만 지우면 되돌릴 수 없다.
     console.error(
       "account: 사진 경로 조회 실패",
       user.id,
@@ -39,9 +35,7 @@ export const DELETE = async () => {
   }
   const paths = [...new Set([...(uploaded ?? []), ...(entries ?? []).map((e) => e.photo_path)])];
   if (paths.length > 0) {
-    // remove()는 실패를 throw하지 않고 { error }로 돌려준다 — 버리면 계정이 사라진 뒤라
-    // 이 경로 목록을 재구성할 방법이 없어 public 버킷에 사진이 영구히 남는다.
-    // 여기서 중단할지는 아직 정해지지 않았다(남은 작업 문서 §3) — 지금은 최소한 흔적을 남긴다.
+    // remove()는 throw하지 않고 { error }를 돌려준다. 여기서 중단할지는 아직 미정.
     const { error: removeError } = await admin.storage.from(BUCKET).remove(paths);
     if (removeError) {
       console.error("account: 사진 파일 삭제 실패", user.id, paths.length, removeError);

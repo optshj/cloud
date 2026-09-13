@@ -1,9 +1,6 @@
 import { BRUTAL_SM } from "@/shared/ui/tokens";
 
-// 로딩 스켈레톤은 실제 카드와 "같은 파일에서" 관리한다 — 카드 레이아웃이 바뀌었는데
-// 스켈레톤만 그대로면 데이터 도착 순간 레이아웃이 튀기 때문.
-// 이 컴포넌트의 골격은 EntryFeedCard와 1:1로 맞춰져 있다(기울기는 id로 정해지므로 여기선 뺀다).
-
+// EntryFeedCard와 골격을 1:1로 맞춘다.
 export const EntryFeedCardSkeleton = () => (
   <div aria-hidden className={`${BRUTAL_SM} flex flex-col bg-white p-1.5 pb-2.5`}>
     <div className="skeleton aspect-square w-full" />

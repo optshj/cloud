@@ -26,7 +26,6 @@ export const Default: Story = {
   args: { className: "h-5 w-40" },
 };
 
-// 스켈레톤은 실제 카드와 1:1이어야 한다 — 모양이 다르면 데이터가 도착하는 순간 레이아웃이 튄다.
 export const MatchesRealCard: Story = {
   name: "실제 카드와 1:1",
   render: () => (
@@ -51,7 +50,6 @@ export const MatchesRealCard: Story = {
   ),
 };
 
-// 사진 자리는 배경색을 살려야 해서 `.skeleton`이 아니라 `.shimmer`를 쓴다.
 export const PhotoSlotUsesShimmer: Story = {
   name: "사진 자리는 shimmer",
   render: () => (

@@ -16,7 +16,6 @@ export const FeedView = () => {
   const { user } = useSession();
   const { entries, isLoading, error, refresh, toggleLike } = useCloudEntries();
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  // 탭 전환 오버레이가 덮여있는 동안 실제로 이 로딩이 끝나야 걷힌다.
   usePageReady(!isLoading);
 
   const handleToggleLike = (id: string) => {
@@ -26,9 +25,6 @@ export const FeedView = () => {
     toggleLike(id);
   };
 
-  // 좋아요순으로 정렬하지 않는다 — 하트를 누른 카드가 그 자리에서 위로 튀어올라
-  // 방금 뭘 눌렀는지 놓치고, 뒤따라 오던 카드들까지 한 칸씩 밀린다.
-  // 목록 순서는 fetchEntries가 준 최신순 그대로 둔다.
   const selectedEntry = entries.find((e) => e.id === selectedId) ?? null;
 
   if (isLoading) {
@@ -82,16 +78,13 @@ export const FeedView = () => {
 
   return (
     <AppShell theme="feed" title="피드">
-      {/* pb는 기존 여백 + 떠 있는 BottomNav 높이(약 80px) — 마지막 카드가 탭에 안 가리게. */}
       <motion.div {...LIST_CONTAINER} className="grid grid-cols-2 gap-3 p-4 pb-24">
         {entries.map((entry) => (
-          // grid로 감싸야 카드가 원래처럼 행 높이만큼 늘어난다(stagger 래퍼를 끼우기 전과 동일).
           <motion.div key={entry.id} {...LIST_ITEM} className="grid">
             <EntryFeedCard entry={entry} onSelect={setSelectedId} onToggleLike={handleToggleLike} />
           </motion.div>
         ))}
       </motion.div>
-      {/* 조건부 마운트하면 부모가 먼저 사라져 exit 애니메이션이 씹힌다 — 상시 마운트하고 entry만 비운다. */}
       <FeedDetailModal
         entry={selectedEntry}
         onClose={() => setSelectedId(null)}

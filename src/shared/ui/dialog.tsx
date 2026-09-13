@@ -5,10 +5,6 @@ import { Dialog as DialogPrimitive } from "radix-ui";
 
 import { cn } from "@/shared/lib/cn";
 
-// shadcn 기본 DialogContent는 `rounded-lg border bg-background p-6 shadow-lg`로 스스로 카드를 그린다 —
-// 이 서비스의 모달은 폴라로이드 카드/카드 더미처럼 연출이 제각각이라 껍데기를 비워두고,
-// 위치 잡기(화면 중앙)와 열고닫기 모션만 여기서 책임진다.
-
 const Dialog = ({ ...props }: ComponentProps<typeof DialogPrimitive.Root>) => (
   <DialogPrimitive.Root data-slot="dialog" {...props} />
 );
@@ -71,5 +67,4 @@ const DialogDescription = ({
   />
 );
 
-// Portal/Overlay는 DialogContent 안에서만 쓴다 — 호출부에 노출하지 않는다.
 export { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle };

@@ -14,9 +14,6 @@ import {
 } from "./alert-dialog";
 import { Button } from "./button";
 
-// `window.confirm`을 전부 대체한 확인창(탈퇴·기록 삭제·신고).
-// **확인 단계 자체는 절대 줄이지 않는다** — 파괴적 액션은 `AlertDialogAction`에서만 실행되고,
-// 여는 버튼을 누르는 것만으로는 아무 일도 일어나지 않는다(→ docs/UI-SYSTEM.md 결정 §7).
 const AlertDialogDemo = ({
   title,
   description,
@@ -68,7 +65,6 @@ export const DeleteEntry: Story = {
   name: "기록 삭제",
 };
 
-// 탈퇴는 `docs/REVIEW-STANDARD.md`의 스코프 가드레일 대상이라 문구를 오히려 강화했다.
 export const DeleteAccount: Story = {
   name: "탈퇴",
   args: {

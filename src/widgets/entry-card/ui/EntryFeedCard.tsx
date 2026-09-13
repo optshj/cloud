@@ -8,10 +8,6 @@ import { formatDisplayDate } from "@/shared/lib/date";
 import type { CloudEntry } from "@/entities/cloud-entry";
 import { tiltClass } from "../lib/tilt";
 
-// 피드와 사진첩이 같이 쓰는 카드다. 원래 사진첩은 EntryListCard(날짜+코멘트, 좋아요 없음)를
-// 따로 들고 있었는데, 같은 기록이 탭마다 다르게 읽히고 사진첩에선 좋아요 수를 볼 수 없었다 —
-// 카드를 하나로 합치고 두 탭의 구분은 배경 테마(라벤더/코랄)에 맡긴다.
-// 대지는 흰색이다 — 크림(amber-50)으로 깔아봤더니 2열로 채우는 순간 화면이 누레졌다.
 export const EntryFeedCard = ({
   entry,
   onSelect,
@@ -21,8 +17,6 @@ export const EntryFeedCard = ({
   onSelect: (id: string) => void;
   onToggleLike: (id: string) => void;
 }) => (
-  // 섀도가 이 대지에 걸려 있어서 눌림도 여기서 낸다 — :active는 조상까지 걸리므로
-  // 안쪽 어느 버튼을 눌러도 카드가 같이 눌린다.
   <div
     className={`${BRUTAL_SM} ${PRESS} ${tiltClass(entry.id)} flex flex-col bg-white p-1.5 pb-2.5`}
   >

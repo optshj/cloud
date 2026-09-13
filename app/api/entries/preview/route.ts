@@ -7,7 +7,7 @@ import { generateAiComment } from "@/shared/lib/ai/generate-ai-comment";
 
 const BUCKET = "entry-photos";
 
-// 미리보기 전용 — DB에 아무것도 저장하지 않는다. "기록하기"를 눌러야 /api/entries/confirm에서 저장된다.
+// DB에 저장하지 않는다 — 저장은 /api/entries/confirm.
 export const POST = async (request: NextRequest) => {
   const supabase = await createClient();
   const {
@@ -27,8 +27,6 @@ export const POST = async (request: NextRequest) => {
   const photoUrl = supabase.storage.from(BUCKET).getPublicUrl(photoPath).data.publicUrl;
 
   const [locationDong, aiComment] = await Promise.all([
-    // 원인을 삼키면 502만 남아 지오코더 장애와 좌표 문제를 구분할 수 없다 —
-    // 지오코더가 돌려준 메시지를 그대로 남긴다.
     reverseGeocodeToDong(lat, lng).catch((err) => {
       console.error("entries/preview: 역지오코딩 실패", { lat, lng }, err);
       return null;

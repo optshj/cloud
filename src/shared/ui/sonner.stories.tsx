@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import { Toaster } from "./sonner";
 import { Button } from "./button";
 
-// Toaster는 화면에 하나만 떠 있는 컨테이너라 그 자체로는 볼 게 없다 — 띄우는 버튼과 함께 둔다.
 const ToasterDemo = () => (
   <div className="flex flex-col items-start gap-2">
     <Button onClick={() => toast.error("위치 확인에 실패했어요. 다시 시도해주세요.")}>

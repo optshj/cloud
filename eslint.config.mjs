@@ -52,117 +52,59 @@ export default tseslint.config(
       ...reactPlugin.configs.recommended.rules,
       ...reactHooksPlugin.configs.recommended.rules,
 
-      // ────────────────────────────────────────────────
-      // Prettier
-      // ────────────────────────────────────────────────
       'prettier/prettier': 'error',
-
-      // ────────────────────────────────────────────────
-      // 명명 규칙 (Naming Convention)
-      // - 변수·함수: camelCase
-      // - 컴포넌트·class: PascalCase
-      // - 상수·enum: UPPER_CASE (snake_case)
-      // - boolean 변수: is/has/should/need prefix
-      // - 이벤트 핸들러: handle prefix
-      // ────────────────────────────────────────────────
 
       '@typescript-eslint/naming-convention': [
         'error',
-        // 일반 변수: camelCase | UPPER_CASE만 허용
         {
           selector: 'variable',
           format: ['camelCase', 'UPPER_CASE'],
           leadingUnderscore: 'allow'
         },
-        // React 컴포넌트 변수: PascalCase 허용
-        // (const MyComponent = () => <div /> 형태 대응)
         {
           selector: 'variable',
           types: ['function'],
           format: ['camelCase', 'PascalCase'],
           leadingUnderscore: 'allow'
         },
-        // boolean 변수: is / has / should / need prefix 강제
         {
           selector: 'variable',
           types: ['boolean'],
           format: ['PascalCase'],
           prefix: ['is', 'has', 'should', 'need', 'disabled', 'opened', 'show']
         },
-        // 함수: camelCase | PascalCase
         {
           selector: 'function',
           format: ['camelCase', 'PascalCase']
         },
-        // 인터페이스: PascalCase
         {
           selector: 'interface',
           format: ['PascalCase']
         },
-        // 타입 별칭: PascalCase
         {
           selector: 'typeAlias',
           format: ['PascalCase']
         },
-        // enum: UPPER_CASE
         {
           selector: 'enum',
           format: ['UPPER_CASE']
         },
-        // enum 멤버: UPPER_CASE
         {
           selector: 'enumMember',
           format: ['UPPER_CASE']
         }
       ],
 
-      // ────────────────────────────────────────────────
-      // 이벤트 핸들러 handle prefix 강제
-      // - JSX prop에 전달되는 함수: handle prefix 강제
-      // - 로컬 변수로 선언된 핸들러도 함께 체크
-      // ────────────────────────────────────────────────
-      // 'react/jsx-handler-names': [
-      //   'error',
-      //   {
-      //     eventHandlerPrefix: 'handle', // 함수 이름은 handle로 시작
-      //     eventHandlerPropPrefix: 'on', // prop 이름은 on으로 시작
-      //     checkLocalVariables: true, // 로컬 변수에 할당된 핸들러도 체크
-      //     checkInlineFunction: false // 인라인 함수 (() => {}) 는 허용
-      //   }
-      // ],
-
-      // ────────────────────────────────────────────────
-      // 변수 (Variables)
-      // - var 사용 금지
-      // - const 우선 사용
-      // - 전역변수 지양
-      // ────────────────────────────────────────────────
       'no-var': 'error',
       'prefer-const': 'error',
       'no-implicit-globals': 'error',
 
-      // ────────────────────────────────────────────────
-      // 함수 (Functions)
-      // - 매개변수 최대 3개 (초과 시 object 사용)
-      // ────────────────────────────────────────────────
       'max-params': ['error', 3],
 
-      // ────────────────────────────────────────────────
-      // 구현 (Implementation)
-      // - 삼중 등호(===, !==) 강제
-      // - 템플릿 문자열 사용 권장
-      // - 중괄호 생략 금지 (early return 등 일관성)
-      // ────────────────────────────────────────────────
       eqeqeq: ['error', 'always', { null: 'ignore' }],
       'prefer-template': 'error',
       curly: ['error', 'all'],
 
-      // ────────────────────────────────────────────────
-      // 모듈 (Modules)
-      // - 타입은 import type 강제
-      // - export * 금지
-      // - import 중복 금지
-      // ────────────────────────────────────────────────
       '@typescript-eslint/consistent-type-imports': [
         'error',
         {
@@ -173,9 +115,7 @@ export default tseslint.config(
       ],
       'import/no-duplicates': 'error',
 
-      // FSD Public API 강제: alias로는 슬라이스 루트(index.ts)까지만 import 허용,
-      // 슬라이스 내부 경로(@/features/auth/ui/LoginForm 등)로의 딥 임포트는 금지.
-      // views는 이 프로젝트 관례상 index.ts 없이 app/{route}/page.tsx에서 ui/*를 직접 import하므로 제외.
+      // FSD 딥임포트 금지. views는 page.tsx가 ui/*를 직접 import해서 제외.
       'import/no-internal-modules': [
         'error',
         {
@@ -183,11 +123,6 @@ export default tseslint.config(
         }
       ],
 
-      // ────────────────────────────────────────────────
-      // FSD 레이어 의존 방향 강제
-      // shared → entities → features → widgets → views → app
-      // 낮은 레이어는 자신보다 높은 레이어를 import할 수 없음
-      // ────────────────────────────────────────────────
       'import/no-restricted-paths': [
         'error',
         {
@@ -221,21 +156,16 @@ export default tseslint.config(
         }
       ],
 
-      // ────────────────────────────────────────────────
-      // no-restricted-syntax: 메시지 커스텀 가능한 규칙들
-      // ────────────────────────────────────────────────
       'no-restricted-syntax': [
         'error',
         {
           selector: 'FunctionDeclaration:not(ExportDefaultDeclaration > FunctionDeclaration)',
           message: '함수 선언식 대신 화살표 함수를 사용해주세요. (const fn = () => {})'
         },
-        // export * 금지
         {
           selector: 'ExportAllDeclaration',
           message: "export * 는 사용하지 않습니다. import 후 named export를 사용해주세요. (import { x } from '...'; export { x };)"
         },
-        // == / != 사용 금지 (eqeqeq와 이중 방어)
         {
           selector: 'BinaryExpression[operator="=="]',
           message: '== 대신 === 을 사용해주세요. '
@@ -244,27 +174,21 @@ export default tseslint.config(
           selector: 'BinaryExpression[operator="!="]',
           message: '!= 대신 !== 을 사용해주세요.'
         },
-        // var 사용 금지 (no-var와 이중 방어)
         {
           selector: 'VariableDeclaration[kind="var"]',
           message: 'var는 사용하지 않습니다. const 또는 let을 사용해주세요.'
         },
-        // 문자열 연결(+) 금지 — 템플릿 리터럴 사용 유도
         {
           selector:
             'BinaryExpression[operator="+"][left.type="Literal"][left.value=type(string)][right.type!="Literal"], BinaryExpression[operator="+"][right.type="Literal"][right.value=type(string)][left.type!="Literal"]',
           message: '문자열 연결에 + 연산자 대신 템플릿 리터럴을 사용해주세요. (예: 안녕 ${name})'
         },
-        // window.xxx 전역변수 할당 금지
         {
           selector: 'AssignmentExpression[left.type="MemberExpression"][left.object.name="window"]',
           message: 'window.xxx 전역변수 할당은 사용하지 않습니다. 모듈 스코프 내에서 변수를 선언해주세요.'
         }
       ],
 
-      // ────────────────────────────────────────────────
-      // no-restricted-imports: 잘못된 import 패턴 차단
-      // ────────────────────────────────────────────────
       'no-restricted-imports': [
         'error',
         {
@@ -287,9 +211,6 @@ export default tseslint.config(
         }
       ],
 
-      // ────────────────────────────────────────────────
-      // 기타 기존 규칙 유지
-      // ────────────────────────────────────────────────
       'no-implicit-coercion': 'error',
       'no-undef': 'off',
       indent: 'off',
@@ -337,10 +258,7 @@ export default tseslint.config(
     }
   },
   {
-    // Storybook 스토리 파일: export 이름이 곧 사이드바에 뜨는 스토리 이름이라
-    // camelCase를 강제하면 카탈로그가 읽히지 않는다(`Default`, `Disabled`가 관례).
-    // 대신 여기서만 PascalCase를 허용하고, 나머지 규칙은 그대로 적용된다.
-    // 한글 이름이 필요하면 export는 ASCII로 두고 `name: '한글 이름'`으로 넘긴다.
+    // 스토리 export 이름이 사이드바 이름이라 PascalCase를 허용한다.
     files: ['**/*.stories.ts', '**/*.stories.tsx'],
     rules: {
       '@typescript-eslint/naming-convention': [

@@ -5,3 +5,4 @@
 - [Safari permissions.query 동기 throw](project_safari_permissions_query.md) — 지원 안 하는 PermissionName은 reject가 아니라 throw, `.catch()`만으론 못 잡음
 - [페이지 전환 wipe 애니메이션](project_page_transition_wipe.md) — PageTransition.tsx의 명령형 DOM 조작은 정당화됨, 결합 지점 3가지(getBodyColor 정규식/app-frame id/시간 기반 fade)만 diff마다 재확인
 - [Route Handler 에러 로깅 누락 반복](project_route_error_logging.md) — 실패 분기에서 원본 error를 버리는 패턴, supabase-js의 `{ error }` 반환 호출이 특히 잘 삼켜진다
+- [`// ponytail:` 주석 접두 유입](project_ponytail_comment_prefix.md) — 전역 플러그인이 에이전트 코드에 남기는 접두, cloud 컨벤션 아님 → 접두만 뗀다

@@ -50,7 +50,6 @@ export const SettingsView = () => {
     router.push("/");
   };
 
-  // 세션 조회 중 {null}을 렌더하면 흰 화면이 깜빡인다 — 실제 골격과 같은 자리를 잡아둔다.
   if (isLoading) {
     return (
       <AppShell theme="calendar" title="설정">
@@ -142,7 +141,7 @@ export const SettingsView = () => {
             <AlertDialogCancel>취소</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
-              // preventDefault가 없으면 창이 즉시 닫혀 삭제가 도는 동안 화면에 아무 표시가 없다.
+              // preventDefault 없으면 Radix가 즉시 닫아 진행 상태가 안 보인다.
               onClick={(e) => {
                 e.preventDefault();
                 void handleDeleteAccount();

@@ -43,11 +43,8 @@ export const useCloudEntries = () => {
     };
   }, []);
 
-  // 목록은 로그인한 사람이 누구냐에 따라 내용이 달라진다 — is_mine과 liked를 서버가
-  // 세션 기준으로 계산해서 내려주기 때문이다. 그래서 로그아웃해도 목록을 그대로 두면
-  // 남의 브라우저에 내 기록이 "내 것"으로 남는다(사진첩이 안 비고, 하트도 눌린 채다).
-  // 로그인/로그아웃으로 사용자가 실제로 바뀔 때만 다시 불러온다 —
-  // 토큰 갱신(TOKEN_REFRESHED)이나 탭 복귀에도 이벤트가 오므로 id를 비교해서 걸러낸다.
+  // is_mine·liked가 세션 기준이라 사용자가 바뀌면 재조회한다.
+  // 토큰 갱신·탭 복귀에도 이벤트가 오므로 id를 비교한다.
   const userIdRef = useRef<string | null | undefined>(undefined);
   useEffect(() => {
     const supabase = createClient();
@@ -55,7 +52,7 @@ export const useCloudEntries = () => {
       const nextUserId = session?.user.id ?? null;
       const previousUserId = userIdRef.current;
       userIdRef.current = nextUserId;
-      // 첫 이벤트(INITIAL_SESSION)는 위 최초 조회와 겹치므로 건너뛴다.
+      // INITIAL_SESSION은 최초 조회와 겹친다.
       if (previousUserId === undefined || previousUserId === nextUserId) return;
       void refresh();
     });
@@ -76,8 +73,6 @@ export const useCloudEntries = () => {
       await toggleLikeRemote(id, previous.liked);
     } catch (err) {
       console.error("cloud-entry: 좋아요 토글 실패", id, err);
-      // 실패하면 낙관적 업데이트 롤백. 롤백만 하고 조용히 두면 하트가 스스로 되돌아간 것처럼
-      // 보인다 — 에러는 토스트 한 채널로 모은다(→ docs/UI-SYSTEM.md "토스트").
       setEntries((prev) => prev.map((e) => (e.id === id ? previous! : e)));
       toast.error("좋아요를 반영하지 못했어요. 잠시 후 다시 시도해주세요.");
     }

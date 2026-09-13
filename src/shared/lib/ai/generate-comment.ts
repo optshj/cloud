@@ -1,5 +1,4 @@
-// AI 코멘트 실패 시의 폴백 풀. 게이트웨이 호출은 generate-ai-comment.ts가 하고,
-// 키가 없거나 호출/파싱이 실패할 때 여기로 떨어진다 — 지우거나 API 호출로 갈아끼우지 말 것.
+// generate-ai-comment의 폴백 풀 — 지우지 말 것.
 const AI_COMMENT_POOL: Array<{ tag: string; comment: string }> = [
   { tag: "기분 좋은 하루", comment: "오늘 하늘 정말 맑아요" },
   { tag: "햇살 가득", comment: "햇살이 좋은 하루예요" },

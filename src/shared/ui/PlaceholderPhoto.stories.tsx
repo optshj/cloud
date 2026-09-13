@@ -3,7 +3,6 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { PlaceholderPhoto } from "./PlaceholderPhoto";
 import { BRUTAL_SM } from "./tokens";
 
-// 1x1 하늘색 픽셀 — 실제 Storage URL에 기대지 않으려고 인라인으로 둔다.
 const SKY_PIXEL = `data:image/svg+xml;utf8,${encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8"><rect width="8" height="8" fill="#7dd3fc"/><circle cx="3" cy="3" r="2" fill="#fff"/><circle cx="5" cy="4" r="1.6" fill="#fff"/></svg>`,
 )}`;
@@ -39,7 +38,6 @@ export const WithPhoto: Story = {
   },
 };
 
-// 달력 칸의 미니 폴라로이드 — 같은 컴포넌트가 40px 남짓에서도 읽혀야 한다.
 export const CalendarCellSize: Story = {
   name: "달력 칸 크기",
   render: () => (

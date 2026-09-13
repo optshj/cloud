@@ -94,8 +94,6 @@ export const WithIcon: Story = {
   },
 };
 
-// 터치 타겟은 최소 44px이다 — `size="icon"`이 그 규격(h-11 w-11)이고,
-// `size="none"`은 호출부가 크기를 직접 정할 때만 쓴다(→ docs/UI-SYSTEM.md 결정 §8).
 export const TouchTarget44: Story = {
   name: "터치 타겟 44px",
   render: () => (

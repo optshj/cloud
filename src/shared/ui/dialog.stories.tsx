@@ -9,10 +9,6 @@ import { X } from "lucide-react";
 import { PlaceholderPhoto } from "./PlaceholderPhoto";
 import { BRUTAL } from "./tokens";
 
-// 열고닫기 모션은 Radix의 `data-state` + globals.css 키프레임이 맡는다(framer-motion 아님).
-// **exit가 재생되려면 Dialog root가 계속 마운트돼 있어야 한다** — 호출부에서
-// `{selected && <Modal/>}`로 감싸면 부모가 먼저 사라져 exit가 씹힌다.
-// 그래서 여기 스토리도 상시 마운트하고 `open`만 토글한다(→ docs/UI-SYSTEM.md 결정 §5).
 const DialogDemo = ({ hasPhoto = false }: { hasPhoto?: boolean }) => {
   const [isOpen, setIsOpen] = useState(false);
 

@@ -7,9 +7,6 @@ import { dateKey, getMonthGrid, seoulDateKey } from "@/shared/lib/date";
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
-// 인화한 사진처럼 — 사방에 흰 여백을 두되 아래쪽만 넓게 두고, 그 여백에 날짜를 적는다.
-// 사진이 있든 없든 같은 골격을 쓴다: 빈 칸은 "결함"이 아니라 "아직 안 채운 자리"로 읽히고,
-// 사진이 도착해도 칸 모양이 바뀌지 않아 레이아웃이 튀지 않는다.
 const PRINT = "aspect-square p-[2px] pb-[11px]";
 const PHOTO_AREA = "absolute inset-[2px] bottom-[11px]";
 const DATE_IN_MARGIN = "absolute inset-x-0 bottom-px text-[10px] leading-none";
@@ -25,8 +22,7 @@ export const MonthCalendarGrid = ({
   entries: CloudEntry[];
   onSelectEntry: (id: string) => void;
 }) => {
-  // 하루 1장 제한(CameraView)과 다음 달 잠금(CalendarView)이 전부 KST 기준이다 —
-  // 여기만 기기 로컬을 쓰면 비 KST 기기에서 강조되는 "오늘"이 그것들과 다른 날을 가리킨다.
+  // KST — 하루 1장 제한·다음 달 잠금과 같은 "오늘"을 가리키게.
   const todayKey = seoulDateKey();
   const grid = getMonthGrid(year, month);
   const entryByDate = new Map(entries.map((e) => [e.date, e]));
@@ -43,7 +39,6 @@ export const MonthCalendarGrid = ({
         const entry = inMonth ? entryByDate.get(key) : undefined;
         const isToday = key === todayKey;
 
-        // 지난달·다음달 칸은 대지에 얹지 않는다 — 이번 달만 앨범 페이지다.
         if (!inMonth) {
           return (
             <div
@@ -55,20 +50,17 @@ export const MonthCalendarGrid = ({
           );
         }
 
-        // 오늘은 대지 색만 바꾼다(모양은 그대로) — 프레임을 덧대면 인화지 어휘가 깨진다.
         const mount = isToday
           ? "border border-black bg-violet-200"
           : entry
             ? "border border-black/25 bg-white"
             : "border border-black/15 bg-white/55";
-        // 날짜 숫자는 달력의 핵심 정보라 대지가 뭐든 AA(4.5:1)를 지킨다.
-        // 오늘 칸은 대지가 violet-200이라 neutral-500으로는 3.4:1밖에 안 나온다.
+        // 대지별로 AA(4.5:1) — violet-200 위 neutral-500은 3.4:1이다.
         const dateTone = isToday
           ? "text-neutral-700"
           : entry
             ? "text-neutral-500"
             : "text-neutral-600";
-        // 오늘을 색으로만 알리지 않는다 — 스크린리더엔 aria-current, 눈으로는 숫자 굵기.
         const dateWeight = isToday ? "font-extrabold" : "font-bold";
 
         if (!entry) {
@@ -86,7 +78,6 @@ export const MonthCalendarGrid = ({
           );
         }
 
-        // 프레임은 이미 자리에 있으니 사진만 그 안에서 나타난다 — 1일 쪽부터 차례로.
         return (
           <button
             key={key}

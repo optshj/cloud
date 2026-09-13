@@ -1,10 +1,9 @@
 const loadImage = (src: string): Promise<HTMLImageElement> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    // Storage의 https URL은 cross-origin이라, 이게 없으면 canvas가 tainted 상태가 돼서 toDataURL이 실패한다.
+    // 없으면 cross-origin Storage URL이 canvas를 taint해 toDataURL이 실패한다.
     img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
-    // Event로 reject하면 호출부의 로그에 원인이 한 글자도 안 남는다.
     img.onerror = () => reject(new Error(`공유카드 이미지 로드 실패: ${src}`));
     img.src = src;
   });
@@ -12,8 +11,6 @@ const loadImage = (src: string): Promise<HTMLImageElement> => {
 
 type Box = { x: number; y: number; w: number; h: number };
 
-// 박스는 x/y/w/h를 따로 받지 않고 한 덩어리로 받는다 — 인자 4개가 전부 number라
-// 호출부에서 순서를 바꿔 넣어도 타입이 안 잡힌다.
 const drawCover = (ctx: CanvasRenderingContext2D, img: HTMLImageElement, { x, y, w, h }: Box) => {
   const imgRatio = img.width / img.height;
   const boxRatio = w / h;
